@@ -1,0 +1,22 @@
+// Colin not next Kate.
+// Emily not next Fred or Kate.
+// Neither Kate or Emily next to Irene.
+// Fred on Irene's left.
+
+A guest is an integer concept, and it is identified by a name.
+A position is a function which takes integer and returns integer .
+The position with guest with name equal to X must be greater than 0, where X is one of Colin, Emily, Kate, Fred and Irene.
+The position with guest with name equal to X must be lower than 6, where X is one of Colin, Emily, Kate, Fred and Irene.
+
+It is required that the position with guest with name equal to X is different from position with guest with name equal to Y, where X is one of Colin, Kate, Fred, Emily, Irene, where Y is one of Colin, Kate, Fred, Emily, Irene, where X and Y are distinct.
+
+It is required that the sum between position with guest with name equal to Colin and 1 is different from position with guest with name equal to Kate and
+    the difference between position with guest with name equal to Colin and 1 is different from position with guest with name equal to Kate.
+
+It is required that the sum between position with guest with name equal to Emily and 1 is different from position with guest with name equal to X and
+    the difference between position with guest with name equal to Emily and 1 is different from position with guest with name equal to X, where X is one of Fred, and Kate.
+
+It is required that the sum between position with guest with name equal to X and 1 is different from position with guest with name equal to Irene and
+    the difference between position with guest with name equal to X and 1 is different from position with guest with name equal to Irene, where X is one of Kate, Emily.
+
+It is required that the difference between position with guest with name equal to Fred and 1 is different from position with guest with name equal to Irene.

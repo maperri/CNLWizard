@@ -1,0 +1,22 @@
+A pathto is identified by first, second.
+A node is identified by id.
+A connectedto is identified by first, second.
+A reachable is identified by id.
+
+There is a connectedto with first equal to 1, with second equal to 2 .
+There is a connectedto with first equal to 1, with second equal to 3 .
+There is a connectedto with first equal to 2, with second equal to 1 .
+There is a connectedto with first equal to 2, with second equal to 4 .
+There is a connectedto with first equal to 3, with second equal to 1 .
+There is a connectedto with first equal to 3, with second equal to 4 .
+There is a connectedto with first equal to 4, with second equal to 3 .
+There is a connectedto with first equal to 4, with second equal to 5 .
+There is a connectedto with first equal to 5, with second equal to 3 .
+There is a connectedto with first equal to 5, with second equal to 4 .
+start is a constant equal to 1 .
+Whenever there is a node with id equal to X, then we can have path with first equal to X, with second equal to Y to a node with id equal to Y, connected with first equal to X, with second equal to Y to.
+It is prohibited that there is the number of second that a pathto with first equal to X, with second equal to Y is different from 1 whenever there is a node with id equal to X.
+It is prohibited that there is the number of first that a pathto with first equal to X, with second equal to Y is different from 1 whenever there is a node with id equal to Y.
+There is a reachable with id equal to start.
+Whenever there is a reachable with id equal to X, whenever there is a node with id equal to X, whenever there is a pathto with first equal to X, with second equal to Y, whenever there is a node with id equal to Y, then we must have a reachable with id equal to Y.
+It is prohibited that there is not a reachable with id equal to X whenever there is a node with id equal to X.

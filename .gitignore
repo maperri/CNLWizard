@@ -1,0 +1,10 @@
+.idea
+.pytest*
+__pycache__
+*pyc
+TODO*
+testing*
+out.txt
+old*
+*.egg-info
+build
