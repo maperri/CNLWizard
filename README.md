@@ -13,4 +13,4 @@ In the root directory:
 
 ## Usage
 
-`python3 file_generator cnl_specification`
+`python3 file_generator.py cnl_specification`
