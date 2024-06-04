@@ -132,7 +132,7 @@ def negative_entity(entity):
 
 
 cnl.support_rule('name', 'CNAME')
-cnl.support_rule('attribute_value', 'string | SIGNED_NUMBER')
+cnl.support_rule('attribute_value', 'string | NUMBER')
 cnl.support_rule('string', 'WORD')
 cnl.import_token(WORD)
 res = cnl.compile()

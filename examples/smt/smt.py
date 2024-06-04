@@ -43,7 +43,7 @@ def function_definition(name, arg_sort, return_sort):
     elif return_sort == 'boolean':
         return_s = BoolSort()
     f = Function(name, arg, return_s)
-    cnl.signatures[name] = f, [], [], 'function'
+    cnl.signatures[name] = f, [], [], ['function', None, None]
 
 
 @cnl.rule('"There is" entity')
@@ -144,7 +144,7 @@ def entity(name, attributes):
 
 
 cnl.support_rule('name', 'CNAME')
-cnl.support_rule('attribute_value', 'string | SIGNED_NUMBER')
+cnl.support_rule('attribute_value', 'string | NUMBER')
 cnl.support_rule('string', 'WORD')
 cnl.import_token(WORD)
 cnl.ignore_token(COMMENT)

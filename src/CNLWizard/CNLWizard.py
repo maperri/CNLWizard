@@ -94,10 +94,10 @@ class Signatures:
     def __getitem__(self, item):
         return copy.deepcopy(self.signatures[item])
 
-    def __setitem__(self, key: str, value: (str, list, list, str)):
+    def __setitem__(self, key: str, value: (str, list, list, (str, int, int))):
         """
         An item is a tuple containing the name,
-        the list of fields, the list of keys (i.e. a subset of fields), and a type.
+        the list of fields, the list of keys (i.e. a subset of fields), and a type possibly with ranges.
         The user can set his custom signature_type and this method can
         instantiate the custom signature_type.
         Note that the user-defined signature_type must be compliant to the Signature interface.
@@ -107,7 +107,9 @@ class Signatures:
             fields_dictionary.update({field: self.signature_field_null_value})
         self.signatures[key] = self.signature_type(value[0], fields_dictionary)
         self.signatures[key].keys = value[2]
-        self.signatures[key].type = value[3]
+        self.signatures[key].type = value[3][0] if value[3] else None
+        self.signatures[key].lb = value[3][1] if value[3] else None
+        self.signatures[key].ub = value[3][2] if value[3] else None
 
 
 class CNLTransformer(Transformer):
@@ -150,13 +152,19 @@ class Cnl:
         self._start_token = start_token
         self._functions: dict = dict()
         self.signatures = signatures
+        self.vars = dict()
         self._init_defaults()
 
     def _init_signature_definitions(self):
         self.import_token(CNAME)
+        self.import_token(NUMBER)
         self.support_rule("signature_parameters", '("a" | "an")? CNAME', concat=',')
 
-        @self.rule('("A" | "An")? CNAME ["is" ("a"|"an")? CNAME "concept, and it"] "is identified by" signature_parameters ["and has" signature_parameters] "."')
+        @self.rule('"is" ("a"|"an")? CNAME "concept" ["that ranges from" NUMBER "to" NUMBER] ", and it"')
+        def typed_signature(name, lb, ub):
+            return name, lb, ub
+
+        @self.rule('("A" | "An")? CNAME [typed_signature] "is identified by" signature_parameters ["and has" signature_parameters] "."')
         def signature_definition(name, type, keys, parameters):
             fields = keys.copy()
             if parameters:

@@ -1,0 +1,4 @@
+A queen is an integer concept that ranges from 1 to 8, and it is identified by an id.
+It is required that a queen with id equal to X is different from a queen with id equal to Y, where X is between 1 and 8, where Y is between 1 and 8, where X and Y are distinct.
+It is required that the sum between a queen with id equal to X and X is different from the sum between a queen with id equal to Y and Y, where X is between 1 and 8, where Y is between 1 and 8, where X and Y are distinct.
+It is required that the difference between a queen with id equal to X and X is different from the difference between a queen with id equal to Y and Y, where X is between 1 and 8, where Y is between 1 and 8, where X and Y are distinct.

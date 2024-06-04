@@ -55,9 +55,11 @@ class CnlTest(unittest.TestCase):
                                                     %import common.WS
                                                     %ignore WS
                                                     %import common.CNAME
+                                                    %import common.NUMBER
                                                     signature_parameters: ("a" | "an")? CNAME
                                                                         | signature_parameters "," signature_parameters -> signature_parameters_concatenation
-                                                    signature_definition: ("A" | "An")? CNAME ["is" ("a"|"an")? CNAME "concept, and it"] "is identified by" signature_parameters ["and has" signature_parameters] "."
+                                                    typed_signature: "is" ("a"|"an")? CNAME "concept" ["that ranges from" NUMBER "to" NUMBER] ", and it"
+                                                    signature_definition: ("A" | "An")? CNAME [typed_signature] "is identified by" signature_parameters ["and has" signature_parameters] "."
                                                     ?cnl_start: signature_definition+ start
                                                     ?start: entity
                                                     entity: ["a "|"an "] CNAME
@@ -73,10 +75,16 @@ class CnlTest(unittest.TestCase):
             atom = cnl.signatures[name]
             atom.fields[parameter_name] = field1
             return atom
+
         res = cnl.compile('An entity is identified by a name and has a value. '
+                          'An intEntity1 is an integer concept, and it is identified by an id.'
+                          'An intRangedEntity is an integer concept that ranges from 1 to 10, and it is identified by an id.'
                           'An entity with name X. An entity with name Y.')
         self.assertEqual(res.strip(), 'entity(X,_)\nentity(Y,_)')
         self.assertEqual(cnl.signatures["entity"].keys, ['name'])
+        self.assertEqual(cnl.signatures["intEntity1"].type, 'integer')
+        self.assertEqual(cnl.signatures["intRangedEntity"].lb, '1')
+        self.assertEqual(cnl.signatures["intRangedEntity"].ub, '10')
 
     def test_process_cnl(self):
         '''
