@@ -10,8 +10,11 @@ from lark import Lark, Transformer
 from CNLWizard.ProcessCNL import process_cnl_specification
 
 
-def cnl_type(string_format: str):
+def cnl_type(*args):
     def wrapper(cls):
+        string_format = ''
+        if args:
+            string_format = args[0]
         return _process_type(cls, string_format)
 
     return wrapper
@@ -23,10 +26,10 @@ def _create_fn(name: str, args: list[str], body: str):
 
 
 def _process_type(cls: type, string_format: str):
-    '''
+    """
     Function for processing types decorated with cnl_type function.
     Setting fields with None default value and __str__ method is created from decorator argument.
-    '''
+    """
     if cls.__module__ in sys.modules:
         globals = sys.modules[cls.__module__].__dict__
     else:
@@ -37,12 +40,13 @@ def _process_type(cls: type, string_format: str):
         cls_init_body += f'if {field} is None:\n    {field} = {value.__name__}()\nself.{field}={field}\n'
     cls_init_args = ['self'] + [f'{f} = None' for f in cls_annotations.keys()]
     cls_init_fn = _create_fn('__init__', cls_init_args, cls_init_body)
-    cls_str_fn = _create_fn('__str__', ['self'], f'return f\'{string_format}\'')
     ns = {}
     exec(cls_init_fn, globals, ns)
-    exec(cls_str_fn, globals, ns)
     setattr(cls, "__init__", ns['__init__'])
-    setattr(cls, "__str__", ns['__str__'])
+    if string_format:
+        cls_str_fn = _create_fn('__str__', ['self'], f'return f\'{string_format}\'')
+        exec(cls_str_fn, globals, ns)
+        setattr(cls, "__str__", ns['__str__'])
     return cls
 
 
@@ -117,6 +121,7 @@ class CNLTransformer(Transformer):
     Compiling the CNL specification.
     The default function call the corresponding defined function.
     """
+
     def __init__(self, functions: dict):
         super().__init__()
         self._functions = functions
@@ -144,6 +149,7 @@ FLOAT = 'common.FLOAT'
 NUMBER = 'common.NUMBER'
 COMMENT = 'common.CPP_COMMENT'
 
+
 class Cnl:
     CNL_START = 'cnl_start'
 
@@ -164,7 +170,8 @@ class Cnl:
         def typed_signature(name, lb, ub):
             return name, lb, ub
 
-        @self.rule('("A" | "An")? CNAME [typed_signature] "is identified by" signature_parameters ["and has" signature_parameters] "."')
+        @self.rule('("A" | "An")? CNAME [typed_signature] "is identified by" signature_parameters '
+                   '["and has" signature_parameters] "."')
         def signature_definition(name, type, keys, parameters):
             fields = keys.copy()
             if parameters:
@@ -233,7 +240,7 @@ class Cnl:
     def compile(self, input_txt: str = None):
         if input_txt is None:
             parser = argparse.ArgumentParser()
-            parser.add_argument('input_file',  nargs='?')
+            parser.add_argument('input_file', nargs='?')
             args = parser.parse_args()
             input_txt = open(args.input_file, 'r').read()
         lark = Lark(str(self._grammar), start=Cnl.CNL_START)

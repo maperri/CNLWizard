@@ -41,8 +41,18 @@ class CnlTest(unittest.TestCase):
             name: str
             fields: dict
 
+        @cnl_type()
+        class Atom2:
+            name: str
+            fields: dict
+
+            def __str__(self):
+                return f'{self.name}({",".join(self.fields.values())}).'
+
         atom = Atom('atom', {'id': '1'})
         self.assertEqual(str(atom), 'atom(1).')
+        atom2 = Atom2('atom', {'id': '1'})
+        self.assertEqual(str(atom2), 'atom(1).')
 
     def test_grammar(self):
         cnl = Cnl()
