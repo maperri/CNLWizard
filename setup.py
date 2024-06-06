@@ -5,7 +5,7 @@ setup(
     version='1.0.0',
     description='',
     url='https://github.com/dodaro/CNLWizard',
-    license='Apache License',
+    license='MIT License',
     author='Carmine Dodaro',
     author_email='carmine.dodaro@unical.it',
     maintainer='Simone Caruso',
