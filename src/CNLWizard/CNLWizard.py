@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import TYPE_CHECKING
 
 import argparse
 import copy
@@ -8,6 +9,9 @@ from textwrap import indent, dedent
 import lark
 from lark import Lark, Transformer
 from CNLWizard.ProcessCNL import process_cnl_specification
+
+if TYPE_CHECKING:
+    from CNLWizard.component import Component
 
 
 def cnl_type(*args):
@@ -51,22 +55,23 @@ def _process_type(cls: type, string_format: str):
 
 
 class ProductionRule:
-    def __init__(self, label: str, body: list[str]):
+    def __init__(self, label: str, body: list[str], prefix=''):
         self.label = label
         self.body = body
+        self.prefix = prefix
 
     def __str__(self):
         join_sep = '\n' + ' ' * len(self.label) + '| '
-        return f'{self.label}: {join_sep.join(self.body)}'
+        return f'{self.prefix}{self.label}: {join_sep.join(self.body)}'
 
 
 class Grammar:
     def __init__(self):
         self._imports: list[str] = []
-        self._production_rules: list[ProductionRule] = []
+        self._production_rules: dict[str, ProductionRule] = {}
 
-    def add_rule(self, label: str, body: list[str]):
-        self._production_rules.append(ProductionRule(label, body))
+    def add_rule(self, label: str, body: list[str], prefix: str):
+        self._production_rules[label] = ProductionRule(label, body, prefix)
 
     def add_import(self, command: str, value: str):
         directive = f'%{command} {value}'
@@ -75,7 +80,7 @@ class Grammar:
 
     def __str__(self):
         imports = '\n'.join(self._imports) + '\n' if self._imports else ''
-        return imports + '\n'.join(map(str, self._production_rules))
+        return imports + '\n'.join(map(str, self._production_rules.values()))
 
 
 class Signature:
@@ -86,7 +91,7 @@ class Signature:
         self.type = ''
 
     def __str__(self):
-        return f'{self.name}({",".join(self.fields.values())})'
+        return f'{self.name}({",".join(map(str, self.fields.values()))})'
 
 
 class Signatures:
@@ -112,8 +117,15 @@ class Signatures:
         self.signatures[key] = self.signature_type(value[0], fields_dictionary)
         self.signatures[key].keys = value[2]
         self.signatures[key].type = value[3][0] if value[3] else None
-        self.signatures[key].lb = value[3][1] if value[3] else None
-        self.signatures[key].ub = value[3][2] if value[3] else None
+        if value[3]:
+            if value[3][1]:
+                self.signatures[key].lb = int(value[3][1])
+            else:
+                self.signatures[key].lb = None
+            if value[3][2]:
+                self.signatures[key].ub = int(value[3][2])
+            else:
+                self.signatures[key].ub = None
 
 
 class CNLTransformer(Transformer):
@@ -152,12 +164,13 @@ COMMENT = 'common.CPP_COMMENT'
 
 class Cnl:
     CNL_START = 'cnl_start'
+    signatures = Signatures()
 
     def __init__(self, start_token: str = 'start', signatures: Signatures = Signatures()):
         self._grammar = Grammar()
         self._start_token = start_token
         self._functions: dict = dict()
-        self.signatures = signatures
+        Cnl.signatures = signatures
         self.vars = dict()
         self._init_defaults()
 
@@ -183,6 +196,7 @@ class Cnl:
         Add the signature definitions to the user-defined CNL.
         """
         self.ignore_token(WHITE_SPACE)
+        # Signature definition
         self._init_signature_definitions()
         self.support_rule(Cnl.CNL_START,
                           f'signature_definition+ {self._start_token}')
@@ -194,7 +208,17 @@ class Cnl:
                                                       'return res'), ns)
         exec(_create_fn(Cnl.CNL_START, ['*args'], 'return args[-1]'), ns)
         self._add_function(self._start_token, ns[self._start_token])
+        # Start
         self._add_function(Cnl.CNL_START, ns[Cnl.CNL_START])
+        # Entity
+        from CNLWizard.component import Entity
+        self._import_component(Entity())
+
+    def _import_component(self, component: Component):
+        for dependence in component.dependencies:
+            self._import_component(dependence)
+        component.grammar_rule(self)
+        self._add_function(type(component).__name__.lower(), component.compile)
 
     def rule(self, string: str, /, *args, concat=None):
         def wrapper(function):
@@ -215,11 +239,12 @@ class Cnl:
         self._functions.update({function_name: function})
 
     def support_rule(self, label: str, body: str, /, *args, concat=None):
+        prefix = ''
         if concat is None and not label.isupper():
-            label = '?' + label
-        self._add_rule(label, [body] + list(args), concat)
+            prefix = '?'
+        self._add_rule(label, [body] + list(args), concat, prefix)
 
-    def _add_rule(self, label: str, body: list[str], concat: str | None):
+    def _add_rule(self, label: str, body: list[str], concat: str | None, prefix=''):
         if concat is not None:
             ns = {}
             if label not in self._functions:
@@ -235,7 +260,7 @@ class Cnl:
                                             return elem1 + elem2''')
             exec(_create_fn(f'{label}_concatenation', ['elem1=None', 'elem2=None'], concatenation_fn_body), ns)
             self._add_function(f'{label}_concatenation', ns[f'{label}_concatenation'])
-        self._grammar.add_rule(label, body)
+        self._grammar.add_rule(label, body, prefix)
 
     def compile(self, input_txt: str = None):
         if input_txt is None:
