@@ -118,3 +118,24 @@ class CnlTest(unittest.TestCase):
         res = cnl.compile('An entity is identified by an id.\n'
                           'There is an entity with id equal to 1 .')
         self.assertEqual(str(res), 'entity(1)')
+
+    def test_extend_default_components(self):
+        @cnl_type('{self.negation}{self.name}({",".join(self.fields.values())})')
+        class Atom:
+            name: str
+            fields: dict
+            negation: str
+
+        cnl = Cnl(signatures=Signatures(signature_type=Atom))
+
+        @cnl.extends('[NEGATION] entity')
+        def entity(negation, entity):
+            if negation:
+                entity.negation = 'not '
+            return entity
+
+        cnl.support_rule('start', '"There is" entity "."')
+        cnl.support_rule("NEGATION", '"not"')
+        res = cnl.compile('An entity is identified by an id.\n'
+                          'There is not an entity with id equal to 1 .')
+        self.assertEqual(str(res), 'not entity(1)')

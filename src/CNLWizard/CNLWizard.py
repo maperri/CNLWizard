@@ -1,4 +1,6 @@
 from __future__ import annotations
+
+import inspect
 from typing import TYPE_CHECKING
 
 import argparse
@@ -72,6 +74,9 @@ class Grammar:
 
     def add_rule(self, label: str, body: list[str], prefix: str):
         self._production_rules[label] = ProductionRule(label, body, prefix)
+
+    def get_rule(self, label: str):
+        return self._production_rules[label]
 
     def add_import(self, command: str, value: str):
         directive = f'%{command} {value}'
@@ -219,14 +224,27 @@ class Cnl:
             self._import_component(dependence)
         component.grammar_rule(self)
         self._add_function(type(component).__name__.lower(), component.compile)
+        setattr(self, type(component).__name__.lower(), component.compile)
 
     def rule(self, string: str, /, *args, concat=None):
         def wrapper(function):
             self._add_rule(function.__name__, [string] + list(args), concat)
             self._add_function(function.__name__, function)
-            return
-
+            return function
         return wrapper
+
+    def extends(self, string: str, /, *args, concat=None):
+        def wrapper(function):
+            label = function.__name__
+            starting_rule = self._grammar.get_rule(label)
+            self._grammar.add_rule(f'primitive_{starting_rule.label}', starting_rule.body, prefix=starting_rule.prefix)
+            self._functions[f'primitive_{starting_rule.label}'] = self._functions[starting_rule.label]
+            rule_body = string.replace(starting_rule.label, f'primitive_{starting_rule.label}')
+            self._add_rule(function.__name__, [rule_body] + list(args), concat)
+            self._add_function(function.__name__, function)
+            return function
+        return wrapper
+
 
     def ignore_token(self, token: str):
         self._grammar.add_import('import', token)

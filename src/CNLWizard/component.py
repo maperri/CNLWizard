@@ -39,7 +39,10 @@ class Entity(Component):
 
     @staticmethod
     def compile(name, attributes):
-        entity = Cnl.signatures[name]
-        for name, value in attributes:
-            entity.fields[name] = value
-        return entity
+        try:
+            entity = Cnl.signatures[name]
+            for name, value in attributes:
+                entity.fields[name] = value
+            return entity
+        except KeyError:
+            return None
