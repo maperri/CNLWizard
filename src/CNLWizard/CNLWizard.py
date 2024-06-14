@@ -13,7 +13,7 @@ from lark import Lark, Transformer
 from CNLWizard.ProcessCNL import process_cnl_specification
 
 if TYPE_CHECKING:
-    from CNLWizard.component import Component
+    from CNLWizard.component import Component, Entity, MathOperation, Attribute
 
 
 def cnl_type(*args):
@@ -57,10 +57,13 @@ def _process_type(cls: type, string_format: str):
 
 
 class ProductionRule:
-    def __init__(self, label: str, body: list[str], prefix=''):
+    def __init__(self, label: str, body: list[str], prefix='', dependencies=None):
+        if dependencies is None:
+            dependencies: list[str] = []
         self.label = label
         self.body = body
         self.prefix = prefix
+        self.dependencies = dependencies
 
     def __str__(self):
         join_sep = '\n' + ' ' * len(self.label) + '| '
@@ -72,11 +75,14 @@ class Grammar:
         self._imports: list[str] = []
         self._production_rules: dict[str, ProductionRule] = {}
 
-    def add_rule(self, label: str, body: list[str], prefix: str):
-        self._production_rules[label] = ProductionRule(label, body, prefix)
+    def add_rule(self, label: str, body: list[str], prefix: str, dependencies: list[str]):
+        self._production_rules[label] = ProductionRule(label, body, prefix, dependencies)
 
     def get_rule(self, label: str):
-        return self._production_rules[label]
+        try:
+            return self._production_rules[label]
+        except KeyError:
+            return None
 
     def add_import(self, command: str, value: str):
         directive = f'%{command} {value}'
@@ -85,7 +91,19 @@ class Grammar:
 
     def __str__(self):
         imports = '\n'.join(self._imports) + '\n' if self._imports else ''
-        return imports + '\n'.join(map(str, self._production_rules.values()))
+        grammar = ''
+        for rule in self._production_rules.values():
+            has_all_dependencies_satisfied = True
+            for dependence in rule.dependencies:
+                """If not all the dependencies are satisfied the rule does not activate
+                so that rule not defined errors are prevented. 
+                Used for importing default components that may require the uer to define part(s) of them."""
+                if not self.get_rule(dependence):
+                    has_all_dependencies_satisfied = False
+                    break
+            if has_all_dependencies_satisfied:
+                grammar += str(rule) + '\n'
+        return imports + grammar
 
 
 class Signature:
@@ -177,6 +195,11 @@ class Cnl:
         self._functions: dict = dict()
         Cnl.signatures = signatures
         self.vars = dict()
+        from CNLWizard.component import Attribute, Entity, MathOperation
+        self.attribute = Attribute()
+        self.entity = Entity()
+        self.math_operation = MathOperation()
+        self.components = [self.attribute, self.entity, self.math_operation]
         self._init_defaults()
 
     def _init_signature_definitions(self):
@@ -204,7 +227,7 @@ class Cnl:
         # Signature definition
         self._init_signature_definitions()
         self.support_rule(Cnl.CNL_START,
-                          f'signature_definition+ {self._start_token}')
+                          f'signature_definition* {self._start_token}')
         ns = {}
         exec(_create_fn(self._start_token, ['*args'], 'res = ""\n'
                                                       'for arg in args:\n'
@@ -215,20 +238,19 @@ class Cnl:
         self._add_function(self._start_token, ns[self._start_token])
         # Start
         self._add_function(Cnl.CNL_START, ns[Cnl.CNL_START])
-        # Entity
-        from CNLWizard.component import Entity
-        self._import_component(Entity())
+        for component in self.components:
+            self._import_component(component)
 
     def _import_component(self, component: Component):
         for dependence in component.dependencies:
             self._import_component(dependence)
-        component.grammar_rule(self)
-        self._add_function(type(component).__name__.lower(), component.compile)
-        setattr(self, type(component).__name__.lower(), component.compile)
+        component.compile(self)
 
-    def rule(self, string: str, /, *args, concat=None):
+    def rule(self, string: str, /, *args, concat=None, dependencies=None):
+        if dependencies is None:
+            dependencies = []
         def wrapper(function):
-            self._add_rule(function.__name__, [string] + list(args), concat)
+            self._add_rule(function.__name__, [string] + list(args), concat, dependencies=dependencies)
             self._add_function(function.__name__, function)
             return function
         return wrapper
@@ -237,7 +259,7 @@ class Cnl:
         def wrapper(function):
             label = function.__name__
             starting_rule = self._grammar.get_rule(label)
-            self._grammar.add_rule(f'primitive_{starting_rule.label}', starting_rule.body, prefix=starting_rule.prefix)
+            self._grammar.add_rule(f'primitive_{starting_rule.label}', starting_rule.body, prefix=starting_rule.prefix, dependencies=starting_rule.dependencies)
             self._functions[f'primitive_{starting_rule.label}'] = self._functions[starting_rule.label]
             rule_body = string.replace(starting_rule.label, f'primitive_{starting_rule.label}')
             self._add_rule(function.__name__, [rule_body] + list(args), concat)
@@ -256,13 +278,29 @@ class Cnl:
     def _add_function(self, function_name, function):
         self._functions.update({function_name: function})
 
-    def support_rule(self, label: str, body: str, /, *args, concat=None):
+    def support_rule(self, label: str, body: str | dict, /, *args, concat=None, dependencies=None):
         prefix = ''
-        if concat is None and not label.isupper():
-            prefix = '?'
-        self._add_rule(label, [body] + list(args), concat, prefix)
+        if dependencies is None:
+            dependencies: list[str] = []
+        if isinstance(body, str):
+            if concat is None and not label.isupper():
+                prefix = '?'
+            self._add_rule(label, [body] + list(args), concat, prefix, dependencies)
+        elif isinstance(body, dict):
+            prefix = '!'
+            self._add_rule(label, list([f'"{key}"' for key in body.keys()]), concat, prefix, dependencies)
+            ns = {}
+            exec(_create_fn(label, ['item'], dedent(f'''\
+                                                                         items = {body}
+                                                                         return items[item]
+                                                                        ''')), ns)
+            self._add_function(label, ns[label])
+        else:
+            raise RuntimeError()
 
-    def _add_rule(self, label: str, body: list[str], concat: str | None, prefix=''):
+    def _add_rule(self, label: str, body: list[str], concat: str | None, prefix='', dependencies=None):
+        if dependencies is None:
+            dependencies: list[str] = []
         if concat is not None:
             ns = {}
             if label not in self._functions:
@@ -278,7 +316,7 @@ class Cnl:
                                             return elem1 + elem2''')
             exec(_create_fn(f'{label}_concatenation', ['elem1=None', 'elem2=None'], concatenation_fn_body), ns)
             self._add_function(f'{label}_concatenation', ns[f'{label}_concatenation'])
-        self._grammar.add_rule(label, body, prefix)
+        self._grammar.add_rule(label, body, prefix, dependencies)
 
     def compile(self, input_txt: str = None):
         if input_txt is None:

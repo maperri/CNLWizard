@@ -115,6 +115,7 @@ class CnlTest(unittest.TestCase):
     def test_default_components(self):
         cnl = Cnl()
         cnl.support_rule('start', '"There is" entity "."')
+        print(cnl._grammar)
         res = cnl.compile('An entity is identified by an id.\n'
                           'There is an entity with id equal to 1 .')
         self.assertEqual(str(res), 'entity(1)')
@@ -139,3 +140,15 @@ class CnlTest(unittest.TestCase):
         res = cnl.compile('An entity is identified by an id.\n'
                           'There is not an entity with id equal to 1 .')
         self.assertEqual(str(res), 'not entity(1)')
+
+    def test_terminal_symbols_dict(self):
+        cnl = Cnl()
+        cnl.support_rule('start', 'test "." ')
+        cnl.support_rule('test', {
+            '1': 1,
+            '2': 2,
+            '3': 3
+        })
+        self.assertEqual(cnl.compile('1 .'), 1)
+        self.assertEqual(cnl.compile('2 .'), 2)
+        self.assertEqual(cnl.compile('3 .'), 3)
