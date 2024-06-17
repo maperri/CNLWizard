@@ -114,11 +114,17 @@ class CnlTest(unittest.TestCase):
 
     def test_default_components(self):
         cnl = Cnl()
-        cnl.support_rule('start', '"There is" entity "."')
-        print(cnl._grammar)
+        cnl.support_rule('start', '(entity | math_operation | comparison) "."')
+        cnl.support_rule('math_operand', 'NUMBER')
+        cnl.support_rule('comparison_first', 'math_operation')
+        cnl.support_rule('comparison_second', 'math_operation | NUMBER')
+
         res = cnl.compile('An entity is identified by an id.\n'
-                          'There is an entity with id equal to 1 .')
+                          'an entity with id equal to 1 .')
         self.assertEqual(str(res), 'entity(1)')
+        self.assertEqual(cnl.compile('the sum between 1 and 1 .'), '1+1')
+        self.assertEqual(cnl.compile('the sum between 1 and 1 is equal to 1 .'), '1+1=1')
+        self.assertEqual(cnl.compile('the sum between 1 and 1 is different from the difference between 1 and 1 .'), '1+1!=1-1')
 
     def test_extend_default_components(self):
         @cnl_type('{self.negation}{self.name}({",".join(self.fields.values())})')
@@ -152,3 +158,17 @@ class CnlTest(unittest.TestCase):
         self.assertEqual(cnl.compile('1 .'), 1)
         self.assertEqual(cnl.compile('2 .'), 2)
         self.assertEqual(cnl.compile('3 .'), 3)
+
+    def test_modify_components(self):
+        cnl = Cnl()
+        cnl.support_rule('start', 'math_operation "."')
+        cnl.support_rule('math_operand', 'NUMBER')
+        cnl.math_operation['sum'] = ' PLUS '  # modifying existing operator
+        cnl.math_operation['mod'] = ' % '  # adding new operator
+        self.assertEqual(cnl.compile('the sum between 1 and 1 .'), '1 PLUS 1')
+        self.assertEqual(cnl.compile('the mod between 1 and 1 .'), '1 % 1')
+        def callable_operator(first, second):
+            return f'OP({first},{second})'
+        cnl.math_operation['OP'] = callable_operator
+        self.assertEqual(cnl.compile('the OP between 1 and 2 .'), 'OP(1,2)')
+

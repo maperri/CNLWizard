@@ -195,11 +195,12 @@ class Cnl:
         self._functions: dict = dict()
         Cnl.signatures = signatures
         self.vars = dict()
-        from CNLWizard.component import Attribute, Entity, MathOperation
-        self.attribute = Attribute()
-        self.entity = Entity()
-        self.math_operation = MathOperation()
-        self.components = [self.attribute, self.entity, self.math_operation]
+        from CNLWizard.component import Attribute, Entity, MathOperation, Comparison
+        self.attribute = Attribute(self)
+        self.entity = Entity(self)
+        self.math_operation = MathOperation(self)
+        self.comparison = Comparison(self)
+        self.components = [self.attribute, self.entity, self.math_operation, self.comparison]
         self._init_defaults()
 
     def _init_signature_definitions(self):
@@ -249,24 +250,30 @@ class Cnl:
     def rule(self, string: str, /, *args, concat=None, dependencies=None):
         if dependencies is None:
             dependencies = []
+
         def wrapper(function):
             self._add_rule(function.__name__, [string] + list(args), concat, dependencies=dependencies)
             self._add_function(function.__name__, function)
             return function
+
         return wrapper
 
     def extends(self, string: str, /, *args, concat=None):
         def wrapper(function):
             label = function.__name__
             starting_rule = self._grammar.get_rule(label)
-            self._grammar.add_rule(f'primitive_{starting_rule.label}', starting_rule.body, prefix=starting_rule.prefix, dependencies=starting_rule.dependencies)
+            self._grammar.add_rule(f'primitive_{starting_rule.label}', starting_rule.body, prefix=starting_rule.prefix,
+                                   dependencies=starting_rule.dependencies)
             self._functions[f'primitive_{starting_rule.label}'] = self._functions[starting_rule.label]
             rule_body = string.replace(starting_rule.label, f'primitive_{starting_rule.label}')
             self._add_rule(function.__name__, [rule_body] + list(args), concat)
             self._add_function(function.__name__, function)
             return function
+
         return wrapper
 
+    def component_changed(self, component: Component):
+        self._import_component(component)
 
     def ignore_token(self, token: str):
         self._grammar.add_import('import', token)
@@ -291,9 +298,9 @@ class Cnl:
             self._add_rule(label, list([f'"{key}"' for key in body.keys()]), concat, prefix, dependencies)
             ns = {}
             exec(_create_fn(label, ['item'], dedent(f'''\
-                                                                         items = {body}
-                                                                         return items[item]
-                                                                        ''')), ns)
+                                                         items = body
+                                                         return items[item]
+                                                         ''')), locals(), ns)
             self._add_function(label, ns[label])
         else:
             raise RuntimeError()
