@@ -91,3 +91,27 @@ class Comparison(Component):
                 return f'{first}{operator}{second}'
             elif callable(operator):
                 return operator(first, second)
+
+
+class Formula(Component):
+    def __init__(self, cnl: Cnl):
+        super().__init__(cnl)
+        self.formula_operator = {
+            'and': '&',
+            'or': '|',
+            'imply': '->',
+            'implies': '->',
+            'is equivalent to': '<->',
+            'not': '!'
+        }
+
+    def compile(self, cnl: Cnl):
+        cnl.support_rule('formula_operator', self.formula_operator)
+
+        @cnl.rule('formula_first "is"? formula_operator formula_second',
+                  dependencies=['formula_first', 'formula_second'])
+        def formula(first, operator, second):
+            if isinstance(operator, str):
+                return f'{first}{operator}{second}'
+            elif callable(operator):
+                return operator(first, second)

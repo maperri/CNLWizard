@@ -195,12 +195,13 @@ class Cnl:
         self._functions: dict = dict()
         Cnl.signatures = signatures
         self.vars = dict()
-        from CNLWizard.component import Attribute, Entity, MathOperation, Comparison
+        from CNLWizard.component import Attribute, Entity, MathOperation, Comparison, Formula
         self.attribute = Attribute(self)
         self.entity = Entity(self)
         self.math_operation = MathOperation(self)
         self.comparison = Comparison(self)
-        self.components = [self.attribute, self.entity, self.math_operation, self.comparison]
+        self.formula = Formula(self)
+        self.components = [self.attribute, self.entity, self.math_operation, self.comparison, self.formula]
         self._init_defaults()
 
     def _init_signature_definitions(self):

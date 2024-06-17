@@ -114,10 +114,12 @@ class CnlTest(unittest.TestCase):
 
     def test_default_components(self):
         cnl = Cnl()
-        cnl.support_rule('start', '(entity | math_operation | comparison) "."')
+        cnl.support_rule('start', '(entity | math_operation | comparison | formula) "."')
         cnl.support_rule('math_operand', 'NUMBER')
         cnl.support_rule('comparison_first', 'math_operation')
         cnl.support_rule('comparison_second', 'math_operation | NUMBER')
+        cnl.support_rule('formula_first', 'entity')
+        cnl.support_rule('formula_second', 'entity')
 
         res = cnl.compile('An entity is identified by an id.\n'
                           'an entity with id equal to 1 .')
@@ -125,6 +127,7 @@ class CnlTest(unittest.TestCase):
         self.assertEqual(cnl.compile('the sum between 1 and 1 .'), '1+1')
         self.assertEqual(cnl.compile('the sum between 1 and 1 is equal to 1 .'), '1+1=1')
         self.assertEqual(cnl.compile('the sum between 1 and 1 is different from the difference between 1 and 1 .'), '1+1!=1-1')
+        self.assertEqual(cnl.compile('entity with id equal to 1 and entity with id equal to 2'), 'entity(1)&entity(2)')
 
     def test_extend_default_components(self):
         @cnl_type('{self.negation}{self.name}({",".join(self.fields.values())})')
