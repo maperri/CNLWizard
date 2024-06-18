@@ -195,13 +195,15 @@ class Cnl:
         self._functions: dict = dict()
         Cnl.signatures = signatures
         self.vars = dict()
-        from CNLWizard.component import Attribute, Entity, MathOperation, Comparison, Formula
+        self.vars['_lists'] = {}  # contains the initialized CnlList
+        from CNLWizard.component import Attribute, Entity, MathOperation, Comparison, Formula, CnlList
         self.attribute = Attribute(self)
         self.entity = Entity(self)
         self.math_operation = MathOperation(self)
         self.comparison = Comparison(self)
         self.formula = Formula(self)
-        self.components = [self.attribute, self.entity, self.math_operation, self.comparison, self.formula]
+        self.components = [self.attribute, self.entity, self.math_operation,
+                           self.comparison, self.formula, CnlList(self)]
         self._init_defaults()
 
     def _init_signature_definitions(self):
@@ -229,7 +231,8 @@ class Cnl:
         # Signature definition
         self._init_signature_definitions()
         self.support_rule(Cnl.CNL_START,
-                          f'signature_definition* {self._start_token}')
+                          f'definitions* {self._start_token}')
+        self.support_rule('definitions', 'signature_definition | cnl_list_definition')
         ns = {}
         exec(_create_fn(self._start_token, ['*args'], 'res = ""\n'
                                                       'for arg in args:\n'
@@ -246,7 +249,7 @@ class Cnl:
     def _import_component(self, component: Component):
         for dependence in component.dependencies:
             self._import_component(dependence)
-        component.compile(self)
+        component.compile()
 
     def rule(self, string: str, /, *args, concat=None, dependencies=None):
         if dependencies is None:

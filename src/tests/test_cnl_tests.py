@@ -125,9 +125,19 @@ class CnlTest(unittest.TestCase):
                           'an entity with id equal to 1 .')
         self.assertEqual(str(res), 'entity(1)')
         self.assertEqual(cnl.compile('the sum between 1 and 1 .'), '1+1')
-        self.assertEqual(cnl.compile('the sum between 1 and 1 is equal to 1 .'), '1+1=1')
+        self.assertEqual(cnl.compile('the sum between 1 and 1 is equal to 1 .'), '1+1==1')
         self.assertEqual(cnl.compile('the sum between 1 and 1 is different from the difference between 1 and 1 .'), '1+1!=1-1')
         self.assertEqual(cnl.compile('entity with id equal to 1 and entity with id equal to 2'), 'entity(1)&entity(2)')
+
+    def test_cnl_types(self):
+        cnl = Cnl()
+        # List
+        cnl.support_rule('start', 'NUMBER "."')
+        cnl.compile('A test is a list made of 1, 2 .\n'
+                    '1 .')
+        self.assertEqual(cnl.vars['_lists']['test'][0], '1')
+        self.assertEqual(cnl.vars['_lists']['test'][1], '2')
+
 
     def test_extend_default_components(self):
         @cnl_type('{self.negation}{self.name}({",".join(self.fields.values())})')

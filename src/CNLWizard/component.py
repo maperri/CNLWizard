@@ -11,7 +11,7 @@ class Component(ABC):
         self.cnl = cnl
 
     @abstractmethod
-    def compile(self, cnl: Cnl):
+    def compile(self):
         """Add grammar rule(s) and function(s) to CNL"""
 
 
@@ -19,20 +19,20 @@ class Attribute(Component):
     def __init__(self, cnl: Cnl):
         super().__init__(cnl)
 
-    def compile(self, cnl: Cnl) -> [str, str]:
-        @cnl.rule('"with" CNAME "equal to" (CNAME | NUMBER)')
+    def compile(self) -> [str, str]:
+        @self.cnl.rule('"with" CNAME "equal to" (CNAME | NUMBER)')
         def attribute(name, attribute_value):
             return name, attribute_value
 
-        cnl.support_rule('attributes', 'attribute', concat=',')
+        self.cnl.support_rule('attributes', 'attribute', concat=',')
 
 
 class Entity(Component):
     def __init__(self, cnl: Cnl):
         super().__init__(cnl)
 
-    def compile(self, cnl: Cnl) -> [str, str]:
-        @cnl.rule('("a" | "an")? CNAME attributes', dependencies=['attributes'])
+    def compile(self) -> [str, str]:
+        @self.cnl.rule('("a" | "an")? CNAME attributes', dependencies=['attributes'])
         def entity(name, attributes):
             try:
                 entity = Cnl.signatures[name]
@@ -53,10 +53,10 @@ class MathOperation(Component):
             'division': '/',
             'multiplication': '*'}
 
-    def compile(self, cnl: Cnl):
-        cnl.support_rule('math_operator', self.operators)
+    def compile(self):
+        self.cnl.support_rule('math_operator', self.operators)
 
-        @cnl.rule('"the" math_operator "between" math_operand "and" math_operand', dependencies=['math_operand'])
+        @self.cnl.rule('"the" math_operator "between" math_operand "and" math_operand', dependencies=['math_operand'])
         def math_operation(math_operator, *args):
             if isinstance(math_operator, str):
                 if self.compute:
@@ -73,7 +73,7 @@ class MathOperation(Component):
 
 
 class Comparison(Component):
-    def __init__(self, cnl: Cnl, compute = False):
+    def __init__(self, cnl: Cnl, compute=False):
         super().__init__(cnl)
         self.compute = False
         self.comparison_operator = {
@@ -87,11 +87,11 @@ class Comparison(Component):
             'greater than or equal to': '>='
         }
 
-    def compile(self, cnl: Cnl):
-        cnl.support_rule('comparison_operator', self.comparison_operator)
+    def compile(self):
+        self.cnl.support_rule('comparison_operator', self.comparison_operator)
 
-        @cnl.rule('comparison_first "is"? comparison_operator comparison_second',
-                  dependencies=['comparison_first', 'comparison_second'])
+        @self.cnl.rule('comparison_first "is"? comparison_operator comparison_second',
+                       dependencies=['comparison_first', 'comparison_second'])
         def comparison(first, operator, second):
             if isinstance(operator, str):
                 if self.compute:
@@ -119,11 +119,11 @@ class Formula(Component):
             'not': '!'
         }
 
-    def compile(self, cnl: Cnl):
-        cnl.support_rule('formula_operator', self.formula_operator)
+    def compile(self):
+        self.cnl.support_rule('formula_operator', self.formula_operator)
 
-        @cnl.rule('formula_first formula_operator formula_second',
-                  dependencies=['formula_first', 'formula_second'])
+        @self.cnl.rule('formula_first formula_operator formula_second',
+                       dependencies=['formula_first', 'formula_second'])
         def formula(first, operator, second):
             if isinstance(operator, str):
                 return f'{first}{operator}{second}'
@@ -133,3 +133,17 @@ class Formula(Component):
     def __setitem__(self, key, value):
         self.formula_operator[key] = value
         self.cnl.component_changed(self)
+
+
+class CnlList(Component):
+    def __init__(self, cnl: Cnl):
+        super().__init__(cnl)
+
+    def compile(self):
+        self.cnl.support_rule('cnl_list_elem', 'NUMBER | CNAME', concat=',')
+
+        @self.cnl.rule('("A" | "An") CNAME "is a list made of" cnl_list_elem "."')
+        def cnl_list_definition(name, values):
+            self.cnl.vars['_lists'][name] = {}
+            for i in range(len(values)):
+                self.cnl.vars['_lists'][name][i] = values[i]
