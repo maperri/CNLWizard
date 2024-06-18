@@ -140,10 +140,5 @@ class CnlList(Component):
         super().__init__(cnl)
 
     def compile(self):
-        self.cnl.support_rule('cnl_list_elem', 'NUMBER | CNAME', concat=',')
+        pass
 
-        @self.cnl.rule('("A" | "An") CNAME "is a list made of" cnl_list_elem "."')
-        def cnl_list_definition(name, values):
-            self.cnl.vars['_lists'][name] = {}
-            for i in range(len(values)):
-                self.cnl.vars['_lists'][name][i] = values[i]

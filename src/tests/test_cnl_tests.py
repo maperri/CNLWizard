@@ -96,20 +96,21 @@ class CnlTest(unittest.TestCase):
         """
         Propositions ending with "where ..." are processed. The variable is substituted in the CNL specification.
         """
+        cnl = Cnl()
         text = 'Some text. A node X, where X is one of blue, red and yellow.'
-        self.assertEqual(process_cnl_specification(text), 'Some text.\nA node blue.\nA node red.\nA node yellow.\n')
+        self.assertEqual(process_cnl_specification(cnl, text), 'Some text.\nA node blue.\nA node red.\nA node yellow.\n')
         text = 'Some text. A node X, where X is between 1 and 3.'
-        self.assertEqual(process_cnl_specification(text), 'Some text.\nA node 1 .\nA node 2 .\nA node 3 .\n')
+        self.assertEqual(process_cnl_specification(cnl, text), 'Some text.\nA node 1 .\nA node 2 .\nA node 3 .\n')
         text = 'Some text. A node X and a node Y, where X is between 1 and 2, where Y is one of blue, red.'
-        self.assertEqual(process_cnl_specification(text),
+        self.assertEqual(process_cnl_specification(cnl, text),
                          'Some text.\nA node 1 and a node blue.\nA node 1 and a node red.\nA node 2 and a node blue.\nA node 2 and a node red.\n')
         text = 'Some text. A node X and a node Y, where X is between 1 and 2, where Y is respectively one of blue, red.'
-        self.assertEqual(process_cnl_specification(text),
+        self.assertEqual(process_cnl_specification(cnl, text),
                          'Some text.\nA node 1 and a node blue.\nA node 2 and a node red.\n')
         # Not matching lists
         with self.assertRaises(VisitError) as context:
             text = 'Some text. A node X and a node Y, where X is between 1 and 3, where Y is respectively one of blue, red.\n'
-            process_cnl_specification(text)
+            process_cnl_specification(cnl, text)
             self.assertTrue('Lists do not match for variable substitution in proposition 2' in str(context.exception))
 
     def test_default_components(self):
@@ -135,8 +136,8 @@ class CnlTest(unittest.TestCase):
         cnl.support_rule('start', 'NUMBER "."')
         cnl.compile('A test is a list made of 1, 2 .\n'
                     '1 .')
-        self.assertEqual(cnl.vars['_lists']['test'][0], '1')
-        self.assertEqual(cnl.vars['_lists']['test'][1], '2')
+        self.assertEqual(cnl.data['_lists']['test'][0], 1)
+        self.assertEqual(cnl.data['_lists']['test'][1], 2)
 
 
     def test_extend_default_components(self):
@@ -168,9 +169,9 @@ class CnlTest(unittest.TestCase):
             '2': 2,
             '3': 3
         })
-        self.assertEqual(cnl.compile('1 .'), 1)
-        self.assertEqual(cnl.compile('2 .'), 2)
-        self.assertEqual(cnl.compile('3 .'), 3)
+        self.assertEqual(cnl.compile('1 .'), '1')
+        self.assertEqual(cnl.compile('2 .'), '2')
+        self.assertEqual(cnl.compile('3 .'), '3')
 
     def test_modify_components(self):
         cnl = Cnl()

@@ -186,7 +186,6 @@ COMMENT = 'common.CPP_COMMENT'
 
 
 class Cnl:
-    CNL_START = 'cnl_start'
     signatures = Signatures()
 
     def __init__(self, start_token: str = 'start', signatures: Signatures = Signatures()):
@@ -195,7 +194,8 @@ class Cnl:
         self._functions: dict = dict()
         Cnl.signatures = signatures
         self.vars = dict()
-        self.vars['_lists'] = {}  # contains the initialized CnlList
+        self.data = dict()
+        self.data['_lists'] = {}  # contains the initialized CnlList
         from CNLWizard.component import Attribute, Entity, MathOperation, Comparison, Formula, CnlList
         self.attribute = Attribute(self)
         self.entity = Entity(self)
@@ -206,43 +206,17 @@ class Cnl:
                            self.comparison, self.formula, CnlList(self)]
         self._init_defaults()
 
-    def _init_signature_definitions(self):
+    def _init_defaults(self):
+        self.ignore_token(WHITE_SPACE)
         self.import_token(CNAME)
         self.import_token(NUMBER)
-        self.support_rule("signature_parameters", '("a" | "an")? CNAME', concat=',')
-
-        @self.rule('"is" ("a"|"an")? CNAME "concept" ["that ranges from" NUMBER "to" NUMBER] ", and it"')
-        def typed_signature(name, lb, ub):
-            return name, lb, ub
-
-        @self.rule('("A" | "An")? CNAME [typed_signature] "is identified by" signature_parameters '
-                   '["and has" signature_parameters] "."')
-        def signature_definition(name, type, keys, parameters):
-            fields = keys.copy()
-            if parameters:
-                fields += parameters
-            self.signatures[name] = name, fields, keys, type
-
-    def _init_defaults(self):
-        """
-        Add the signature definitions to the user-defined CNL.
-        """
-        self.ignore_token(WHITE_SPACE)
-        # Signature definition
-        self._init_signature_definitions()
-        self.support_rule(Cnl.CNL_START,
-                          f'definitions* {self._start_token}')
-        self.support_rule('definitions', 'signature_definition | cnl_list_definition')
         ns = {}
         exec(_create_fn(self._start_token, ['*args'], 'res = ""\n'
                                                       'for arg in args:\n'
                                                       '    if arg:\n'
                                                       '        res += str(arg) + \"\\n\"\n'
                                                       'return res'), ns)
-        exec(_create_fn(Cnl.CNL_START, ['*args'], 'return args[-1]'), ns)
         self._add_function(self._start_token, ns[self._start_token])
-        # Start
-        self._add_function(Cnl.CNL_START, ns[Cnl.CNL_START])
         for component in self.components:
             self._import_component(component)
 
@@ -330,12 +304,13 @@ class Cnl:
         self._grammar.add_rule(label, body, prefix, dependencies)
 
     def compile(self, input_txt: str = None):
+        self._grammar.get_rule(self._start_token).prefix = ''
         if input_txt is None:
             parser = argparse.ArgumentParser()
             parser.add_argument('input_file', nargs='?')
             args = parser.parse_args()
             input_txt = open(args.input_file, 'r').read()
-        lark = Lark(str(self._grammar), start=Cnl.CNL_START)
-        processed_cnl = process_cnl_specification(input_txt)
+        lark = Lark(str(self._grammar), start=self._start_token)
+        processed_cnl = process_cnl_specification(self, input_txt)
         parse_tree = lark.parse(processed_cnl)
-        return CNLTransformer(self._functions).transform(parse_tree)
+        return CNLTransformer(self._functions).transform(parse_tree).strip()

@@ -1,7 +1,13 @@
+from __future__ import annotations
 from textwrap import dedent
+from typing import TYPE_CHECKING
+
 import lark
 from lark import Lark, UnexpectedEOF, Transformer, v_args
 from CNLWizard.exception.exception import SubstitutionError
+
+if TYPE_CHECKING:
+    from CNLWizard.CNLWizard import Cnl
 
 """
 Processing propositions ending with "where VAR is VALUES".
@@ -10,13 +16,50 @@ The variables are substituted into the proposition generating clones, one for ea
 
 
 class ProcessCNLTransformer(Transformer):
-    def __init__(self):
+    def __init__(self, cnl: Cnl):
         super().__init__()
+        self.cnl = cnl
         self.variable_substitution: list[dict] = []  # a list of dict with variable-value as a key-pair
                                                      # each dict of the list is a new proposition clone
 
     def start(self, args):
-        return ''.join(args), self.variable_substitution
+        return ''.join(args[-1])
+
+    def proposition(self, args):
+        return args
+
+    @v_args(inline=True)
+    def signature_definition(self, name, type, keys, parameters):
+        fields = keys.copy()
+        if parameters:
+            fields += parameters
+        self.cnl.signatures[name] = name, fields, keys, type
+        return ''
+
+    @v_args(inline=True)
+    def typed_signature(self, name, lb, ub):
+        return name, lb, ub
+
+    def signature_parameters(self, name):
+        return name
+
+    @v_args(inline=True)
+    def signature_parameters_concat(self, first, second):
+        return first + second
+
+    @v_args(inline=True)
+    def cnl_list_definition(self, name, values):
+        self.cnl.data['_lists'][name] = {}
+        for i in range(len(values)):
+            self.cnl.data['_lists'][name][i] = values[i]
+        return ''
+
+    def cnl_list_elem(self, arg):
+        return arg
+
+    @v_args(inline=True)
+    def cnl_list_elem_concat(self, first, second):
+        return first + second
 
     def any(self, args):
         return args[0].value if args[0].value else ' '
@@ -68,7 +111,7 @@ class ProcessCNLTransformer(Transformer):
         return arg.value
 
     def NUMBER(self, arg):
-        return arg.value
+        return int(arg.value)
 
     def LABEL(self, arg):
         return arg.value
@@ -88,7 +131,7 @@ def substitute_variable(proposition, variables):
     return '\n'.join(res)
 
 
-def process_cnl_specification(cnl_specification: str):
+def process_cnl_specification(cnl: Cnl, cnl_specification: str):
     # grammar for identifying variable substitution proposition parts
     # that are the constructions supported by the where_token
     lark = Lark(dedent(f'''\
@@ -97,7 +140,16 @@ def process_cnl_specification(cnl_specification: str):
                 %import common.NUMBER
                 %import common.CNAME
                 LABEL: /[A-Z]+/
-                start: any+ "," where_token
+                start: definition | proposition
+                signature_definition: ("A" | "An")? CNAME [typed_signature] "is identified by" signature_parameters ["and has" signature_parameters]
+                typed_signature: "is" ("a"|"an")? CNAME "concept" ["that ranges from" NUMBER "to" NUMBER] ", and it"
+                cnl_list_elem: NUMBER | CNAME
+                             | cnl_list_elem "," cnl_list_elem -> cnl_list_elem_concat
+                signature_parameters: ("a" | "an")? CNAME 
+                                    | signature_parameters "," signature_parameters -> signature_parameters_concat
+                cnl_list_definition: ("A" | "An") CNAME "is a list made of" cnl_list_elem
+                ?definition.1: signature_definition | cnl_list_definition
+                proposition: any+ "," where_token
                 any: /.+?/ 
                 ?where_token.1: where_token_between | where_token_one_of | where_distinct | where_token "," where_token
                 where_token_between: "where" LABEL "is" [respectively] "between" NUMBER "and" NUMBER 
@@ -110,8 +162,11 @@ def process_cnl_specification(cnl_specification: str):
         try:
             proposition = proposition.strip()
             tree = lark.parse(proposition)
-            proposition, variables = ProcessCNLTransformer().transform(tree)
-            res += substitute_variable(proposition, variables) + '\n'
+            transf = ProcessCNLTransformer(cnl)
+            proposition = transf.transform(tree)
+            if proposition:
+                if transf.variable_substitution:
+                    res += substitute_variable(proposition, transf.variable_substitution) + '\n'
         except UnexpectedEOF:
             if proposition:
                 if proposition[-1].isnumeric():
