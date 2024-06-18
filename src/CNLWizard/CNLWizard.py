@@ -194,8 +194,7 @@ class Cnl:
         self._functions: dict = dict()
         Cnl.signatures = signatures
         self.vars = dict()
-        self.data = dict()
-        self.data['_lists'] = {}  # contains the initialized CnlList
+        self.lists = dict()
         from CNLWizard.component import Attribute, Entity, MathOperation, Comparison, Formula, CnlList
         self.attribute = Attribute(self)
         self.entity = Entity(self)

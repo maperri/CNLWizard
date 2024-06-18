@@ -133,11 +133,13 @@ class CnlTest(unittest.TestCase):
     def test_cnl_types(self):
         cnl = Cnl()
         # List
-        cnl.support_rule('start', 'NUMBER "."')
-        cnl.compile('A test is a list made of 1, 2 .\n'
-                    '1 .')
-        self.assertEqual(cnl.data['_lists']['test'][0], 1)
-        self.assertEqual(cnl.data['_lists']['test'][1], 2)
+        cnl.support_rule('start', '(entity ".")*')
+        res = cnl.compile('An entity is identified by an id.'
+                    'A test is a list made of 1, 2 .\n'
+                    'an entity with id equal to X, where X is one of test .')
+        self.assertEqual(cnl.lists['test'][0], 1)
+        self.assertEqual(cnl.lists['test'][1], 2)
+        self.assertEqual(res, 'entity(1)\nentity(2)')
 
 
     def test_extend_default_components(self):

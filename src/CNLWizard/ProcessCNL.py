@@ -49,9 +49,9 @@ class ProcessCNLTransformer(Transformer):
 
     @v_args(inline=True)
     def cnl_list_definition(self, name, values):
-        self.cnl.data['_lists'][name] = {}
+        self.cnl.lists[name] = {}
         for i in range(len(values)):
-            self.cnl.data['_lists'][name][i] = values[i]
+            self.cnl.lists[name][i] = values[i]
         return ''
 
     def cnl_list_elem(self, arg):
@@ -76,6 +76,8 @@ class ProcessCNLTransformer(Transformer):
     @v_args(meta=True)
     def where_token_one_of(self, meta, args):
         values = args[2:]
+        if len(values) == 1 and values[0] in self.cnl.lists:
+            values = self.cnl.lists[values[0]].values()
         if not self.variable_substitution:
             for value in values:
                 self.variable_substitution.append({args[0]: value})
