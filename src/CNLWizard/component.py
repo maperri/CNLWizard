@@ -44,8 +44,9 @@ class Entity(Component):
 
 
 class MathOperation(Component):
-    def __init__(self, cnl: Cnl):
+    def __init__(self, cnl: Cnl, compute=False):
         super().__init__(cnl)
+        self.compute = compute
         self.operators = {
             'sum': '+',
             'difference': '-',
@@ -58,6 +59,10 @@ class MathOperation(Component):
         @cnl.rule('"the" math_operator "between" math_operand "and" math_operand', dependencies=['math_operand'])
         def math_operation(math_operator, *args):
             if isinstance(math_operator, str):
+                if self.compute:
+                    ns = {}
+                    exec('res=' + math_operator.join([f'args[{i}]' for i in range(len(args))]), locals(), ns)
+                    return ns['res']
                 return math_operator.join(args)
             elif callable(math_operator):
                 return math_operator(*args)
@@ -68,12 +73,13 @@ class MathOperation(Component):
 
 
 class Comparison(Component):
-    def __init__(self, cnl: Cnl):
+    def __init__(self, cnl: Cnl, compute = False):
         super().__init__(cnl)
+        self.compute = False
         self.comparison_operator = {
             'sum': '+',
             'difference': '-',
-            'equal to': '=',
+            'equal to': '==',
             'different from': '!=',
             'lower than': '<',
             'greater than': '>',
@@ -88,9 +94,17 @@ class Comparison(Component):
                   dependencies=['comparison_first', 'comparison_second'])
         def comparison(first, operator, second):
             if isinstance(operator, str):
+                if self.compute:
+                    ns = {}
+                    exec(f'res=first{operator}second', locals(), ns)
+                    return ns['res']
                 return f'{first}{operator}{second}'
             elif callable(operator):
                 return operator(first, second)
+
+    def __setitem__(self, key, value):
+        self.comparison_operator[key] = value
+        self.cnl.component_changed(self)
 
 
 class Formula(Component):
@@ -108,10 +122,14 @@ class Formula(Component):
     def compile(self, cnl: Cnl):
         cnl.support_rule('formula_operator', self.formula_operator)
 
-        @cnl.rule('formula_first "is"? formula_operator formula_second',
+        @cnl.rule('formula_first formula_operator formula_second',
                   dependencies=['formula_first', 'formula_second'])
         def formula(first, operator, second):
             if isinstance(operator, str):
                 return f'{first}{operator}{second}'
             elif callable(operator):
                 return operator(first, second)
+
+    def __setitem__(self, key, value):
+        self.formula_operator[key] = value
+        self.cnl.component_changed(self)
