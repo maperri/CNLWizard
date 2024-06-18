@@ -13,20 +13,23 @@ cnl.import_token(CNAME)
 cnl.import_token(SIGNED_NUMBER)
 cnl.ignore_token(WHITE_SPACE)
 
-cnl.support_rule("start", "formula")
+cnl.support_rule("start", "smt_formula")
 
 
 @cnl.rule("formula_body")
-def formula(formula_body):
+def smt_formula(formula_body):
     s = Solver()
     for clause in formula_body:
         s.add(clause)
-    return f'{s.sexpr()}(check-sat)\n(get-model)'
+    v = (Ast * 0)()
+    a = s.assertions()
+    f = And(*a)
+    res = Z3_benchmark_to_smtlib_string(f.ctx_ref(), "benchmark", "QF_UFLIA", "unknown", "", 0, v, f.as_ast())
+    return f'{res}\n(get-model)'
 
 
 cnl.support_rule("list_of_strings", 'string', concat=",")
 cnl.support_rule('formula_body', 'body', concat="")
-
 cnl.support_rule('body', '((function_definition | constraint | fact | if_then | comparison)".")')
 
 
@@ -56,38 +59,13 @@ def constraint(clause_body):
     return clause_body
 
 
-cnl.support_rule("clause_body", "there_is_clause | simple_clause | or_operation | and_operation | comparison ")
+cnl.support_rule("clause_body", "there_is_clause | simple_clause | formula | comparison ")
 
-cnl.support_rule('OPERATOR',
-                 '"equal to" | "greater than" | "lower than" | "greater than or equal to" | "lower than or equal to" | "different from" ')
-
-
-@cnl.rule('("The"|"the") [string "between"] entity ["and" (SIGNED_NUMBER | entity)] ("must be" | "is") OPERATOR (SIGNED_NUMBER | entity)')
-def comparison(arith_operator, entity_1, entity_2, eq_operator, res):
-    op = None
-    if arith_operator == 'sum':
-        op = entity_1 + entity_2
-    elif arith_operator == 'difference':
-        op = entity_1 - entity_2
-    elif arith_operator == 'division':
-        op = entity_1 / entity_2
-    elif arith_operator == 'multiplication':
-        op = entity_1 * entity_2
-    else:
-        op = entity_1
-    if eq_operator == 'equal to':
-        op = op == res
-    elif eq_operator == 'greater than':
-        op = op > res
-    elif eq_operator == 'lower than':
-        op = op < res
-    elif eq_operator == 'greater than or equal to':
-        op = op >= res
-    elif eq_operator == 'lower than or equal to':
-        op = op <= res
-    elif eq_operator == 'different from':
-        op = op != res
-    return op
+cnl.support_rule('math_operand', 'entity | NUMBER')
+cnl.support_rule('comparison_first', 'math_operation | NUMBER | ("the"i entity)')
+cnl.support_rule('comparison_second', 'entity | NUMBER')
+cnl.math_operation.compute = True
+cnl.comparison.compute = True
 
 
 @cnl.rule('"there is" entity')
@@ -95,14 +73,10 @@ def there_is_clause(entity):
     return entity
 
 
-@cnl.rule('clause_body "or" clause_body')
-def or_operation(clause_body1, clause_body_2):
-    return Or(clause_body1, clause_body_2)
-
-
-@cnl.rule('clause_body "and" clause_body')
-def and_operation(clause_body1, clause_body_2):
-    return And(clause_body1, clause_body_2)
+cnl.support_rule('formula_first', 'clause_body')
+cnl.support_rule('formula_second', 'clause_body')
+cnl.formula['or'] = Or
+cnl.formula['and'] = And
 
 
 @cnl.rule('"If" clause_body ", then" clause_body')
@@ -121,12 +95,8 @@ def simple_clause(entity1, negation, entity2):
     return Not(entity2) if negation else entity2
 
 
-@cnl.rule('name "equal to" attribute_value')
-def attribute(name, attribute_value):
-    return name, attribute_value
+cnl.support_rule("attributes", 'attribute | ("with" entity)', concat=",")
 
-
-cnl.support_rule("attributes", '"with" (attribute | entity)', concat=",")
 
 @cnl.rule('("a" | "an")? name attributes')
 def entity(name, attributes):

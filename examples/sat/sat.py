@@ -1,15 +1,16 @@
-from pysat.formula import CNF
-
+from pysat.formula import CNF, Atom, Neg
+from sympy.logic.boolalg import to_cnf
 from CNLWizard.CNLWizard import Cnl, cnl_type, Signatures, CNAME, SIGNED_NUMBER, WHITE_SPACE, WORD
 
 
-@cnl_type('{self.name}_{"_".join(self.fields.values())}')
+@cnl_type('{self.negation}{self.name}_{"_".join(self.fields.values())}')
 class Definition:
     name: str
     fields: dict
+    negation: str
 
 
-@cnl_type('{self.clause}')
+@cnl_type('({self.clause})')
 class Clause:
     clause: str
 
@@ -24,14 +25,11 @@ cnl.import_token(CNAME)
 cnl.import_token(SIGNED_NUMBER)
 cnl.ignore_token(WHITE_SPACE)
 
-cnl.support_rule("start", "formula")
+cnl.support_rule("start", "sat_formula")
 
 
-@cnl.rule("formula_body")
-def formula(formula_body):
-    from sympy.logic.boolalg import to_cnf
-    from pysat.formula import Atom
-    from pysat.formula import Neg
+@cnl.rule("formula_body", concat='')
+def sat_formula(formula_body):
     formula_body = "&".join(["(" + str(x) + ")" for x in formula_body])
     formula_body = str(to_cnf(formula_body))
     definitions = []
@@ -60,7 +58,6 @@ def formula(formula_body):
 
 cnl.support_rule("list_of_strings", 'string', concat=",")
 cnl.support_rule('formula_body', 'body', concat="")
-
 cnl.support_rule('body', '((constraint | fact | if_then)".")')
 
 
@@ -74,7 +71,9 @@ def constraint(clause_body):
     return Clause(clause_body)
 
 
-cnl.support_rule("clause_body", "there_is_clause | simple_clause | or_operation | and_operation")
+cnl.support_rule("clause_body", "there_is_clause | simple_clause | formula")
+cnl.support_rule('formula_first', 'clause_body')
+cnl.support_rule('formula_second', 'clause_body')
 
 
 @cnl.rule('"there is" entity')
@@ -82,22 +81,9 @@ def there_is_clause(entity):
     return Clause(entity)
 
 
-@cnl.rule('clause_body "or" clause_body')
-def or_operation(clause_body1, clause_body_2):
-    return Clause(f'({clause_body1}|{clause_body_2})')
-
-
-@cnl.rule('clause_body "and" clause_body')
-def and_operation(clause_body1, clause_body_2):
-    return Clause(f'({clause_body1}&{clause_body_2})')
-
-
 @cnl.rule('"If" clause_body ", then" clause_body')
 def if_then(clause_body1, clause_body_2):
-    return Clause(f'({clause_body1}>>{clause_body_2})')
-
-
-cnl.support_rule("NEGATION", '"cannot"')
+    return Clause(f'{clause_body1}>>{clause_body_2}')
 
 
 @cnl.rule('entity [NEGATION] ("is" | "be" | "have" | "has") entity')
@@ -108,29 +94,14 @@ def simple_clause(entity1, negation, entity2):
     return Clause("~" + str(entity2)) if negation else Clause(str(entity2))
 
 
-@cnl.rule('"with" name "equal to" attribute_value')
-def attribute(name, attribute_value):
-    return name, attribute_value
-
-
-cnl.support_rule("attributes", "attribute", concat=",")
-cnl.support_rule("entity", "positive_entity | negative_entity")
-
-
-@cnl.rule('("a" | "an")? name attributes')
-def positive_entity(name, attributes):
-    entity = cnl.signatures[name]
-    for name, value in attributes:
-        entity.fields[name] = value
+@cnl.extends('[NEGATION] entity')
+def entity(negation, entity):
+    if negation:
+        entity.negation = '~'
     return entity
 
 
-@cnl.rule('"not" positive_entity')
-def negative_entity(entity):
-    entity.negation = "~"
-    return entity
-
-
+cnl.support_rule("NEGATION", '"cannot"')
 cnl.support_rule('name', 'CNAME')
 cnl.support_rule('attribute_value', 'string | NUMBER')
 cnl.support_rule('string', 'WORD')

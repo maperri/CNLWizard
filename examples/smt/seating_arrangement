@@ -5,8 +5,9 @@
 
 A guest is an integer concept, and it is identified by a name.
 A position is a function which takes integer and returns integer .
-The position with guest with name equal to X must be greater than 0, where X is one of Colin, Emily, Kate, Fred and Irene.
-The position with guest with name equal to X must be lower than 6, where X is one of Colin, Emily, Kate, Fred and Irene.
+
+The position with guest with name equal to X is greater than 0, where X is one of Colin, Emily, Kate, Fred and Irene.
+The position with guest with name equal to X is lower than 6, where X is one of Colin, Emily, Kate, Fred and Irene.
 
 It is required that the position with guest with name equal to X is different from position with guest with name equal to Y, where X is one of Colin, Kate, Fred, Emily, Irene, where Y is one of Colin, Kate, Fred, Emily, Irene, where X and Y are distinct.
 

@@ -34,20 +34,17 @@ class Aggregate:
     body: list
 
 
-@cnl_type('{self.value1}{self.operator}{self.value2}')
-class Comparison:
-    operator: str
-    value1: str
-    value2: str
-
-
-@cnl_type('{self.lb} {{{self.head}{": " + ", ".join(map(str, self.condition))}}} {self.ub} :- {", ".join(map(str, self.body))}.')
+@cnl_type()
 class Choice:
     head: Atom
     body: list
     condition: list
     lb: str
     ub: str
+
+    def __str__(self):
+        head_cond = ": " + ", ".join(map(str, self.condition)) if self.condition else ''
+        return f'{self.lb} {{{self.head}{head_cond}}} {self.ub} :- {", ".join(map(str, self.body))}.'
 
 
 @cnl_type('{" | ".join(map(str, self.head))} :- {", ".join(map(str, self.body))}.')
@@ -62,26 +59,14 @@ class WeakConstraint:
     weight: int
     discriminant: list
 
-@cnl.rule('"with" attribute_name [("equal to")? attribute_value]')
-def parameter(attribute_name, attribute_value):
-    return [attribute_name, attribute_value]
+
+cnl.support_rule('NEGATION', '"not"')
 
 
-cnl.support_rule("parameters", "parameter", concat=',')
-cnl.support_rule('entity', 'positive_entity | negative_entity')
-
-
-@cnl.rule('("a" | "an")? name parameters')
-def positive_entity(name, parameters):
-    entity = cnl.signatures[name]
-    for name, value in parameters:
-        entity.fields[name] = value
-    return entity
-
-
-@cnl.rule('"not" entity')
-def negative_entity(entity):
-    entity.negation = "not "
+@cnl.extends('[NEGATION] entity')
+def entity(negation, entity):
+    if negation:
+        entity.negation = 'not '
     return entity
 
 
@@ -95,9 +80,7 @@ def constant(string, attribute_value):
     return Constant(string, attribute_value)
 
 
-cnl.support_rule('constraint_body',
-                 'entity | aggregate | aggregate_comparison | arithmetic_comparison',
-                 concat="and")
+cnl.support_rule('constraint_body', 'entity | aggregate | comparison', concat="and")
 
 
 @cnl.rule('"It is prohibited that there is" constraint_body [whenever_clause]')
@@ -106,19 +89,14 @@ def constraint(body, terminal):
 
 
 cnl.support_rule("AGGREGATE_OPERATOR",
-    '"the number of" | "the total of" | "the lowest value of" | "the highest value of"')
+                 '"the number of" | "the total of" | "the lowest value of" | "the highest value of"')
 
-
-@cnl.rule('AGGREGATE_OPERATOR')
-def aggregate_operator(operator):
-    if operator == "the number of":
-        return "count"
-    elif operator == "the total of":
-        return "sum"
-    elif operator == "the lowest value of":
-        return "min"
-    elif operator == "the highest value of":
-        return "max"
+cnl.support_rule('aggregate_operator', {
+    "the number of": "count",
+    "the total of": "sum",
+    "the lowest value of": "min",
+    "the highest value of": "max"
+})
 
 
 @cnl.rule('aggregate_operator attribute_name "that" entity')
@@ -127,43 +105,9 @@ def aggregate(aggregate_operator, attribute_name, entity):
     return Aggregate(aggregate_operator, [parameter_value], [entity])
 
 
-cnl.support_rule('COMPARISON_OPERATOR',
-    '"sum" | "difference" | "equal to" | "different from" | "lower than" | "greater than" | "lower than or equal to" | "greater than or equal to"')
-
-
-@cnl.rule("COMPARISON_OPERATOR")
-def comparison_operator(operator):
-    if operator == "sum":
-        return "+"
-    elif operator == "difference":
-        return "-"
-    elif operator == "equal to":
-        return "="
-    elif operator == "different from":
-        return "!="
-    elif operator == "lower than":
-        return "<"
-    elif operator == "greater than":
-        return ">"
-    elif operator == "lower than or equal to":
-        return "<="
-    elif operator == "greater than or equal to":
-        return ">="
-
-
-@cnl.rule(
-    '"the" comparison_operator "between" attribute_value "and" attribute_value "is"? comparison_operator attribute_value')
-def arithmetic_comparison(comparison_operator, attribute_value, attribute_value2, comparison_operator2,
-                          attribute_value3):
-    return Comparison(comparison_operator2, Comparison(comparison_operator, attribute_value, attribute_value2),
-                      attribute_value3)
-
-
-@cnl.rule('aggregate "is" comparison_operator attribute_value')
-def aggregate_comparison(aggregate, comparison_operator, attribute_value):
-    return Comparison(comparison_operator, aggregate, attribute_value)
-
-
+cnl.support_rule('comparison_second', 'attribute_value')
+cnl.support_rule('comparison_first', 'math_operation | aggregate')
+cnl.support_rule('math_operand', 'attribute_value')
 cnl.support_rule("then_subject", "entity | verb")
 cnl.support_rule("then_object", 'then_subject', concat=",")
 
@@ -188,32 +132,21 @@ def whenever_then_clause_assignment(whenever_clause, subject):
 
 cnl.support_rule('CARDINALITY', '"exactly one" | "at lest one" | "at most one"')
 
+cnl.support_rule('cardinality', {
+    'exactly one': ('1', '1'),
+    'at least one': ('1', ''),
+    'at most one': ('', '1')
+})
 
-@cnl.rule("CARDINALITY")
-def cardinality(cardinality):
-    if cardinality == "exactly one":
-        return "1", "1"
-    elif cardinality == "at lest one":
-        return "1", ""
-    elif cardinality == "at most one":
-        return "", "1"
-
-
-cnl.support_rule('LEVEL', '"low" | "medium" | "high"')
-
-
-@cnl.rule("LEVEL")
-def level(level):
-    if level == "low":
-        return 1
-    elif level == "medium":
-        return 2
-    elif level == "high":
-        return 3
+cnl.support_rule('level', {
+    'low': 1,
+    'medium': 2,
+    'high': 3,
+})
 
 
 @cnl.rule(
-    '"It is preferred as much as possible, with" level "priority that" arithmetic_comparison [whenever_clause]')
+    '"It is preferred as much as possible, with" level "priority that" comparison [whenever_clause]')
 def weak_constraint(level, arithmetic_comparison, whenever_clause):
     body = [arithmetic_comparison]
     if whenever_clause:
@@ -221,7 +154,7 @@ def weak_constraint(level, arithmetic_comparison, whenever_clause):
     return WeakConstraint(body, level, [1])
 
 
-@cnl.rule("name parameters string")
+@cnl.rule("name attributes string")
 def verb(name, parameters, string):
     verb = cnl.signatures[name + string]
     for parameter in parameters:
@@ -232,7 +165,7 @@ def verb(name, parameters, string):
 cnl.support_rule("whenever_clause", '("whenever there is" | "Whenever there is") entity', concat=",")
 
 cnl.support_rule("start",
-    '((fact | constant | constraint | whenever_then_clause_choice | whenever_then_clause_assignment | weak_constraint) ".")+')
+                 '((fact | constant | constraint | whenever_then_clause_choice | whenever_then_clause_assignment | weak_constraint) ".")+')
 
 cnl.import_token(WORD)
 cnl.import_token(SIGNED_NUMBER)
