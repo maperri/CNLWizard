@@ -10,7 +10,7 @@ A guests is a list made of Colin, Kate, Fred, Emily, Irene.
 The position with guest with name equal to X is greater than 0, where X is one of guests.
 The position with guest with name equal to X is lower than 6, where X is one of guests.
 
-It is required that the position with guest with name equal to X is different from position with guest with name equal to Y, where X is one of guests, where Y is one of Cguests, where X and Y are distinct.
+It is required that the position with guest with name equal to X is different from position with guest with name equal to Y, where X is one of guests, where Y is one of guests, where X and Y are distinct.
 
 It is required that the sum between position with guest with name equal to Colin and 1 is different from position with guest with name equal to Kate and
     the difference between position with guest with name equal to Colin and 1 is different from position with guest with name equal to Kate.
