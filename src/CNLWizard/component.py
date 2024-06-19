@@ -140,5 +140,10 @@ class CnlList(Component):
         super().__init__(cnl)
 
     def compile(self):
-        pass
+        @self.cnl.rule('"the" NUMBER "th element of" CNAME')
+        def list_index_element(idx, list_name):
+            return self.cnl.lists[list_name][idx]
 
+        @self.cnl.rule('CNAME "contains" (NUMBER | CNAME)')
+        def list_contains(list_name, elem):
+            return elem in self.cnl.lists[list_name]

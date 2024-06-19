@@ -133,14 +133,15 @@ class CnlTest(unittest.TestCase):
     def test_cnl_types(self):
         cnl = Cnl()
         # List
-        cnl.support_rule('start', '(entity ".")*')
+        cnl.support_rule('start', '((entity | list_index_element | list_contains) ".")*')
         res = cnl.compile('An entity is identified by an id.'
-                    'A test is a list made of 1, 2 .\n'
-                    'an entity with id equal to X, where X is one of test .')
-        self.assertEqual(cnl.lists['test'][0], 1)
-        self.assertEqual(cnl.lists['test'][1], 2)
+                    'A testList is a list made of 1, 2 .\n'
+                    'an entity with id equal to X, where X is one of testList .')
+        self.assertEqual(cnl.lists['testList'][0], 1)
+        self.assertEqual(cnl.lists['testList'][1], 2)
         self.assertEqual(res, 'entity(1)\nentity(2)')
-
+        self.assertTrue("the 1st element of testList")
+        self.assertTrue("testList contains 1")
 
     def test_extend_default_components(self):
         @cnl_type('{self.negation}{self.name}({",".join(self.fields.values())})')
