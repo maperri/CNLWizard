@@ -1,5 +1,5 @@
 from z3 import *
-from CNLWizard.CNLWizard import Cnl, cnl_type, Signatures, CNAME, SIGNED_NUMBER, WHITE_SPACE, WORD, COMMENT
+from CNLWizard.CNLWizard import CnlWizard, cnl_type, Signatures, CNAME, SIGNED_NUMBER, WHITE_SPACE, WORD, COMMENT
 
 
 @cnl_type('{self.name}_{"_".join(self.fields.values())}')
@@ -8,7 +8,7 @@ class Definition:
     fields: dict
 
 
-cnl = Cnl(signatures=Signatures(signature_type=Definition))
+cnl = CnlWizard(signatures=Signatures(signature_type=Definition))
 cnl.import_token(CNAME)
 cnl.import_token(SIGNED_NUMBER)
 cnl.ignore_token(WHITE_SPACE)

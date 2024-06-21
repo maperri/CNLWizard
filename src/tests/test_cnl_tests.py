@@ -4,13 +4,13 @@ from textwrap import dedent
 from lark.exceptions import VisitError
 
 from CNLWizard.ProcessCNL import process_cnl_specification
-from CNLWizard.CNLWizard import Signatures, cnl_type, Cnl
+from CNLWizard.CNLWizard import Signatures, cnl_type, CnlWizard, WHITE_SPACE
 
 
 class CnlTest(unittest.TestCase):
 
     def setUp(self) -> None:
-        Cnl.signatures = Signatures()
+        CnlWizard.signatures = Signatures()
 
     def test_signatures(self):
         signatures = Signatures()
@@ -57,7 +57,7 @@ class CnlTest(unittest.TestCase):
         self.assertEqual(str(atom2), 'atom(1).')
 
     def test_grammar(self):
-        cnl = Cnl()
+        cnl = CnlWizard()
         cnl.support_rule('start', 'entity')
 
         @cnl.rule('["a "|"an "] CNAME')
@@ -66,14 +66,14 @@ class CnlTest(unittest.TestCase):
 
         cnl.support_rule('rule', 'body1', 'body2', concat=',')
         grammar = str(cnl._grammar)
-        self.assertTrue('entity: ["a "|"an "] CNAME' in grammar and
+        self.assertTrue('entity: ["a" |"an" ] CNAME' in grammar and
                         dedent('''\
                                 rule: body1
                                     | body2
                                     | rule "," rule -> rule_concatenation''') in grammar)
 
     def test_default_signature(self):
-        cnl = Cnl()
+        cnl = CnlWizard()
         cnl.support_rule('start', 'entity+')
 
         @cnl.rule('("A"|"An") CNAME " with " CNAME " " CNAME "."')
@@ -96,7 +96,7 @@ class CnlTest(unittest.TestCase):
         """
         Propositions ending with "where ..." are processed. The variable is substituted in the CNL specification.
         """
-        cnl = Cnl()
+        cnl = CnlWizard()
         text = 'Some text. A node X, where X is one of blue, red and yellow.'
         self.assertEqual(process_cnl_specification(cnl, text), 'Some text.\nA node blue.\nA node red.\nA node yellow.\n')
         text = 'Some text. A node X, where X is between 1 and 3.'
@@ -114,14 +114,14 @@ class CnlTest(unittest.TestCase):
             self.assertTrue('Lists do not match for variable substitution in proposition 2' in str(context.exception))
 
     def test_default_components(self):
-        cnl = Cnl()
+        cnl = CnlWizard()
+        cnl.ignore_token(WHITE_SPACE)
         cnl.support_rule('start', '(entity | math_operation | comparison | formula) "."')
         cnl.support_rule('math_operand', 'NUMBER')
         cnl.support_rule('comparison_first', 'math_operation')
         cnl.support_rule('comparison_second', 'math_operation | NUMBER')
         cnl.support_rule('formula_first', 'entity')
         cnl.support_rule('formula_second', 'entity')
-
         res = cnl.compile('An entity is identified by an id.\n'
                           'an entity with id equal to 1 .')
         self.assertEqual(str(res), 'entity(1)')
@@ -131,7 +131,7 @@ class CnlTest(unittest.TestCase):
         self.assertEqual(cnl.compile('entity with id equal to 1 and entity with id equal to 2'), 'entity(1)&entity(2)')
 
     def test_cnl_types(self):
-        cnl = Cnl()
+        cnl = CnlWizard()
         # List
         cnl.support_rule('start', '((entity | list_index_element | list_contains) ".")*')
         res = cnl.compile('An entity is identified by an id.'
@@ -150,7 +150,7 @@ class CnlTest(unittest.TestCase):
             fields: dict
             negation: str
 
-        cnl = Cnl(signatures=Signatures(signature_type=Atom))
+        cnl = CnlWizard(signatures=Signatures(signature_type=Atom))
 
         @cnl.extends('[NEGATION] entity')
         def entity(negation, entity):
@@ -165,7 +165,7 @@ class CnlTest(unittest.TestCase):
         self.assertEqual(str(res), 'not entity(1)')
 
     def test_terminal_symbols_dict(self):
-        cnl = Cnl()
+        cnl = CnlWizard()
         cnl.support_rule('start', 'test "." ')
         cnl.support_rule('test', {
             '1': 1,
@@ -177,7 +177,7 @@ class CnlTest(unittest.TestCase):
         self.assertEqual(cnl.compile('3 .'), '3')
 
     def test_modify_components(self):
-        cnl = Cnl()
+        cnl = CnlWizard()
         cnl.support_rule('start', 'math_operation "."')
         cnl.support_rule('math_operand', 'NUMBER')
         cnl.math_operation['sum'] = ' PLUS '  # modifying existing operator
@@ -189,3 +189,11 @@ class CnlTest(unittest.TestCase):
         cnl.math_operation['OP'] = callable_operator
         self.assertEqual(cnl.compile('the OP between 1 and 2 .'), 'OP(1,2)')
 
+    def test_split_symbols(self):
+        cnl = CnlWizard()
+        cnl.support_rule('start', '"First second"')
+        self.assertTrue('"First" "second"' in str(cnl._grammar))
+        cnl.support_rule('start', '"First second "')
+        self.assertTrue('"First" "second"' in str(cnl._grammar))
+        cnl.support_rule('start', '"  First second  "')
+        self.assertTrue('"First" "second"' in str(cnl._grammar))

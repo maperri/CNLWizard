@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from CNLWizard.CNLWizard import Cnl, CNAME
+from CNLWizard.CNLWizard import CnlWizard, CNAME
 
 
 class Component(ABC):
     dependencies: list[Component] = []
 
-    def __init__(self, cnl: Cnl):
+    def __init__(self, cnl: CnlWizard):
         self.cnl = cnl
 
     @abstractmethod
@@ -16,7 +16,7 @@ class Component(ABC):
 
 
 class Attribute(Component):
-    def __init__(self, cnl: Cnl):
+    def __init__(self, cnl: CnlWizard):
         super().__init__(cnl)
 
     def compile(self) -> [str, str]:
@@ -28,14 +28,14 @@ class Attribute(Component):
 
 
 class Entity(Component):
-    def __init__(self, cnl: Cnl):
+    def __init__(self, cnl: CnlWizard):
         super().__init__(cnl)
 
     def compile(self) -> [str, str]:
         @self.cnl.rule('("a" | "an")? CNAME attributes', dependencies=['attributes'])
         def entity(name, attributes):
             try:
-                entity = Cnl.signatures[name]
+                entity = CnlWizard.signatures[name]
                 for name, value in attributes:
                     entity.fields[name] = value
                 return entity
@@ -44,7 +44,7 @@ class Entity(Component):
 
 
 class MathOperation(Component):
-    def __init__(self, cnl: Cnl, compute=False):
+    def __init__(self, cnl: CnlWizard, compute=False):
         super().__init__(cnl)
         self.compute = compute
         self.operators = {
@@ -73,7 +73,7 @@ class MathOperation(Component):
 
 
 class Comparison(Component):
-    def __init__(self, cnl: Cnl, compute=False):
+    def __init__(self, cnl: CnlWizard, compute=False):
         super().__init__(cnl)
         self.compute = False
         self.comparison_operator = {
@@ -108,7 +108,7 @@ class Comparison(Component):
 
 
 class Formula(Component):
-    def __init__(self, cnl: Cnl):
+    def __init__(self, cnl: CnlWizard):
         super().__init__(cnl)
         self.formula_operator = {
             'and': '&',
@@ -136,7 +136,7 @@ class Formula(Component):
 
 
 class CnlList(Component):
-    def __init__(self, cnl: Cnl):
+    def __init__(self, cnl: CnlWizard):
         super().__init__(cnl)
 
     def compile(self):

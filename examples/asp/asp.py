@@ -8,7 +8,7 @@ class Atom:
     negation: str
 
 
-cnl = Cnl(signatures=Signatures(signature_type=Atom))
+cnl = CnlWizard(signatures=Signatures(signature_type=Atom))
 
 
 @cnl_type('{self.head}.')

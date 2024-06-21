@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import inspect
+import logging
 from typing import TYPE_CHECKING
 
 import argparse
@@ -9,7 +10,7 @@ import sys
 from textwrap import indent, dedent
 
 import lark
-from lark import Lark, Transformer
+from lark import Lark, Transformer, ParseError, UnexpectedInput
 from CNLWizard.ProcessCNL import process_cnl_specification
 
 if TYPE_CHECKING:
@@ -65,9 +66,41 @@ class ProductionRule:
         self.prefix = prefix
         self.dependencies = dependencies
 
-    def __str__(self):
+    def _split_terminal_symbols(self, body: str) -> str:
+        """
+        Given a rule, split all terminal symbols into unit symbols.
+        This transformation is used to prevent lark from printing __ANON_ in parsing errors.
+        """
+        i = 0
+        res = ''
+        while i < len(body):
+            if body[i] == '"':
+                start = i
+                end = start+1
+                while end < len(body) and body[end] != '"':
+                    end += 1
+                token = body[start+1:end].split(' ')
+                for word in range(len(token)):
+                    if token[word]:
+                        token[word] = f'"{token[word]}"'
+                res += ' '.join(token)
+                i = end
+            else:
+                res += body[i]
+            i += 1
+        return res
+
+    def to_str_with_splitted_tokens(self):
+        body = [self._split_terminal_symbols(rule) for rule in self.body]
+        return self._to_string(body)
+
+    def _to_string(self, body: list[str]):
         join_sep = '\n' + ' ' * len(self.label) + '| '
-        return f'{self.prefix}{self.label}: {join_sep.join(self.body)}'
+        return f'{self.prefix}{self.label}: {join_sep.join(body)}'
+
+    def __str__(self):
+        return self._to_string(self.body)
+
 
 
 class Grammar:
@@ -102,7 +135,10 @@ class Grammar:
                     has_all_dependencies_satisfied = False
                     break
             if has_all_dependencies_satisfied:
-                grammar += str(rule) + '\n'
+                str_rule = str(rule)
+                if f'%ignore WS' in self._imports:
+                    str_rule = rule.to_str_with_splitted_tokens()
+                grammar += str_rule + '\n'
         return imports + grammar
 
 
@@ -185,14 +221,14 @@ NUMBER = 'common.NUMBER'
 COMMENT = 'common.CPP_COMMENT'
 
 
-class Cnl:
+class CnlWizard:
     signatures = Signatures()
 
     def __init__(self, start_token: str = 'start', signatures: Signatures = Signatures()):
         self._grammar = Grammar()
         self._start_token = start_token
         self._functions: dict = dict()
-        Cnl.signatures = signatures
+        CnlWizard.signatures = signatures
         self.vars = dict()
         self.lists = dict()
         from CNLWizard.component import Attribute, Entity, MathOperation, Comparison, Formula, CnlList
@@ -204,6 +240,9 @@ class Cnl:
         self.components = [self.attribute, self.entity, self.math_operation,
                            self.comparison, self.formula, CnlList(self)]
         self._init_defaults()
+        logging.basicConfig(format='%(levelname)s :: %(name)s :: %(message)s')
+        self.logger = logging.getLogger(type(self).__name__)
+
 
     def _init_defaults(self):
         self.ignore_token(WHITE_SPACE)
@@ -274,7 +313,8 @@ class Cnl:
             prefix = '!'
             self._add_rule(label, list([f'"{key}"' for key in body.keys()]), concat, prefix, dependencies)
             ns = {}
-            exec(_create_fn(label, ['item'], dedent(f'''\
+            exec(_create_fn(label, ['*args'], dedent(f'''\
+                                                         item = ' '.join(args)
                                                          items = body
                                                          return items[item]
                                                          ''')), locals(), ns)
@@ -311,5 +351,9 @@ class Cnl:
             input_txt = open(args.input_file, 'r').read()
         lark = Lark(str(self._grammar), start=self._start_token)
         processed_cnl = process_cnl_specification(self, input_txt)
-        parse_tree = lark.parse(processed_cnl)
+        try:
+            parse_tree = lark.parse(processed_cnl)
+        except UnexpectedInput as e:
+            self.logger.error(e)
+            return ''
         return CNLTransformer(self._functions).transform(parse_tree).strip()

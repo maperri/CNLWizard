@@ -7,7 +7,7 @@ from lark import Lark, UnexpectedEOF, Transformer, v_args
 from CNLWizard.exception.exception import SubstitutionError
 
 if TYPE_CHECKING:
-    from CNLWizard.CNLWizard import Cnl
+    from CNLWizard.CNLWizard import CnlWizard
 
 """
 Processing propositions ending with "where VAR is VALUES".
@@ -16,7 +16,7 @@ The variables are substituted into the proposition generating clones, one for ea
 
 
 class ProcessCNLTransformer(Transformer):
-    def __init__(self, cnl: Cnl):
+    def __init__(self, cnl: CnlWizard):
         super().__init__()
         self.cnl = cnl
         self.variable_substitution: list[dict] = []  # a list of dict with variable-value as a key-pair
@@ -133,7 +133,7 @@ def substitute_variable(proposition, variables):
     return '\n'.join(res)
 
 
-def process_cnl_specification(cnl: Cnl, cnl_specification: str):
+def process_cnl_specification(cnl: CnlWizard, cnl_specification: str):
     # grammar for identifying variable substitution proposition parts
     # that are the constructions supported by the where_token
     lark = Lark(dedent(f'''\
