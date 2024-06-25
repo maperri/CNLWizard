@@ -1,14 +1,13 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from CNLWizard.CNLWizard import CnlWizard, CNAME
+from CNLWizard.CNLWizard import CnlWizard
 
 
 class Component(ABC):
-    dependencies: list[Component] = []
-
-    def __init__(self, cnl: CnlWizard):
+    def __init__(self, cnl: CnlWizard, name: str):
         self.cnl = cnl
+        self.name = name
 
     @abstractmethod
     def compile(self):
@@ -16,8 +15,8 @@ class Component(ABC):
 
 
 class Attribute(Component):
-    def __init__(self, cnl: CnlWizard):
-        super().__init__(cnl)
+    def __init__(self, cnl: CnlWizard, name: str):
+        super().__init__(cnl, name)
 
     def compile(self) -> [str, str]:
         @self.cnl.rule('"with" CNAME "equal to" (CNAME | NUMBER)')
@@ -28,8 +27,8 @@ class Attribute(Component):
 
 
 class Entity(Component):
-    def __init__(self, cnl: CnlWizard):
-        super().__init__(cnl)
+    def __init__(self, cnl: CnlWizard, name: str):
+        super().__init__(cnl, name)
 
     def compile(self) -> [str, str]:
         @self.cnl.rule('("a" | "an")? CNAME attributes', dependencies=['attributes'])
@@ -43,101 +42,58 @@ class Entity(Component):
                 return None
 
 
-class MathOperation(Component):
-    def __init__(self, cnl: CnlWizard, compute=False):
-        super().__init__(cnl)
+class Operation(Component):
+    def __init__(self, cnl: CnlWizard, name: str, operators: dict,
+                 rule_body: list[str, str] = None, rule_dependencies: list[str] = None, compute=False):
+        """
+        param rule_body: contains a list of two elements.
+            The first element contains the grammar rule,
+            the second element contains the operators and operands order.
+
+            The order is expressed by a string containing
+            a space separated 'operand' and 'operator' string.
+
+            Operator must be labeled in the rule as {operation_name}_operator.
+        """
+        super().__init__(cnl, name)
         self.compute = compute
-        self.operators = {
-            'sum': '+',
-            'difference': '-',
-            'division': '/',
-            'multiplication': '*'}
+        self.operators = operators
+        if rule_body is None:
+            self.rule_body = f'{self.name}_first {self.name}_operator {self.name}_second'
+            self.rule_dependencies = [f'{self.name}_first', f'{self.name}_first']
+        else:
+            self.rule_body = rule_body[0]
+            self.parameters_order = rule_body[1].split()
+        if rule_dependencies is not None:
+            self.rule_dependencies = rule_dependencies
 
     def compile(self):
-        self.cnl.support_rule('math_operator', self.operators)
+        self.cnl.support_rule(f'{self.name}_operator', self.operators)
 
-        @self.cnl.rule('"the" math_operator "between" math_operand "and" math_operand', dependencies=['math_operand'])
-        def math_operation(math_operator, *args):
-            if isinstance(math_operator, str):
+        @self.cnl.rule(f'{self.rule_body}',
+                       dependencies=self.rule_dependencies, name=self.name)
+        def operation_component(*args):
+            operator_index = self.parameters_order.index('operator')
+            operator = args[operator_index]
+            args = list(args)
+            args.pop(operator_index)
+            if isinstance(operator, str):
                 if self.compute:
                     ns = {}
-                    exec('res=' + math_operator.join([f'args[{i}]' for i in range(len(args))]), locals(), ns)
+                    exec('res=' + operator.join([f'args[{i}]' for i in range(len(args))]), locals(), ns)
                     return ns['res']
-                return math_operator.join(args)
-            elif callable(math_operator):
-                return math_operator(*args)
+                return operator.join(map(str, args))
+            elif callable(operator):
+                return operator(*args)
 
     def __setitem__(self, key, value):
         self.operators[key] = value
-        self.cnl.component_changed(self)
-
-
-class Comparison(Component):
-    def __init__(self, cnl: CnlWizard, compute=False):
-        super().__init__(cnl)
-        self.compute = False
-        self.comparison_operator = {
-            'sum': '+',
-            'difference': '-',
-            'equal to': '==',
-            'different from': '!=',
-            'lower than': '<',
-            'greater than': '>',
-            'lower than or equal to': '<=',
-            'greater than or equal to': '>='
-        }
-
-    def compile(self):
-        self.cnl.support_rule('comparison_operator', self.comparison_operator)
-
-        @self.cnl.rule('comparison_first "is"? comparison_operator comparison_second',
-                       dependencies=['comparison_first', 'comparison_second'])
-        def comparison(first, operator, second):
-            if isinstance(operator, str):
-                if self.compute:
-                    ns = {}
-                    exec(f'res=first{operator}second', locals(), ns)
-                    return ns['res']
-                return f'{first}{operator}{second}'
-            elif callable(operator):
-                return operator(first, second)
-
-    def __setitem__(self, key, value):
-        self.comparison_operator[key] = value
-        self.cnl.component_changed(self)
-
-
-class Formula(Component):
-    def __init__(self, cnl: CnlWizard):
-        super().__init__(cnl)
-        self.formula_operator = {
-            'and': '&',
-            'or': '|',
-            'imply': '->',
-            'implies': '->',
-            'is equivalent to': '<->',
-            'not': '!'
-        }
-
-    def compile(self):
-        self.cnl.support_rule('formula_operator', self.formula_operator)
-
-        @self.cnl.rule('formula_first formula_operator formula_second',
-                       dependencies=['formula_first', 'formula_second'])
-        def formula(first, operator, second):
-            if isinstance(operator, str):
-                return f'{first}{operator}{second}'
-            elif callable(operator):
-                return operator(first, second)
-
-    def __setitem__(self, key, value):
-        self.formula_operator[key] = value
-        self.cnl.component_changed(self)
+        self.compile()
 
 
 class CnlList(Component):
-    def __init__(self, cnl: CnlWizard):
-        super().__init__(cnl)
+    def __init__(self, cnl: CnlWizard, name):
+        super().__init__(cnl, name)
 
     def compile(self):
         @self.cnl.rule('"the" NUMBER "th element of" CNAME')

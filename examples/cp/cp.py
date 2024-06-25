@@ -34,7 +34,7 @@ cnl.support_rule("list_of_strings", 'string', concat=",")
 cnl.support_rule('formula_body', 'body', concat="")
 cnl.support_rule('body', '((constraint)".")')
 cnl.support_rule('constraint', '"It is required that" comparison')
-cnl.math_operation.compute = True
+cnl.math.compute = True
 cnl.comparison.compute = True
 
 @cnl.extends('comparison')
@@ -43,8 +43,8 @@ def comparison(comparison):
     return comparison
 
 cnl.support_rule('math_operand', 'number | entity')
-cnl.support_rule('comparison_first', 'number | entity | math_operation')
-cnl.support_rule('comparison_second', 'number | entity | math_operation')
+cnl.support_rule('comparison_first', 'number | entity | math')
+cnl.support_rule('comparison_second', 'number | entity | math')
 
 @cnl.extends('entity')
 def entity(entity):

@@ -106,7 +106,7 @@ def aggregate(aggregate_operator, attribute_name, entity):
 
 
 cnl.support_rule('comparison_second', 'attribute_value')
-cnl.support_rule('comparison_first', 'math_operation | aggregate')
+cnl.support_rule('comparison_first', 'math | aggregate')
 cnl.support_rule('math_operand', 'attribute_value')
 cnl.support_rule("then_subject", "entity | verb")
 cnl.support_rule("then_object", 'then_subject', concat=",")

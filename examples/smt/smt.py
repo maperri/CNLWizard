@@ -62,9 +62,9 @@ def constraint(clause_body):
 cnl.support_rule("clause_body", "there_is_clause | simple_clause | formula | comparison ")
 
 cnl.support_rule('math_operand', 'entity | NUMBER')
-cnl.support_rule('comparison_first', 'math_operation | NUMBER | ("the"i entity)')
+cnl.support_rule('comparison_first', 'math | NUMBER | ("the"i entity)')
 cnl.support_rule('comparison_second', 'entity | NUMBER')
-cnl.math_operation.compute = True
+cnl.math.compute = True
 cnl.comparison.compute = True
 
 

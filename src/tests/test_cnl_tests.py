@@ -65,7 +65,7 @@ class CnlTest(unittest.TestCase):
             return name
 
         cnl.support_rule('rule', 'body1', 'body2', concat=',')
-        grammar = str(cnl._grammar)
+        grammar = str(cnl.grammar)
         self.assertTrue('entity: ["a" |"an" ] CNAME' in grammar and
                         dedent('''\
                                 rule: body1
@@ -116,10 +116,10 @@ class CnlTest(unittest.TestCase):
     def test_default_components(self):
         cnl = CnlWizard()
         cnl.ignore_token(WHITE_SPACE)
-        cnl.support_rule('start', '(entity | math_operation | comparison | formula) "."')
+        cnl.support_rule('start', '(entity | math | comparison | formula) "."')
         cnl.support_rule('math_operand', 'NUMBER')
-        cnl.support_rule('comparison_first', 'math_operation')
-        cnl.support_rule('comparison_second', 'math_operation | NUMBER')
+        cnl.support_rule('comparison_first', 'math')
+        cnl.support_rule('comparison_second', 'math | NUMBER')
         cnl.support_rule('formula_first', 'entity')
         cnl.support_rule('formula_second', 'entity')
         res = cnl.compile('An entity is identified by an id.\n'
@@ -178,22 +178,22 @@ class CnlTest(unittest.TestCase):
 
     def test_modify_components(self):
         cnl = CnlWizard()
-        cnl.support_rule('start', 'math_operation "."')
+        cnl.support_rule('start', 'math "."')
         cnl.support_rule('math_operand', 'NUMBER')
-        cnl.math_operation['sum'] = ' PLUS '  # modifying existing operator
-        cnl.math_operation['mod'] = ' % '  # adding new operator
+        cnl.math['sum'] = ' PLUS '  # modifying existing operator
+        cnl.math['mod'] = ' % '  # adding new operator
         self.assertEqual(cnl.compile('the sum between 1 and 1 .'), '1 PLUS 1')
         self.assertEqual(cnl.compile('the mod between 1 and 1 .'), '1 % 1')
         def callable_operator(first, second):
             return f'OP({first},{second})'
-        cnl.math_operation['OP'] = callable_operator
+        cnl.math['OP'] = callable_operator
         self.assertEqual(cnl.compile('the OP between 1 and 2 .'), 'OP(1,2)')
 
     def test_split_symbols(self):
         cnl = CnlWizard()
         cnl.support_rule('start', '"First second"')
-        self.assertTrue('"First" "second"' in str(cnl._grammar))
+        self.assertTrue('"First" "second"' in str(cnl.grammar))
         cnl.support_rule('start', '"First second "')
-        self.assertTrue('"First" "second"' in str(cnl._grammar))
+        self.assertTrue('"First" "second"' in str(cnl.grammar))
         cnl.support_rule('start', '"  First second  "')
-        self.assertTrue('"First" "second"' in str(cnl._grammar))
+        self.assertTrue('"First" "second"' in str(cnl.grammar))

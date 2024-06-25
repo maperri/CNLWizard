@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import inspect
 import logging
+import os
 from typing import TYPE_CHECKING
 
 import argparse
@@ -10,6 +11,7 @@ import sys
 from textwrap import indent, dedent
 
 import lark
+import yaml
 from lark import Lark, Transformer, ParseError, UnexpectedInput
 from CNLWizard.ProcessCNL import process_cnl_specification
 
@@ -222,23 +224,16 @@ COMMENT = 'common.CPP_COMMENT'
 
 
 class CnlWizard:
+    """@DynamicAttrs"""
     signatures = Signatures()
 
     def __init__(self, start_token: str = 'start', signatures: Signatures = Signatures()):
-        self._grammar = Grammar()
+        self.grammar = Grammar()
         self._start_token = start_token
         self._functions: dict = dict()
         CnlWizard.signatures = signatures
         self.vars = dict()
         self.lists = dict()
-        from CNLWizard.component import Attribute, Entity, MathOperation, Comparison, Formula, CnlList
-        self.attribute = Attribute(self)
-        self.entity = Entity(self)
-        self.math_operation = MathOperation(self)
-        self.comparison = Comparison(self)
-        self.formula = Formula(self)
-        self.components = [self.attribute, self.entity, self.math_operation,
-                           self.comparison, self.formula, CnlList(self)]
         self._init_defaults()
         logging.basicConfig(format='%(levelname)s :: %(name)s :: %(message)s')
         self.logger = logging.getLogger(type(self).__name__)
@@ -255,21 +250,30 @@ class CnlWizard:
                                                       '        res += str(arg) + \"\\n\"\n'
                                                       'return res'), ns)
         self._add_function(self._start_token, ns[self._start_token])
-        for component in self.components:
-            self._import_component(component)
+        self._import_components()
 
-    def _import_component(self, component: Component):
-        for dependence in component.dependencies:
-            self._import_component(dependence)
-        component.compile()
+    def _import_components(self):
+        from CNLWizard.component import Component, Attribute, Entity, Operation, CnlList
+        ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+        with open(os.path.join(ROOT_DIR, 'components.yaml'), 'r') as stream:
+            components = yaml.safe_load(stream)
+            for component, instances in components.items():
+                for instance in instances:
+                    ns = {}
+                    exec(f'obj = {component}(self, *(instance.values()))', locals(), ns)
+                    ns['obj'].compile()
+                    setattr(self, instance['name'], ns['obj'])
 
-    def rule(self, string: str, /, *args, concat=None, dependencies=None):
+    def rule(self, string: str, /, *args, concat=None, dependencies=None, name=None):
         if dependencies is None:
             dependencies = []
 
         def wrapper(function):
-            self._add_rule(function.__name__, [string] + list(args), concat, dependencies=dependencies)
-            self._add_function(function.__name__, function)
+            f_name = name
+            if f_name is None:
+                f_name = function.__name__
+            self._add_rule(f_name, [string] + list(args), concat, dependencies=dependencies)
+            self._add_function(f_name, function)
             return function
 
         return wrapper
@@ -277,9 +281,9 @@ class CnlWizard:
     def extends(self, string: str, /, *args, concat=None):
         def wrapper(function):
             label = function.__name__
-            starting_rule = self._grammar.get_rule(label)
-            self._grammar.add_rule(f'primitive_{starting_rule.label}', starting_rule.body, prefix=starting_rule.prefix,
-                                   dependencies=starting_rule.dependencies)
+            starting_rule = self.grammar.get_rule(label)
+            self.grammar.add_rule(f'primitive_{starting_rule.label}', starting_rule.body, prefix=starting_rule.prefix,
+                                  dependencies=starting_rule.dependencies)
             self._functions[f'primitive_{starting_rule.label}'] = self._functions[starting_rule.label]
             rule_body = string.replace(starting_rule.label, f'primitive_{starting_rule.label}')
             self._add_rule(function.__name__, [rule_body] + list(args), concat)
@@ -288,15 +292,12 @@ class CnlWizard:
 
         return wrapper
 
-    def component_changed(self, component: Component):
-        self._import_component(component)
-
     def ignore_token(self, token: str):
-        self._grammar.add_import('import', token)
-        self._grammar.add_import('ignore', token.split('.')[-1])
+        self.grammar.add_import('import', token)
+        self.grammar.add_import('ignore', token.split('.')[-1])
 
     def import_token(self, token: str):
-        self._grammar.add_import('import', token)
+        self.grammar.add_import('import', token)
 
     def _add_function(self, function_name, function):
         self._functions.update({function_name: function})
@@ -340,16 +341,16 @@ class CnlWizard:
                                             return elem1 + elem2''')
             exec(_create_fn(f'{label}_concatenation', ['elem1=None', 'elem2=None'], concatenation_fn_body), ns)
             self._add_function(f'{label}_concatenation', ns[f'{label}_concatenation'])
-        self._grammar.add_rule(label, body, prefix, dependencies)
+        self.grammar.add_rule(label, body, prefix, dependencies)
 
     def compile(self, input_txt: str = None):
-        self._grammar.get_rule(self._start_token).prefix = ''
+        self.grammar.get_rule(self._start_token).prefix = ''
         if input_txt is None:
             parser = argparse.ArgumentParser()
             parser.add_argument('input_file', nargs='?')
             args = parser.parse_args()
             input_txt = open(args.input_file, 'r').read()
-        lark = Lark(str(self._grammar), start=self._start_token)
+        lark = Lark(str(self.grammar), start=self._start_token)
         processed_cnl = process_cnl_specification(self, input_txt)
         try:
             parse_tree = lark.parse(processed_cnl)
