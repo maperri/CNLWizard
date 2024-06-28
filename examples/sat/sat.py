@@ -28,7 +28,7 @@ cnl.ignore_token(WHITE_SPACE)
 cnl.support_rule("start", "sat_formula")
 
 
-@cnl.rule("formula_body", concat='')
+@cnl.rule("formula_body")
 def sat_formula(formula_body):
     formula_body = "&".join(["(" + str(x) + ")" for x in formula_body])
     formula_body = str(to_cnf(formula_body))
@@ -56,9 +56,7 @@ def sat_formula(formula_body):
     return formula
 
 
-cnl.support_rule("list_of_strings", 'string', concat=",")
-cnl.support_rule('formula_body', 'body', concat="")
-cnl.support_rule('body', '((constraint | fact | if_then)".")')
+cnl.support_rule('formula_body', '((constraint | fact | if_then)".")', concat='')
 
 
 @cnl.rule('"There is" entity')

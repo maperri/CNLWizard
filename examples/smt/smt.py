@@ -27,11 +27,7 @@ def smt_formula(formula_body):
     res = Z3_benchmark_to_smtlib_string(f.ctx_ref(), "benchmark", "QF_UFLIA", "unknown", "", 0, v, f.as_ast())
     return f'{res}\n(get-model)'
 
-
-cnl.support_rule("list_of_strings", 'string', concat=",")
-cnl.support_rule('formula_body', 'body', concat="")
-cnl.support_rule('body', '((function_definition | constraint | fact | if_then | comparison)".")')
-
+cnl.support_rule('formula_body', '((function_definition | constraint | fact | if_then | comparison)".")', concat="")
 
 @cnl.rule('("A" | "An") name "is a function which takes" string "and returns" string')
 def function_definition(name, arg_sort, return_sort):
@@ -49,10 +45,7 @@ def function_definition(name, arg_sort, return_sort):
     cnl.signatures[name] = f, [], [], ['function', None, None]
 
 
-@cnl.rule('"There is" entity')
-def fact(entity):
-    return entity
-
+cnl.support_rule('fact_body', 'entity')
 
 @cnl.rule('"It is required that" clause_body')
 def constraint(clause_body):

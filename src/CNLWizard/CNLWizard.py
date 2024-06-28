@@ -253,7 +253,7 @@ class CnlWizard:
         self._import_components()
 
     def _import_components(self):
-        from CNLWizard.component import Component, Attribute, Entity, Operation, CnlList
+        from CNLWizard.component import Component, Attribute, Entity, Operation, CnlList, UnitProposition
         ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
         with open(os.path.join(ROOT_DIR, 'components.yaml'), 'r') as stream:
             components = yaml.safe_load(stream)

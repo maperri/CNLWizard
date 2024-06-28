@@ -92,7 +92,7 @@ class Operation(Component):
 
 
 class CnlList(Component):
-    def __init__(self, cnl: CnlWizard, name):
+    def __init__(self, cnl: CnlWizard, name: str):
         super().__init__(cnl, name)
 
     def compile(self):
@@ -103,3 +103,15 @@ class CnlList(Component):
         @self.cnl.rule('CNAME "contains" (NUMBER | CNAME)')
         def list_contains(list_name, elem):
             return elem in self.cnl.lists[list_name]
+
+
+class UnitProposition(Component):
+
+    def __init__(self, cnl: CnlWizard, name: str,
+                 rule_body: str, rule_dependencies: list[str]):
+        super().__init__(cnl, name)
+        self.rule_body = rule_body
+        self.rule_dependencies = rule_dependencies
+
+    def compile(self):
+        self.cnl.support_rule(self.name, self.rule_body, dependencies=self.rule_dependencies)

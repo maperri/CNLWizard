@@ -45,9 +45,26 @@ Operation:
 
 Attribute:
   - name: attribute
+
 Entity:
   - name: entity
+
 CnlList:
   - name: list
 
+UnitProposition:
 
+  - name: positive_constraint
+    rule_body: '"It is required that" positive_constraint_body'
+    dependencies:
+      - 'positive_constraint_body'
+
+  - name: negative_constraint
+    rule_body: '"It is prohibited that" negative_constraint_body'
+    dependencies:
+      - 'negative_constraint_body'
+
+  - name: fact
+    rule_body: '"There is" fact_body'
+    dependencies:
+      - 'fact_body'

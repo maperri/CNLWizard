@@ -30,7 +30,6 @@ def formula(formula_body):
     return solution
 
 
-cnl.support_rule("list_of_strings", 'string', concat=",")
 cnl.support_rule('formula_body', 'body', concat="")
 cnl.support_rule('body', '((constraint)".")')
 cnl.support_rule('constraint', '"It is required that" comparison')
