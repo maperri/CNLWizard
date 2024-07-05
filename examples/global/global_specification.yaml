@@ -1,0 +1,329 @@
+start:
+  syntax:
+    - >
+      (propositions ".")+
+
+propositions:
+  - name: function_definition
+    syntax: >
+      ("A" | "An") string "is a function which takes" string "and returns" string
+    target:
+      - smt
+
+  - name: there_is_clause
+    syntax: >
+      ("There" | "there") "is" entity
+    target:
+      - asp
+      - sat
+      - smt
+
+  - name: constant
+    syntax: >
+      string "is a constant equal to" attribute_value
+    target:
+      - asp
+
+  - name: constraint
+    syntax: >
+      "It is prohibited that there is" constraint_body [whenever_clause]
+    target:
+      - asp
+
+  - name: constraint
+    syntax: >
+      "It is required that" comparison
+    target:
+      - cp
+
+  - name: constraint
+    syntax: >
+      "It is required that" clause_body
+    target:
+      - sat
+      - smt
+
+  - name: whenever_then_clause_choice
+    syntax: >
+      whenever_clause ", then we can have" [cardinality] then_subject [then_object]
+    target:
+      - asp
+
+  - name: whenever_then_clause_assignment
+    syntax:
+      - >
+        whenever_clause ", then we must have" then_subject
+      - >
+        whenever_clause ", then we can have" disjunction_then_subject
+    target:
+        - asp
+
+  - name: weak_constraint
+    syntax: >
+      "It is preferred as much as possible, with" level "priority that" comparison [whenever_clause]
+    target:
+      - asp
+
+  - name: comparison
+    target:
+      - cp
+      - smt
+
+  - name: if_then
+    syntax: >
+      "If" clause_body ", then" clause_body
+    target:
+      - sat
+      - smt
+
+attribute_value:
+    syntax:
+      - string
+      - number
+    target:
+      - asp
+
+whenever_clause:
+  syntax:
+    - >
+      ("whenever there is" | "Whenever there is") entity
+  concat: ","
+  target:
+    - asp
+
+disjunction_then_subject:
+  syntax:
+    - then_subject
+  concat: "or"
+  target:
+    - asp
+
+cardinality:
+  syntax:
+    - >
+      "exactly one"
+    - >
+      "at lest one"
+    - >
+      "at most one"
+  target:
+    - asp
+
+simple_clause:
+    syntax: >
+      entity [negation] ("is" | "be" | "have" | "has") entity
+    target:
+      - sat
+      - smt
+
+negation:
+  syntax:
+    - >
+      "not"
+    - >
+      "cannot"
+  target:
+    - asp
+    - sat
+    - smt
+
+level:
+  syntax:
+    - >
+      "low"
+    - >
+      "medium"
+    - >
+      "high"
+  target:
+    - asp
+
+constraint_body:
+    syntax:
+      - entity
+      - aggregate
+      - comparison
+      - constraint_body "and" constraint_body
+    target:
+      - asp
+
+operation:
+  - name: math
+    operators:
+      sum: '+'
+      difference: '-'
+      division: '/'
+      multiplication: '*'
+    syntax:
+      - '"the" math_operator "between" math_operand "and" math_operand'
+    target:
+      - asp
+      - cp
+      - smt
+
+  - name: comparison
+    operators:
+      equal to: '=='
+      different from: '!='
+      lower than: '<'
+      greater than: '>'
+      lower than or equal to: '<='
+      greater than or equal to: '>='
+    syntax:
+      - comparison_operand "is"? comparison_operator comparison_operand
+    target:
+      - asp
+      - cp
+      - smt
+
+  - name: formula
+    syntax: clause_body formula_operator clause_body
+    operators:
+      and: '&'
+      or: '|'
+      imply: '>>'
+      implies: '>>'
+      is equivalent to: '<->'
+      not: '!'
+    target:
+      - sat
+      - smt
+
+clause_body:
+  - name: clause_body
+    syntax:
+      - there_is_clause
+      - simple_clause
+      - formula
+    target:
+      - sat
+
+  - name: clause_body
+    syntax:
+      - there_is_clause
+      - simple_clause
+      - formula
+      - comparison
+    target:
+      - smt
+
+aggregate:
+    syntax:
+      - >
+        aggregate_operator string "that" entity
+    target:
+      - asp
+
+aggregate_operator:
+  syntax:
+    - >
+      "the number of"
+    - >
+      "the total of"
+    - >
+      "the lowest value of"
+    - >
+      "the highest value of"
+  target:
+    - asp
+
+
+then_subject:
+  syntax:
+    - entity
+    - verb
+  target:
+    - asp
+
+then_object:
+  syntax:
+    - then_subject
+  concat: ","
+  target:
+    - asp
+
+comparison_operand:
+  - name: comparison_operand
+    syntax:
+      - math
+      - aggregate
+      - attribute_value
+    target:
+      - asp
+
+  - name: comparison_operand
+    syntax:
+      - math
+      - number
+      - ("the" | "The")? entity
+    target:
+      - smt
+
+  - name: comparison_operand
+    syntax:
+      - math
+      - number
+      - entity
+    target:
+      - cp
+
+
+math_operand:
+  - name: math_operand
+    syntax:
+      - entity
+      - string
+      - number
+    target:
+      - asp
+
+  - name: math_operand
+    syntax:
+      - entity
+      - number
+    target:
+      - cp
+      - smt
+
+Attribute:
+  - name: attribute
+    concat: ","
+    target:
+      - cp
+      - asp
+      - sat
+
+  - name: attribute
+    target:
+      - smt
+
+attributes:
+    syntax: >
+      (attribute | ("with" entity)) ("," (attribute | ("with" entity)))*
+    target:
+      - smt
+
+Entity:
+  - name: entity
+    syntax: >
+      [negation] ("a"| "an") string attribute
+    target:
+      - asp
+
+  - name: entity
+    target:
+      - cp
+      - sat
+
+  - name: entity
+    syntax: >
+      ("a" | "an")? string attributes
+    target:
+      - smt
+
+  - name: verb
+    syntax: string attribute string
+    target:
+      - asp
+
+

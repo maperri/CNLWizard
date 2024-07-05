@@ -1,0 +1,56 @@
+start:
+  syntax:
+    - >
+      (propositions ".")+
+  target:
+    - sat
+
+propositions:
+  - name: constraint
+    syntax: >
+      "It is required that" clause_body
+
+  - name: there_is_clause
+    syntax: >
+      ("There" | "there") "is" entity
+
+  - name: if_then
+    syntax: >
+      "If" clause_body ", then" clause_body
+
+clause_body:
+  syntax:
+    - there_is_clause
+    - simple_clause
+    - formula
+
+
+simple_clause:
+    syntax: >
+      entity [negation] ("is" | "be" | "have" | "has") entity
+
+negation:
+    syntax:
+      - >
+        "not"
+      - >
+        "cannot"
+
+operation:
+  - name: formula
+    syntax: clause_body formula_operator clause_body
+    operators:
+      and: '&'
+      or: '|'
+      imply: '>>'
+      implies: '>>'
+      is equivalent to: '<->'
+      not: '!'
+
+Attribute:
+  - name: attribute
+    concat: ","
+
+Entity:
+  - name: entity
+

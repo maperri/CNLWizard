@@ -1,0 +1,30 @@
+
+constraint:
+  - name: negative_constraint
+    syntax: >
+      "It is prohibited that" operation
+    target:
+      - lang1
+      - lang2
+
+Operation:
+  - name: arithmetic
+    syntax:
+      - >
+        "the sum between 1 and 2"
+      - >
+        "the difference between 1 and 2"
+
+  - name: boolean
+    syntax: >
+      "the or between a and b"
+    target:
+      - lang1
+
+start:
+  syntax:
+    - arithmetic
+    - constraint
+  target:
+    - lang1
+    - lang2

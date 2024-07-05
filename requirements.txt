@@ -1,0 +1,9 @@
+lark~=1.1.9
+CNLWizard~=1.0.0
+PyYAML~=6.0.1
+cnl2asp~=1.3.4
+ortools~=9.10.4067
+pysat~=3.2.0
+sympy~=1.12.1
+z3~=0.2.0
+setuptools~=60.2.0

@@ -4,10 +4,12 @@ from typing import TYPE_CHECKING
 
 import lark
 from lark import Lark, UnexpectedEOF, Transformer, v_args
+
 from CNLWizard.exception.exception import SubstitutionError
 
 if TYPE_CHECKING:
-    from CNLWizard.CNLWizard import CnlWizard
+    from CNLWizard.cnl_wizard_compiler import CnlWizardCompiler
+
 
 """
 Processing propositions ending with "where VAR is VALUES".
@@ -16,7 +18,7 @@ The variables are substituted into the proposition generating clones, one for ea
 
 
 class ProcessCNLTransformer(Transformer):
-    def __init__(self, cnl: CnlWizard):
+    def __init__(self, cnl: CnlWizardCompiler):
         super().__init__()
         self.cnl = cnl
         self.variable_substitution: list[dict] = []  # a list of dict with variable-value as a key-pair
@@ -30,10 +32,11 @@ class ProcessCNLTransformer(Transformer):
 
     @v_args(inline=True)
     def signature_definition(self, name, type, keys, parameters):
+        from CNLWizard.cnl_wizard_compiler import CnlWizardCompiler
         fields = keys.copy()
         if parameters:
             fields += parameters
-        self.cnl.signatures[name] = name, fields, keys, type
+        CnlWizardCompiler.signatures[name] = name, fields, keys, type
         return ''
 
     @v_args(inline=True)
@@ -133,7 +136,7 @@ def substitute_variable(proposition, variables):
     return '\n'.join(res)
 
 
-def process_cnl_specification(cnl: CnlWizard, cnl_specification: str):
+def process_cnl_specification(cnl: CnlWizardCompiler, cnl_specification: str):
     # grammar for identifying variable substitution proposition parts
     # that are the constructions supported by the where_token
     lark = Lark(dedent(f'''\
@@ -175,4 +178,4 @@ def process_cnl_specification(cnl: CnlWizard, cnl_specification: str):
                     res += proposition + ' .\n'
                 else:
                     res += proposition + '.\n'
-    return res
+    return res.strip()

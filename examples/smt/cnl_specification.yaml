@@ -1,0 +1,99 @@
+start:
+  syntax:
+    - >
+      (propositions ".")+
+  target:
+    - smt
+
+propositions:
+  - name: function_definition
+    syntax: >
+      ("A" | "An") string "is a function which takes" string "and returns" string
+
+  - name: constraint
+    syntax: >
+      "It is required that" clause_body
+
+  - name: there_is_clause
+    syntax: >
+      ("There" | "there") "is" entity
+
+  - name: if_then
+    syntax: >
+      "If" clause_body ", then" clause_body
+
+  - name: comparison
+
+clause_body:
+  syntax:
+    - there_is_clause
+    - simple_clause
+    - formula
+    - comparison
+
+simple_clause:
+    syntax: >
+      entity [negation] ("is" | "be" | "have" | "has") entity
+
+negation:
+    syntax:
+      - >
+        "not"
+      - >
+        "cannot"
+
+attributes:
+    syntax: >
+      (attribute | ("with" entity)) ("," (attribute | ("with" entity)))*
+
+operation:
+  - name: math
+    operators:
+      sum: '+'
+      difference: '-'
+      division: '/'
+      multiplication: '*'
+    syntax:
+      - '"the" math_operator "between" math_operand "and" math_operand'
+
+  - name: comparison
+    operators:
+      equal to: '=='
+      different from: '!='
+      lower than: '<'
+      greater than: '>'
+      lower than or equal to: '<='
+      greater than or equal to: '>='
+    syntax:
+      - comparison_operand "is"? comparison_operator comparison_operand
+
+  - name: formula
+    syntax: clause_body formula_operator clause_body
+    operators:
+      and: '&'
+      or: '|'
+      imply: '>>'
+      implies: '>>'
+      is equivalent to: '<->'
+      not: '!'
+
+comparison_operand:
+  syntax:
+    - math
+    - number
+    - ("the" | "The")? entity
+
+math_operand:
+  syntax:
+    - entity
+    - number
+
+Attribute:
+  - name: attribute
+
+
+Entity:
+  - name: entity
+    syntax: >
+      ("a" | "an")? string attributes
+

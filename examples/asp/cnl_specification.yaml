@@ -1,0 +1,153 @@
+start:
+  syntax:
+    - >
+      (propositions ".")+
+  target:
+    - asp
+
+
+propositions:
+  - name: there_is_clause
+    syntax: >
+      ("There" | "there") "is" entity
+
+  - name: constant
+    syntax: >
+      string "is a constant equal to" attribute_value
+
+  - name: constraint
+    syntax: >
+      "It is prohibited that there is" constraint_body [whenever_clause]
+      
+  - name: whenever_then_clause_choice
+    syntax: >
+      whenever_clause ", then we can have" [cardinality] then_subject [then_object]
+  
+  - name: whenever_then_clause_assignment
+    syntax:
+      - >
+        whenever_clause ", then we must have" then_subject
+      - >
+        whenever_clause ", then we can have" disjunction_then_subject
+
+  - name: weak_constraint
+    syntax: >
+      "It is preferred as much as possible, with" level "priority that" comparison [whenever_clause]
+
+attribute_value:
+    syntax:
+      - string
+      - number
+
+whenever_clause:
+  syntax:
+    - >
+      ("whenever there is" | "Whenever there is") entity
+  concat: ","
+
+disjunction_then_subject:
+  syntax:
+    - then_subject
+  concat: "or"
+
+cardinality:
+  syntax:
+    - >
+      "exactly one"
+    - >
+      "at lest one"
+    - >
+      "at most one"
+
+negation:
+  syntax: >
+    "not"
+
+level:
+  syntax:
+    - >
+      "low"
+    - >
+      "medium"
+    - >
+      "high"
+
+constraint_body:
+    syntax:
+      - entity
+      - aggregate
+      - comparison
+      - constraint_body "and" constraint_body
+
+operation:
+  - name: math
+    operators:
+      sum: '+'
+      difference: '-'
+      division: '/'
+      multiplication: '*'
+    syntax:
+      - '"the" math_operator "between" math_operand "and" math_operand'
+
+  - name: comparison
+    operators:
+      equal to: '=='
+      different from: '!='
+      lower than: '<'
+      greater than: '>'
+      lower than or equal to: '<='
+      greater than or equal to: '>='
+    syntax:
+      - comparison_operand "is"? comparison_operator comparison_operand
+
+aggregate:
+    syntax:
+      - >
+        aggregate_operator string "that" entity
+
+aggregate_operator:
+  syntax:
+    - >
+      "the number of"
+    - >
+      "the total of"
+    - >
+      "the lowest value of"
+    - >
+      "the highest value of"
+
+then_subject:
+  syntax:
+    - entity
+    - verb
+
+then_object:
+  syntax:
+    - then_subject
+  concat: ","
+
+comparison_operand:
+  syntax:
+    - math
+    - aggregate
+    - attribute_value
+
+math_operand:
+  syntax:
+    - entity
+    - string
+    - number
+
+Attribute:
+  - name: attribute
+    concat: ","
+
+Entity:
+  - name: entity
+    syntax: >
+      [negation] ("a"| "an") string attribute
+
+  - name: verb
+    syntax: string attribute string
+
+

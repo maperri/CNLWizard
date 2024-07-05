@@ -13,6 +13,9 @@ setup(
     package_dir={'': 'src'},
     packages=find_packages('src', exclude=['tests*']),
     package_data={'CNLWizard': ['components.yaml']},
+    entry_points={
+        'console_scripts': ['CNLWizard = main:main'],
+    },
     install_requires=['lark'],
     python_requires=">=3.10"
 )
