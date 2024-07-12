@@ -19,12 +19,32 @@ dummy:
   syntax:
     "Do not add me"
 
+operation:
+  - name: test_operation
+    operators:
+      sum:
+        fun:
+          name: sum
+          args:
+            - operand_1
+            - operand_2
+    syntax: >
+      "the" test_operation_operator "between" operand "and" operand
+    target:
+      - lang2
+
+operand:
+  syntax: number
+  target:
+    - lang2
+
 start:
   syntax:
     - arithmetic
     - constraint
     - TERMINAL
     - entity
+    - operation
   target:
     - lang1
     - lang2

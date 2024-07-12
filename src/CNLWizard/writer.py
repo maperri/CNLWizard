@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import collections
 from textwrap import dedent, indent
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Callable
 
 if TYPE_CHECKING:
     from CNLWizard.cnl import CompiledRule, SupportRule, AttributeRule, EntityRule, ListRule, OperationRule, \
-    GrammarConfigRule, Rule
+    GrammarConfigRule, Rule, PureFunction
 
 
 class RuleVisitor:
@@ -28,9 +28,11 @@ class RuleVisitor:
     def visit_operation_rule(self, r: OperationRule) -> str:
         return ''
 
-    def visit_config_rule(self, r: GrammarConfigRule):
+    def visit_config_rule(self, r: GrammarConfigRule) -> str:
         return ''
 
+    def visit_pure_function(self, r: PureFunction) -> str:
+        return ''
 
 class LarkGrammarWriter(RuleVisitor):
     def visit_compiled_rule(self, r: CompiledRule) -> str:
@@ -69,7 +71,7 @@ class LarkGrammarWriter(RuleVisitor):
         rule = f'{r.name}: {r.syntax[0]} -> list_index_element\n' \
                f'{" " * len(r.name)}| {r.syntax[1]} -> list_contains\n'
         if r.concat is not None:
-            rule += f'{" "*len(r.name)}| {self.__concat_rule(r)}'
+            rule += f'{" " * len(r.name)}| {self.__concat_rule(r)}'
         return rule
 
     def visit_operation_rule(self, r: OperationRule) -> str:
@@ -86,6 +88,7 @@ class LarkGrammarWriter(RuleVisitor):
         if r.syntax:
             syntax = ''.join(r.syntax)
         return f'{r.name} {syntax}\n'
+
 
     def __concat_rule(self, rule: Rule):
         concat_symbol = f'"{rule.concat}"'
@@ -194,7 +197,8 @@ class PythonFunctionWriter(RuleVisitor):
                             raise NotImplementedError('replace operator_index value')
                             operator = args[operator_index]
                             args = list(args)
-                            args.pop(operator_index)''')
+                            args.pop(operator_index)
+                            ''')
             if isinstance(list(r.operators.values())[0], str):
                 py_fn += f'    return operator.join(map(str, args))\n\n\n'
             elif callable(list(r.operators.values())[0]):
@@ -204,6 +208,13 @@ class PythonFunctionWriter(RuleVisitor):
         if r.concat is not None and f'{r.name}_concat' not in self.implemented_fn:
             py_fn += self.__concat_rule(r)
         return py_fn
+
+    def visit_pure_function(self, r: PureFunction) -> str:
+        if r.name in self.implemented_fn:
+            return ''
+        return dedent(f'''\
+                def {r.name}({", ".join(r.syntax)}):
+                    {indent(r.body, '    ')}\n\n\n''')
 
     def __concat_rule(self, rule: Rule):
         fn_name = f'{rule.name}_concat'
@@ -215,4 +226,3 @@ class PythonFunctionWriter(RuleVisitor):
                                 arg = [arg]
                             res += arg
                         return res\n\n\n''')
-

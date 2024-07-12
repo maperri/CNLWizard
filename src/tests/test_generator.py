@@ -15,7 +15,8 @@ class TestCNLWizardGenerator(unittest.TestCase):
         with open(os.path.join(base_path, 'res', 'py_lang2.py'), 'r') as file:
             lang2 = file.read()
         cnl_wizard = CnlWizardGenerator(os.path.join(base_path, 'res',
-                                                     'cnlwizard_generator_test.yaml'), 'res')
+                                                     'cnlwizard_generator_test.yaml'),
+                                        os.path.join(base_path, 'res'))
 
         cnl_wizard.generate()
         # Add arithmetic function to lang1 file

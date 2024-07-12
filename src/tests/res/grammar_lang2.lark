@@ -8,10 +8,15 @@
 %ignore WS 
 %ignore CPP_COMMENT 
 ?string: CNAME
+?number: NUMBER
 
 //  ----- Defined grammar below
 !arithmetic: "the sum between 1 and 2"
 constraint: "it is prohibited that" arithmetic
 entity: ("a" | "an")? string attribute
-?TERMINAL: "TERMINAL"
-start: arithmetic | constraint | TERMINAL | entity
+TERMINAL: "TERMINAL"
+!test_operation_operator: "sum"
+test_operation: "the" test_operation_operator "between" operand "and" operand
+operation: test_operation
+operand: number
+start: arithmetic | constraint | TERMINAL | entity | operation

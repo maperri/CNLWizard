@@ -7,7 +7,8 @@ from pathlib import Path
 
 import yaml
 
-from CNLWizard.cnl import Cnl, SupportRule, CompiledRule, AttributeRule, EntityRule, OperationRule, ListRule
+from CNLWizard.cnl import Cnl, SupportRule, CompiledRule, AttributeRule, EntityRule, OperationRule, ListRule, \
+    PureFunction
 
 
 class YAMLReader:
@@ -57,7 +58,8 @@ class YAMLReader:
                 concat = rule['concat']
             for target in rule_targets:
                 if name == 'operation':
-                    instance = self.operation_rule(rule['name'], rule)
+                    instance, functions = self.operation_rule(rule['name'], rule)
+                    instances[target] += functions
                 elif name == 'attribute':
                     instance = self.attribute_rule(rule['name'], rule)
                 elif name == 'entity':
@@ -80,13 +82,13 @@ class YAMLReader:
                 instances[key].append(CompiledRule(name, value, None))
         return instances
 
-    def attribute_rule(self, name: str, data: dict):
+    def attribute_rule(self, name: str, data: dict) -> AttributeRule:
         concat = None
         if 'concat' in data:
             concat = data['concat']
         return AttributeRule(name, concat)
 
-    def entity_rule(self, name: str, data: dict):
+    def entity_rule(self, name: str, data: dict) -> EntityRule:
         concat = None
         if 'concat' in data:
             concat = data['concat']
@@ -95,14 +97,22 @@ class YAMLReader:
             syntax = self.syntax(data['syntax'])
         return EntityRule(name, syntax, concat)
 
-    def operation_rule(self, name: str, data: dict):
+    def operation_rule(self, name: str, data: dict) -> [OperationRule, list[PureFunction]]:
         syntax = None
         operators = {}
+        functions = []
         if 'syntax' in data:
             syntax = self.syntax(data['syntax'])
         if 'operators' in data:
             operators = data['operators']
-        return OperationRule(name, operators, syntax)
+        # process functions inside operators
+        for key, value in operators.items():
+            if isinstance(value, dict):
+                value = value['fun']
+                fn = PureFunction(value['name'], value['args'])
+                operators[key] = fn.signature()
+                functions.append(fn)
+        return OperationRule(name, operators, syntax), functions
 
     def list_rule(self, name: str):
         return ListRule(name)

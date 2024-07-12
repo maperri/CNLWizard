@@ -13,5 +13,5 @@
 !arithmetic: "the sum between 1 and 2"
 constraint: "it is prohibited that" arithmetic
 entity: ("a" | "an")? string attribute
-?TERMINAL: "TERMINAL"
-start: arithmetic | constraint | TERMINAL | entity
+TERMINAL: "TERMINAL"
+start: arithmetic | constraint | TERMINAL | entity | operation

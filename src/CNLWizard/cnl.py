@@ -130,6 +130,23 @@ class ListRule(Rule):
         return v.visit_list_rule(self)
 
 
+class PureFunction(Rule):
+    def __init__(self, name: str, args: list[str], body: str = None):
+        super().__init__(name, args)
+        if body is None:
+            body = 'raise NotImplementedError'
+        self.body = body
+
+    def signature(self) -> str:
+        return f'{self.name}({", ".join(self.syntax)})'
+
+    def get_non_terminal_symbols(self) -> list[str]:
+        return [self.name]
+
+    def accept(self, v: RuleVisitor):
+        return v.visit_pure_function(self)
+
+
 class Grammar:
     def __init__(self):
         self.rules: dict[str, list[Rule]] = defaultdict(list)  # dictionary target language - rule
@@ -195,7 +212,6 @@ class Cnl:
         self.add_rule('_all', GrammarConfigRule('\n//', [' ----- Defined grammar below']))
 
     def add_rule(self, target: str, rule: Rule):
-        # TODO handle target not specified
         self._grammar[target].append(rule)
 
     def add_rules(self, target: str, rules: list[Rule]):
