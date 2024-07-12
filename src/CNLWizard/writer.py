@@ -43,7 +43,9 @@ class LarkGrammarWriter(RuleVisitor):
         return rule
 
     def visit_support_rule(self, r: SupportRule) -> str:
-        prefix = '?'
+        prefix = ''
+        if not r.name.isupper():
+            prefix = '?'
         if not r.non_terminal_symbols and not r.name.isupper():
             prefix = '!'
         rule = f'{prefix}{r.name}: {" | ".join(r.syntax)}\n'
@@ -105,7 +107,10 @@ class PythonFunctionWriter(RuleVisitor):
                 fn_args.insert(0, f'{arg}_{args_counter[arg]}')
                 args_counter[arg] -= 1
             else:
-                fn_args.insert(0, arg)
+                if f'{arg}_{2}' in fn_args:
+                    fn_args.insert(0, f'{arg}_{args_counter[arg]}')
+                else:
+                    fn_args.insert(0, arg)
         if not fn_args:
             fn_args.append('*args')
         return f'def {name}({", ".join(fn_args)}):\n' \
@@ -180,6 +185,7 @@ class PythonFunctionWriter(RuleVisitor):
                                 item = ' '.join(args)
                                 return items_dict[item]
                                 
+                                
                             ''')
         if r.name not in self.implemented_fn:
             py_fn += dedent(f'''\
@@ -188,12 +194,13 @@ class PythonFunctionWriter(RuleVisitor):
                             raise NotImplementedError('replace operator_index value')
                             operator = args[operator_index]
                             args = list(args)
-                            args.pop(operator_index)
-                            ''')
+                            args.pop(operator_index)''')
             if isinstance(list(r.operators.values())[0], str):
                 py_fn += f'    return operator.join(map(str, args))\n\n\n'
             elif callable(list(r.operators.values())[0]):
                 py_fn += '    return operator(*args)\n\n\n'
+            else:
+                py_fn += '\n\n\n'
         if r.concat is not None and f'{r.name}_concat' not in self.implemented_fn:
             py_fn += self.__concat_rule(r)
         return py_fn
