@@ -20,11 +20,16 @@ class YAMLReader:
                 for target, rules in self.composite_rule(key.lower(), value).items():
                     cnl.add_rules(target, rules)
             else:
+                if key.isupper():
+                    # The rule is a terminal symbol
+                    rule = self.support_rule(key, value)
+                else:
+                    rule = self.compiled_rule(key, value)
                 if 'target' in value:
                     for target in self.target(value['target']):
-                        cnl.add_rule(target, self.support_rule(key, value))
+                        cnl.add_rule(target, rule)
                 else:
-                    cnl.add_rule('_all', self.support_rule(key, value))
+                    cnl.add_rule('_all', rule)
         return cnl
 
     def support_rule(self, name: str, data: dict) -> SupportRule:
@@ -32,6 +37,12 @@ class YAMLReader:
         if 'concat' in data:
             concat = data['concat']
         return SupportRule(name, self.syntax(data['syntax']), concat)
+
+    def compiled_rule(self, name: str, data: dict) -> CompiledRule:
+        concat = None
+        if 'concat' in data:
+            concat = data['concat']
+        return CompiledRule(name, self.syntax(data['syntax']), concat)
 
     def composite_rule(self, name: str, rules: list) -> dict[str, list]:
         composite: dict[str, list] = defaultdict(list)  # dict of target and corresponding instances name

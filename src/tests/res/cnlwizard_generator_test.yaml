@@ -1,0 +1,30 @@
+
+arithmetic:
+  syntax: >
+      "the sum between 1 and 2"
+
+
+constraint:
+  syntax: >
+      "it is prohibited that" arithmetic
+
+entity:
+  - name: entity
+
+TERMINAL:
+  syntax: >
+    "TERMINAL"
+
+dummy:
+  syntax:
+    "Do not add me"
+
+start:
+  syntax:
+    - arithmetic
+    - constraint
+    - TERMINAL
+    - entity
+  target:
+    - lang1
+    - lang2

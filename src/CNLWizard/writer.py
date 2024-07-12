@@ -109,7 +109,7 @@ class PythonFunctionWriter(RuleVisitor):
         if not fn_args:
             fn_args.append('*args')
         return f'def {name}({", ".join(fn_args)}):\n' \
-               f'   raise NotImplementedError\n\n'
+               f'   raise NotImplementedError\n\n\n'
 
     def visit_support_rule(self, r: SupportRule) -> str:
         py_fn = ''
@@ -137,7 +137,7 @@ class PythonFunctionWriter(RuleVisitor):
         py_fn = ''
         if r.name not in self.implemented_fn:
             py_fn += f'def {r.name}(name, attribute_value):\n' \
-                     '    return name, attribute_value\n\n'
+                     '    return name, attribute_value\n\n\n'
         if r.concat is not None and f'{r.name}_concat' not in self.implemented_fn:
             py_fn += self.__concat_rule(r)
         return py_fn
@@ -153,7 +153,7 @@ class PythonFunctionWriter(RuleVisitor):
                                 entity.fields[name] = value
                             return entity
                         except KeyError:
-                            return None\n\n''')
+                            return None\n\n\n''')
         if r.concat is not None and f'{r.name}_concat' not in self.implemented_fn:
             py_fn += self.__concat_rule(r)
         return py_fn
@@ -166,7 +166,7 @@ class PythonFunctionWriter(RuleVisitor):
                                 return self.cnl.lists[list_name][idx]
                     
                             def list_contains(list_name, elem):
-                                return elem in self.cnl.lists[list_name]\n\n''')
+                                return elem in self.cnl.lists[list_name]\n\n\n''')
         if r.concat is not None and f'{r.name}_concat' not in self.implemented_fn:
             py_fn += self.__concat_rule(r)
         return py_fn
@@ -191,9 +191,9 @@ class PythonFunctionWriter(RuleVisitor):
                             args.pop(operator_index)
                             ''')
             if isinstance(list(r.operators.values())[0], str):
-                py_fn += f'    return operator.join(map(str, args))\n\n'
+                py_fn += f'    return operator.join(map(str, args))\n\n\n'
             elif callable(list(r.operators.values())[0]):
-                py_fn += '    return operator(*args)\n\n'
+                py_fn += '    return operator(*args)\n\n\n'
         if r.concat is not None and f'{r.name}_concat' not in self.implemented_fn:
             py_fn += self.__concat_rule(r)
         return py_fn
@@ -207,5 +207,5 @@ class PythonFunctionWriter(RuleVisitor):
                             if not isinstance(arg, list):
                                 arg = [arg]
                             res += arg
-                        return res\n\n''')
+                        return res\n\n\n''')
 

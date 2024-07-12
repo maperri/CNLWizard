@@ -59,7 +59,7 @@ class Rule:
             else:
                 if not open_quotes and (c.isalpha() or c == '_'):
                     curr += c
-        if curr:
+        if curr and not curr.isupper():
             res.append(curr)
         return res
 

@@ -1,0 +1,17 @@
+%import common.WS 
+%import common.CNAME 
+%import common.SIGNED_NUMBER 
+%import common.INT 
+%import common.FLOAT 
+%import common.NUMBER 
+%import common.CPP_COMMENT 
+%ignore WS 
+%ignore CPP_COMMENT 
+?string: CNAME
+
+//  ----- Defined grammar below
+!arithmetic: "the sum between 1 and 2"
+constraint: "it is prohibited that" arithmetic
+entity: ("a" | "an")? string attribute
+?TERMINAL: "TERMINAL"
+start: arithmetic | constraint | TERMINAL | entity

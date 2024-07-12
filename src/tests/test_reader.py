@@ -1,14 +1,14 @@
 import os.path
 import unittest
 
-from CNLWizard.reader import YAMLReader
+from CNLWizard.reader import YAMLReader, pyReader
 
 
-class TestYAMLReader(unittest.TestCase):
+class TestReader(unittest.TestCase):
 
-    def test(self):
+    def test_yaml_reader(self):
         cnl = YAMLReader().read_specification(os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                                           'res', 'yamlreadertest.yaml'))
+                                                           'res', 'yaml_reader_test.yaml'))
         lang1 = [(x.name, x.syntax) for x in cnl._grammar.get_rules('lang1')]
         self.assertIn(('negative_constraint', ['"It is prohibited that" operation']), lang1)
         self.assertIn(('constraint', ['negative_constraint']), lang1)
@@ -23,3 +23,9 @@ class TestYAMLReader(unittest.TestCase):
         self.assertIn(('arithmetic', ['"the sum between 1 and 2"', '"the difference between 1 and 2"']), lang2)
         self.assertIn(('operation', ['arithmetic']), lang2)
         self.assertIn(('start', ['arithmetic', 'constraint']), lang2)
+
+    def test_py_reader(self):
+        reader = pyReader()
+        self.assertEqual({'arith', 'Operation', 'constraint', 'Proposition'},
+                         set(reader.read_module(os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                             'res', 'functions.py'))))

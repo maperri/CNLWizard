@@ -1,8 +1,6 @@
-import os
 import unittest
 
 from CNLWizard.cnl import CompiledRule
-from CNLWizard.reader import pyReader
 
 
 class TestCnl(unittest.TestCase):
@@ -16,8 +14,12 @@ class TestCnl(unittest.TestCase):
                                      '"terminal" "terminal" non_terminal'])
         self.assertEqual(['non_terminal', 'non_terminal', 'non_terminal'], rule.get_non_terminal_symbols())
 
-    def test_py_reader(self):
-        reader = pyReader()
-        self.assertEqual({'arith', 'Operation', 'constraint', 'Proposition'},
-                         set(reader.read_module(os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                             'res', 'functions.py'))))
+    def test_rule_args(self):
+        rule = CompiledRule('test', ['attr attr'])
+        self.assertEqual(rule.get_rule_function_args(), ['attr', 'attr'])
+        rule = CompiledRule('test', ['attr attr ATTR'])
+        self.assertEqual(rule.get_rule_function_args(), ['attr', 'attr'])
+        rule = CompiledRule('test', ['attr attr "attr" ATTR attr'])
+        self.assertEqual(rule.get_rule_function_args(), ['attr', 'attr', 'attr'])
+        rule = CompiledRule('test', ['"attr" ATTR attr attr "attr" ATTR attr'])
+        self.assertEqual(rule.get_rule_function_args(), ['attr', 'attr', 'attr'])
