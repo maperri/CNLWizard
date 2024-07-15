@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Callable
 
 if TYPE_CHECKING:
     from CNLWizard.cnl import CompiledRule, SupportRule, AttributeRule, EntityRule, ListRule, OperationRule, \
-    GrammarConfigRule, Rule, PureFunction
+        GrammarConfigRule, Rule, PureFunction
 
 
 class RuleVisitor:
@@ -33,6 +33,7 @@ class RuleVisitor:
 
     def visit_pure_function(self, r: PureFunction) -> str:
         return ''
+
 
 class LarkGrammarWriter(RuleVisitor):
     def visit_compiled_rule(self, r: CompiledRule) -> str:
@@ -89,7 +90,6 @@ class LarkGrammarWriter(RuleVisitor):
             syntax = ''.join(r.syntax)
         return f'{r.name} {syntax}\n'
 
-
     def __concat_rule(self, rule: Rule):
         concat_symbol = f'"{rule.concat}"'
         return f'{rule.name} {concat_symbol} {rule.name} -> {rule.name}_concat\n'
@@ -101,7 +101,7 @@ class PythonFunctionWriter(RuleVisitor):
             implemented_functions = set()
         self.implemented_fn = implemented_functions
 
-    def __py_not_implemented_fn(self, name: str, args: list[str]) -> str:
+    def __create_unique_args(self, args: list[str]) -> list[str]:
         args_counter = collections.Counter(args)
         fn_args = []
         for arg in args[::-1]:
@@ -114,6 +114,10 @@ class PythonFunctionWriter(RuleVisitor):
                     fn_args.insert(0, f'{arg}_{args_counter[arg]}')
                 else:
                     fn_args.insert(0, arg)
+        return fn_args
+
+    def __py_not_implemented_fn(self, name: str, args: list[str]) -> str:
+        fn_args = self.__create_unique_args(args)
         if not fn_args:
             fn_args.append('*args')
         return f'def {name}({", ".join(fn_args)}):\n' \
@@ -145,7 +149,7 @@ class PythonFunctionWriter(RuleVisitor):
         py_fn = ''
         if r.name not in self.implemented_fn:
             py_fn += f'def {r.name}(name, attribute_value):\n' \
-                     '    return name, attribute_value\n\n\n'
+                     '    return [(name, attribute_value)]\n\n\n'
         if r.concat is not None and f'{r.name}_concat' not in self.implemented_fn:
             py_fn += self.__concat_rule(r)
         return py_fn
@@ -154,7 +158,7 @@ class PythonFunctionWriter(RuleVisitor):
         py_fn = ''
         if r.name not in self.implemented_fn:
             py_fn += dedent(f'''\
-                    def {r.name}({', '.join(r.get_rule_function_args())}):
+                    def {r.name}({', '.join(self.__create_unique_args(r.get_rule_function_args()))}):
                         try:
                             entity = CnlWizardCompiler.signatures[string]
                             for name, value in attribute:
