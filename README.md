@@ -13,7 +13,7 @@ In the root directory:
 
 ## Usage
 Generate grammar and python functions
-`python3 -g specification.yaml`
+`CNLWizard -g specification.yaml`
 
 Compile the CNL
-`python3 -c grammar.lark py_fn.py cnl_text.txt`
+`CNLWizard -c grammar.lark py_fn.py cnl_text.txt`
