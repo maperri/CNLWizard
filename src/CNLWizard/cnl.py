@@ -56,6 +56,10 @@ class Rule:
                 if curr and not curr.isupper():
                     res.append(curr)
                 curr = ''
+            elif c == '+' or c == '*':
+                # Return args with undefined length
+                arg = res[0] if res else curr
+                return [f'*{arg}']
             else:
                 if not open_quotes and (c.isalpha() or c == '_'):
                     curr += c
@@ -167,7 +171,9 @@ class Grammar:
                 visited[rule.name].syntax += rule.syntax
             else:
                 visited[rule.name] = copy.deepcopy(rule)
-        return list(visited.values())
+        start_rule = visited['start']
+        del visited['start']
+        return [start_rule] + list(visited.values())
 
     def keys(self) -> list:
         return list(self.rules.keys())

@@ -154,10 +154,10 @@ class PythonFunctionWriter(RuleVisitor):
         py_fn = ''
         if r.name not in self.implemented_fn:
             py_fn += dedent(f'''\
-                    def {r.name}(name, attributes):
+                    def {r.name}({', '.join(r.get_rule_function_args())}):
                         try:
-                            entity = CnlWizardCompiler.signatures[name]
-                            for name, value in attributes:
+                            entity = CnlWizardCompiler.signatures[string]
+                            for name, value in attribute:
                                 entity.fields[name] = value
                             return entity
                         except KeyError:
@@ -179,12 +179,18 @@ class PythonFunctionWriter(RuleVisitor):
             py_fn += self.__concat_rule(r)
         return py_fn
 
+    def __dict_to_str(self, d: dict) -> str:
+        res = '{'
+        for key, value in d.items():
+            res += f'\'{key}\': {value}, '
+        return res.removesuffix(', ') + '}'
+
     def visit_operation_rule(self, r: OperationRule) -> str:
         py_fn = ''
         if f'{r.name}_operator' not in self.implemented_fn:
             py_fn += dedent(f'''\
                             def {r.name}_operator(*args):
-                                items_dict = {str(r.operators)}
+                                items_dict = {self.__dict_to_str(r.operators)}
                                 item = ' '.join(args)
                                 return items_dict[item]
                                 
@@ -214,7 +220,7 @@ class PythonFunctionWriter(RuleVisitor):
             return ''
         return dedent(f'''\
                 def {r.name}({", ".join(r.syntax)}):
-                    {indent(r.body, '    ')}\n\n\n''')
+                {indent(r.body, '    ')}\n\n\n''')
 
     def __concat_rule(self, rule: Rule):
         fn_name = f'{rule.name}_concat'

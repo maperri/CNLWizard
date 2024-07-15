@@ -1,3 +1,4 @@
+start: arithmetic | constraint | TERMINAL | entity | operation
 %import common.WS 
 %import common.CNAME 
 %import common.SIGNED_NUMBER 
@@ -19,4 +20,3 @@ TERMINAL: "TERMINAL"
 test_operation: "the" test_operation_operator "between" operand "and" operand
 operation: test_operation
 operand: number
-start: arithmetic | constraint | TERMINAL | entity | operation

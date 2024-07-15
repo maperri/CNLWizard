@@ -100,7 +100,7 @@ class YAMLReader:
     def operation_rule(self, name: str, data: dict) -> [OperationRule, list[PureFunction]]:
         syntax = None
         operators = {}
-        functions = []
+        functions = {}
         if 'syntax' in data:
             syntax = self.syntax(data['syntax'])
         if 'operators' in data:
@@ -110,9 +110,12 @@ class YAMLReader:
             if isinstance(value, dict):
                 value = value['fun']
                 fn = PureFunction(value['name'], value['args'])
-                operators[key] = fn.signature()
-                functions.append(fn)
-        return OperationRule(name, operators, syntax), functions
+                functions[value['name']] = fn
+                operators[key] = functions[value['name']].name
+            else:
+                # adorn string operators with quotes
+                operators[key] = f'\'{value}\''
+        return OperationRule(name, operators, syntax), list(functions.values())
 
     def list_rule(self, name: str):
         return ListRule(name)

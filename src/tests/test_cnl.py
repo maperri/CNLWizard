@@ -23,3 +23,5 @@ class TestCnl(unittest.TestCase):
         self.assertEqual(rule.get_rule_function_args(), ['attr', 'attr', 'attr'])
         rule = CompiledRule('test', ['"attr" ATTR attr attr "attr" ATTR attr'])
         self.assertEqual(rule.get_rule_function_args(), ['attr', 'attr', 'attr'])
+        rule = CompiledRule('test', ['attr+'])
+        self.assertEqual(rule.get_rule_function_args(), ['*attr'])
