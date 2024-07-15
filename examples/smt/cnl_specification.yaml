@@ -70,12 +70,36 @@ operation:
   - name: formula
     syntax: clause_body formula_operator clause_body
     operators:
-      and: '&'
-      or: '|'
-      imply: '>>'
-      implies: '>>'
-      is equivalent to: '<->'
-      not: '!'
+      and:
+        fun:
+          name: conjunction
+          args:
+            - '*args'
+      or:
+        fun:
+          name: disjunction
+          args:
+            - '*args'
+      imply:
+        fun:
+          name: implication
+          args:
+            - '*args'
+      implies:
+        fun:
+          name: implication
+          args:
+            - '*args'
+      is equivalent to:
+        fun:
+          name: equivalence
+          args:
+            - '*args'
+      not:
+        fun:
+          name: negation_op
+          args:
+            - '*args'
 
 comparison_operand:
   syntax:

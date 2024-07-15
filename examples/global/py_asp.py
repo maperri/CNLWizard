@@ -261,3 +261,36 @@ def comparison_operand(arg):
 def math_operand(entity):
    return entity
 
+def attribute_value(string):
+   return string
+
+
+def whenever_clause(entity):
+   return entity
+
+
+def disjunction_then_subject(then_subject):
+   return then_subject
+
+
+def constraint_body(entity):
+   return entity
+
+
+def constraint_body_concat(*args): 
+    res = []
+    for arg in args:
+        if not isinstance(arg, list):
+            arg = [arg]
+        res += arg
+    return res
+
+
+def then_subject(entity):
+    return entity
+
+
+def then_object(then_subject):
+   return then_subject
+
+

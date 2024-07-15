@@ -80,23 +80,12 @@ class WeakConstraint:
         return f':~ {", ".join(map(str, self.body))}. [{self.weight}@{", ".join(map(str, self.discriminant))}]'
 
 
-def start(*rules):
-    res = ''
-    for r in rules:
-        res += str(r) + '\n'
-    return res
-
-
-def propositions(p):
-    return p
-
-
 def there_is_clause(entity):
-    return Fact(entity)
+   return Fact(entity)
 
 
 def constant(string, attribute_value):
-    return Constant(string, attribute_value)
+   return Constant(string, attribute_value)
 
 
 def constraint(constraint_body, whenever_clause):
@@ -120,7 +109,7 @@ def whenever_then_clause_choice(whenever_clause, cardinality, then_subject, then
 
 
 def whenever_then_clause_assignment(whenever_clause, then_subject):
-    return Assignment([then_subject], whenever_clause)
+   return Assignment([then_subject], whenever_clause)
 
 
 def weak_constraint(level, comparison, whenever_clause):
@@ -130,6 +119,77 @@ def weak_constraint(level, comparison, whenever_clause):
             whenever_clause = [whenever_clause]
         body += whenever_clause
     return WeakConstraint(body, level, [1])
+
+
+def propositions(there_is_clause):
+   return there_is_clause
+
+
+def attribute_value(string):
+   return string
+
+
+def whenever_clause(entity):
+   return entity
+
+
+def whenever_clause_concat(*args):
+    res = []
+    for arg in args:
+        if not isinstance(arg, list):
+            arg = [arg]
+        res += arg
+    return res
+
+
+def disjunction_then_subject(then_subject):
+   return then_subject
+
+
+def disjunction_then_subject_concat(*args):
+    res = []
+    for arg in args:
+        if not isinstance(arg, list):
+            arg = [arg]
+        res += arg
+    return res
+
+
+def cardinality(*args):
+    value = ' '.join(args)
+    if value == 'exactly one':
+        return '1', '1'
+    elif value == 'at least one':
+        return '1', ''
+    else:
+        return '', '1'
+
+
+def negation(*args):
+   return True
+
+
+def level(*args):
+    value = ' '.join(args)
+    if value == 'low':
+        return '1'
+    elif value == 'medium':
+        return '2'
+    else:
+        return '3'
+
+
+def constraint_body(entity):
+   return entity
+
+
+def constraint_body_concat(*args):
+    res = []
+    for arg in args:
+        if not isinstance(arg, list):
+            arg = [arg]
+        res += arg
+    return res
 
 
 def math_operator(*args):
@@ -147,8 +207,7 @@ def math(*args):
 
 
 def comparison_operator(*args):
-    items_dict = {'equal to': '==', 'different from': '!=', 'lower than': '<', 'greater than': '>',
-                  'lower than or equal to': '<=', 'greater than or equal to': '>='}
+    items_dict = {'equal to': '==', 'different from': '!=', 'lower than': '<', 'greater than': '>', 'lower than or equal to': '<=', 'greater than or equal to': '>='}
     item = ' '.join(args)
     return items_dict[item]
 
@@ -161,41 +220,13 @@ def comparison(*args):
     return operator.join(map(str, args))
 
 
-def attribute(name, attribute_value):
-    return [(name, attribute_value)]
+def aggregate(aggregate_operator, string, entity):
+    parameter_value = entity.fields[string]
+    return Aggregate(aggregate_operator, [parameter_value], [entity])
 
 
-def entity(negation, name, attributes):
-    entity = Atom(CnlWizardCompiler.signatures[name])
-    for name, value in attributes:
-        entity.fields[name] = value
-    if negation:
-        entity.negation = 'not '
-    return entity
-
-
-def cardinality(*value):
-    value = ' '.join(value)
-    if value == 'exactly one':
-        return '1', '1'
-    elif value == 'at least one':
-        return '1', ''
-    else:
-        return '', '1'
-
-
-def level(*value):
-    value = ' '.join(value)
-    if value == 'low':
-        return '1'
-    elif value == 'medium':
-        return '2'
-    else:
-        return '3'
-
-
-def aggregate_operator(*value):
-    value = ' '.join(value)
+def aggregate_operator(*args):
+    value = ' '.join(args)
     if value == 'the number of':
         return 'count'
     elif value == 'the total of':
@@ -206,21 +237,33 @@ def aggregate_operator(*value):
         return 'max'
 
 
-def verb(name, attributes, string):
-    verb = Atom(CnlWizardCompiler.signatures[name + string])
-    for parameter in attributes:
-        verb.fields[parameter[0]] = parameter[1]
-    return verb
+def then_subject(entity):
+   return entity
 
 
-def aggregate(aggregate_operator, attribute_name, entity):
-    parameter_value = entity.fields[attribute_name]
-    return Aggregate(aggregate_operator, [parameter_value], [entity])
+def then_object(then_subject):
+   return then_subject
 
 
-def negation(args):
-    return True
+def then_object_concat(*args):
+    res = []
+    for arg in args:
+        if not isinstance(arg, list):
+            arg = [arg]
+        res += arg
+    return res
 
+
+def comparison_operand(math):
+   return math
+
+
+def math_operand(entity):
+   return entity
+
+
+def attribute(name, attribute_value):
+    return [(name, attribute_value)]
 
 
 def attribute_concat(*args):
@@ -231,27 +274,29 @@ def attribute_concat(*args):
         res += arg
     return res
 
-def then_object_concat(*args):
-    res = []
-    for arg in args:
-        if not isinstance(arg, list):
-            arg = [arg]
-        res += arg
-    return res
 
-def whenever_clause_concat(*args):
-    res = []
-    for arg in args:
-        if not isinstance(arg, list):
-            arg = [arg]
-        res += arg
-    return res
+def entity(negation, string, attribute):
+    try:
+        entity = CnlWizardCompiler.signatures[string]
+        for name, value in attribute:
+            entity.fields[name] = value
+        return entity
+    except KeyError:
+        return None
 
-def disjunction_then_subject_concat(*args):
-    res = []
-    for arg in args:
-        if not isinstance(arg, list):
-            arg = [arg]
-        res += arg
-    return res
 
+def verb(name, attributes):
+    try:
+        entity = CnlWizardCompiler.signatures[name]
+        for name, value in attributes:
+            entity.fields[name] = value
+        return entity
+    except KeyError:
+        return None
+
+
+def start(*propositions):
+    res = ''
+    for r in propositions:
+        res += str(r) + '\n'
+    return res

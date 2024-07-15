@@ -1,12 +1,13 @@
-%import common.WS 
-%import common.CNAME 
-%import common.SIGNED_NUMBER 
-%import common.INT 
-%import common.FLOAT 
-%import common.NUMBER 
-%import common.CPP_COMMENT 
-%ignore WS 
-%ignore CPP_COMMENT 
+start: (propositions ".")+
+%import common.WS
+%import common.CNAME
+%import common.SIGNED_NUMBER
+%import common.INT
+%import common.FLOAT
+%import common.NUMBER
+%import common.CPP_COMMENT
+%ignore WS
+%ignore CPP_COMMENT
 ?string: CNAME
 ?number: NUMBER
 
@@ -16,8 +17,8 @@ constraint: "It is required that" clause_body
 there_is_clause: ("There" | "there") "is" entity
 if_then: "If" clause_body ", then" clause_body
 propositions: function_definition | constraint | there_is_clause | if_then | comparison
-?clause_body: there_is_clause | simple_clause | formula | comparison
-?simple_clause: entity [negation] ("is" | "be" | "have" | "has") entity
+clause_body: there_is_clause | simple_clause | formula | comparison
+simple_clause: entity [negation] ("is" | "be" | "have" | "has") entity
 !negation: "not" | "cannot"
 attributes: (attribute | ("with" entity)) ("," (attribute | ("with" entity)))*
 !math_operator: "sum" | "difference" | "division" | "multiplication"
@@ -26,8 +27,7 @@ math: "the" math_operator "between" math_operand "and" math_operand
 comparison: comparison_operand "is"? comparison_operator comparison_operand
 !formula_operator: "and" | "or" | "imply" | "implies" | "is equivalent to" | "not"
 formula: clause_body formula_operator clause_body
-?comparison_operand: math | number | ("the" | "The")? entity
-?math_operand: entity | number
+comparison_operand: math | number | ("the" | "The")? entity
+math_operand: entity | number
 attribute: "with" string "equal to" (string | number)
 entity: ("a" | "an")? string attributes
-?start: (propositions ".")+

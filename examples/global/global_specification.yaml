@@ -143,7 +143,7 @@ constraint_body:
       - entity
       - aggregate
       - comparison
-      - constraint_body "and" constraint_body
+    concat: "and"
     target:
       - asp
 
@@ -184,9 +184,44 @@ operation:
       imply: '>>'
       implies: '>>'
       is equivalent to: '<->'
-      not: '!'
+      not: '~'
     target:
       - sat
+
+  - name: formula
+    syntax: clause_body formula_operator clause_body
+    operators:
+      and:
+        fun:
+          name: conjunction
+          args:
+            - '*args'
+      or:
+        fun:
+          name: disjunction
+          args:
+            - '*args'
+      imply:
+        fun:
+          name: implication
+          args:
+            - '*args'
+      implies:
+        fun:
+          name: implication
+          args:
+            - '*args'
+      is equivalent to:
+        fun:
+          name: equivalence
+          args:
+            - '*args'
+      not:
+        fun:
+          name: negation_op
+          args:
+            - '*args'
+    target:
       - smt
 
 clause_body:

@@ -6,7 +6,7 @@ model = cp_model.CpModel()
 vars = {}
 
 
-def start(*constraint):
+def start(*propositions):
     solver = cp_model.CpSolver()
     status = solver.solve(model)
     solution = ''
@@ -16,6 +16,14 @@ def start(*constraint):
     else:
         solution += "No solution found."
     return solution
+
+
+def constraint(comparison):
+   return comparison
+
+
+def propositions(constraint):
+   return constraint
 
 
 def math_operator(*args):
@@ -39,8 +47,7 @@ def math(*args):
 
 
 def comparison_operator(*args):
-    items_dict = {'equal to': '==', 'different from': '!=', 'lower than': '<', 'greater than': '>',
-                  'lower than or equal to': '<=', 'greater than or equal to': '>='}
+    items_dict = {'equal to': '==', 'different from': '!=', 'lower than': '<', 'greater than': '>', 'lower than or equal to': '<=', 'greater than or equal to': '>='}
     item = ' '.join(args)
     return items_dict[item]
 
@@ -57,16 +64,12 @@ def comparison(*args):
     return ns['res']
 
 
-def entity(name, attributes):
-    entity = CnlWizardCompiler.signatures[name]
-    for name, value in attributes:
-        entity.fields[name] = value
-    if str(entity) in vars:
-        return vars[str(entity)]
-    if entity.type == 'integer':
-        entity = model.new_int_var(entity.lb, entity.ub, str(entity))
-        vars[str(entity)] = entity
-    return entity
+def comparison_operand(math):
+   return math
+
+
+def math_operand(entity):
+   return entity
 
 
 def attribute(name, attribute_value):
@@ -80,3 +83,17 @@ def attribute_concat(*args):
             arg = [arg]
         res += arg
     return res
+
+
+def entity(string, attribute):
+    entity = CnlWizardCompiler.signatures[string]
+    for name, value in attribute:
+        entity.fields[name] = value
+    if str(entity) in vars:
+        return vars[str(entity)]
+    if entity.type == 'integer':
+        entity = model.new_int_var(entity.lb, entity.ub, str(entity))
+        vars[str(entity)] = entity
+    return entity
+
+

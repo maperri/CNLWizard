@@ -1,3 +1,4 @@
+start: (propositions ".")+
 %import common.WS 
 %import common.CNAME 
 %import common.SIGNED_NUMBER 
@@ -11,13 +12,12 @@
 ?number: NUMBER
 
 //  ----- Defined grammar below
-?start: (propositions ".")+
 function_definition: ("A" | "An") string "is a function which takes" string "and returns" string
 there_is_clause: ("There" | "there") "is" entity
 constraint: "It is required that" clause_body
 if_then: "If" clause_body ", then" clause_body
 propositions: function_definition | there_is_clause | constraint | comparison | if_then
-?simple_clause: entity [negation] ("is" | "be" | "have" | "has") entity
+simple_clause: entity [negation] ("is" | "be" | "have" | "has") entity
 !negation: "not" | "cannot"
 !math_operator: "sum" | "difference" | "division" | "multiplication"
 math: "the" math_operator "between" math_operand "and" math_operand
@@ -29,5 +29,5 @@ clause_body: there_is_clause | simple_clause | formula | comparison
 comparison_operand: math | number | ("the" | "The")? entity
 math_operand: entity | number
 attribute: "with" string "equal to" (string | number)
-?attributes: (attribute | ("with" entity)) ("," (attribute | ("with" entity)))*
+attributes: (attribute | ("with" entity)) ("," (attribute | ("with" entity)))*
 entity: ("a" | "an")? string attributes

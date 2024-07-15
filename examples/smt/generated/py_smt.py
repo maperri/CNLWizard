@@ -3,36 +3,9 @@ from z3 import IntSort, BoolSort, Function, If, Solver, Z3_benchmark_to_smtlib_s
 from CNLWizard.cnl_wizard_compiler import CnlWizardCompiler
 
 
-def function_definition(name, arg_sort, return_sort):
-    arg = None
-    if arg_sort == 'integer':
-        arg = IntSort()
-    elif arg_sort == 'boolean':
-        arg = BoolSort()
-    return_s = None
-    if return_sort == 'integer':
-        return_s = IntSort()
-    elif return_sort == 'boolean':
-        return_s = BoolSort()
-    f = Function(name, arg, return_s)
-    CnlWizardCompiler.signatures[name] = f, [], [], ['function', None, None]
-
-
-def constraint(clause_body):
-    return clause_body
-
-
-def there_is_clause(entity):
-    return entity
-
-
-def if_then(clause_body, clause_body_2):
-    return If(clause_body, clause_body_2)
-
-
-def start(*formula_body):
+def start(*propositions):
     s = Solver()
-    for clause in formula_body:
+    for clause in propositions:
         s.add(clause)
     v = (Ast * 0)()
     a = s.assertions()
@@ -41,7 +14,42 @@ def start(*formula_body):
     return f'{res}\n(get-model)'
 
 
-def simple_clause(entity, negation, entity_2):
+def function_definition(string_1, string_2, string_3):
+    arg = None
+    if string_2 == 'integer':
+        arg = IntSort()
+    elif string_2 == 'boolean':
+        arg = BoolSort()
+    return_s = None
+    if string_3 == 'integer':
+        return_s = IntSort()
+    elif string_3 == 'boolean':
+        return_s = BoolSort()
+    f = Function(string_1, arg, return_s)
+    CnlWizardCompiler.signatures[string_1] = f, [], [], ['function', None, None]
+
+
+def constraint(clause_body):
+   return clause_body
+
+
+def there_is_clause(entity):
+   return entity
+
+
+def if_then(clause_body_1, clause_body_2):
+   return If(clause_body_1, clause_body_2)
+
+
+def propositions(function_definition):
+   return function_definition
+
+
+def clause_body(there_is_clause):
+   return there_is_clause
+
+
+def simple_clause(entity_1, negation, entity_2):
     for key, value in entity.fields.items():
         field_name = entity.name + key
         entity_2.fields[field_name] = value
@@ -49,14 +57,15 @@ def simple_clause(entity, negation, entity_2):
 
 
 def negation(*args):
-    return True
+   return True
+
+
+def attributes(*attribute):
+   return attribute
 
 
 def math_operator(*args):
-    items_dict = {'sum': '+',
-                  'difference': '-',
-                  'division': '/',
-                  'multiplication': '*'}
+    items_dict = {'sum': '+', 'difference': '-', 'division': '/', 'multiplication': '*'}
     item = ' '.join(args)
     return items_dict[item]
 
@@ -72,52 +81,8 @@ def math(*args):
     return ns['res']
 
 
-def formula_operator(*args):
-    items_dict = {'and': And,
-                  'or': Or,
-                  'imply': If,
-                  'implies': If,
-                  'is equivalent to': '==',
-                  'not': Not}
-    item = ' '.join(args)
-    return items_dict[item]
-
-
-def formula(*args):
-    operator_index = 1
-    operator = args[operator_index]
-    args = list(args)
-    args.pop(operator_index)
-    if operator != '==':
-        return operator(*args)
-    else:
-        return args[0] == args[1]
-
-
-def attribute(name, attribute_value):
-    return name, attribute_value
-
-
-def entity(name, attributes):
-    entity = CnlWizardCompiler.signatures[name]
-    if entity.type == 'function':
-        f = entity.name
-        return f(attributes[0])
-    for name, value in attributes:
-        entity.fields[name] = value
-    if entity.type == 'boolean':
-        return Bool(str(entity))
-    elif entity.type == 'integer':
-        return Int(str(entity))
-    return entity
-
-
 def comparison_operator(*args):
-    items_dict = {'different from': '!=',
-                  'lower than': '<',
-                  'greater than': '>',
-                  'lower than or equal to': '<=',
-                  'greater than or equal to': '>='}
+    items_dict = {'equal to': '==', 'different from': '!=', 'lower than': '<', 'greater than': '>', 'lower than or equal to': '<=', 'greater than or equal to': '>='}
     item = ' '.join(args)
     return items_dict[item]
 
@@ -131,3 +96,73 @@ def comparison(*args):
     operands = [f'args[{i}]' for i in range(len(args))]
     exec(f'res = {operator.join(operands)}', locals(), ns)
     return ns['res']
+
+
+
+
+def formula(*args):
+    operator_index = 1
+    operator = args[operator_index]
+    args = list(args)
+    args.pop(operator_index)
+    if operator != '==':
+        return operator(*args)
+    else:
+        return args[0] == args[1]
+
+
+def comparison_operand(math):
+   return math
+
+
+def math_operand(entity):
+   return entity
+
+
+def attribute(name, attribute_value):
+    return name, attribute_value
+
+
+def entity(string, attributes):
+    entity = CnlWizardCompiler.signatures[string]
+    if entity.type == 'function':
+        f = entity.name
+        return f(attributes[0])
+    for name, value in attributes:
+        entity.fields[name] = value
+    if entity.type == 'boolean':
+        return Bool(str(entity))
+    elif entity.type == 'integer':
+        return Int(str(entity))
+    return entity
+
+
+def conjunction(*args):
+    return And(*args)
+
+
+def disjunction(*args):
+    return Or(*args)
+
+
+def implication(*args):
+    return If(*args)
+
+
+def equivalence(*args):
+    return args[0] == args[1]
+
+
+def negation_op(*args):
+    return Not(*args)
+
+
+def formula_operator(*args):
+    items_dict = {'and': conjunction, 'or': disjunction, 'imply': implication, 'implies': implication, 'is equivalent to': equivalence, 'not': negation}
+    item = ' '.join(args)
+    return items_dict[item]
+
+
+
+
+

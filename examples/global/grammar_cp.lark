@@ -1,3 +1,4 @@
+start: (propositions ".")+
 %import common.WS 
 %import common.CNAME 
 %import common.SIGNED_NUMBER 
@@ -11,7 +12,6 @@
 ?number: NUMBER
 
 //  ----- Defined grammar below
-?start: (propositions ".")+
 constraint: "It is required that" comparison
 propositions: constraint | comparison
 !math_operator: "sum" | "difference" | "division" | "multiplication"

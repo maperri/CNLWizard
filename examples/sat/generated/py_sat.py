@@ -22,28 +22,8 @@ class Clause:
         return f'({self.clause})'
 
 
-def constraint(clausebody):
-    return Clause(clausebody)
-
-
-def sat_formula(r):
-    return Clause(r)
-
-
-def there_is_clause(entity):
-    return Clause(entity)
-
-
-def if_then(clausebody, clausebody_2):
-    return Clause(f'{clausebody}>>{clausebody_2}')
-
-
-def propositions(args):
-    return args
-
-
-def start(*formula_body):
-    formula_body = "&".join(["(" + str(x) + ")" for x in formula_body])
+def start(*propositions):
+    formula_body = "&".join(["(" + str(x) + ")" for x in propositions])
     formula_body = str(to_cnf(formula_body))
     definitions = []
     formula = CNF()
@@ -69,11 +49,35 @@ def start(*formula_body):
     return formula.to_dimacs()
 
 
-def simple_clause(entity, negation, entity_2):
-    for key, value in entity.fields.items():
-        field_name = entity.name + key
+def constraint(clause_body):
+   return Clause(clause_body)
+
+
+def there_is_clause(entity):
+   return Clause(entity)
+
+
+def if_then(clause_body_1, clause_body_2):
+    return Clause(f'{clause_body_1}>>{clause_body_2}')
+
+
+def propositions(constraint):
+   return constraint
+
+
+def clause_body(there_is_clause):
+   return there_is_clause
+
+
+def simple_clause(entity_1, negation, entity_2):
+    for key, value in entity_1.fields.items():
+        field_name = entity_1.name + key
         entity_2.fields[field_name] = value
     return Clause("~" + str(entity_2)) if negation else Clause(str(entity_2))
+
+
+def negation(*args):
+   return True
 
 
 def formula_operator(*args):
@@ -90,20 +94,6 @@ def formula(*args):
     return Clause(operator.join(map(str, args)))
 
 
-def entity(name, attributes):
-    try:
-        entity = CnlWizardCompiler.signatures[name]
-        for name, value in attributes:
-            entity.fields[name] = value
-        return Definition(entity)
-    except KeyError:
-        return None
-
-
-def negation(*args):
-    return True
-
-
 def attribute(name, attribute_value):
     return [(name, attribute_value)]
 
@@ -115,3 +105,14 @@ def attribute_concat(*args):
             arg = [arg]
         res += arg
     return res
+
+
+def entity(string, attribute):
+    try:
+        entity = CnlWizardCompiler.signatures[string]
+        for name, value in attribute:
+            entity.fields[name] = value
+        return Definition(entity)
+    except KeyError:
+        return None
+

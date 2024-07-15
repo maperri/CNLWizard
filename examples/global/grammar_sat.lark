@@ -1,3 +1,4 @@
+start: (propositions ".")+
 %import common.WS 
 %import common.CNAME 
 %import common.SIGNED_NUMBER 
@@ -11,12 +12,11 @@
 ?number: NUMBER
 
 //  ----- Defined grammar below
-?start: (propositions ".")+
 there_is_clause: ("There" | "there") "is" entity
 constraint: "It is required that" clause_body
 if_then: "If" clause_body ", then" clause_body
 propositions: there_is_clause | constraint | if_then
-?simple_clause: entity [negation] ("is" | "be" | "have" | "has") entity
+simple_clause: entity [negation] ("is" | "be" | "have" | "has") entity
 !negation: "not" | "cannot"
 !formula_operator: "and" | "or" | "imply" | "implies" | "is equivalent to" | "not"
 formula: clause_body formula_operator clause_body

@@ -132,20 +132,44 @@ def comparison(*args):
     exec(f'res = {operator.join(operands)}', locals(), ns)
     return ns['res']
 
+
 def propositions(function_definition):
-   return function_definition
+    return function_definition
+
 
 def clause_body(there_is_clause):
-   return there_is_clause
+    return there_is_clause
+
 
 def comparison_operand(math):
-   return math
+    return math
+
 
 def math_operand(entity):
-   return entity
+    return entity
 
 
+def attributes(*attribute):
+   return attribute
 
-def attributes(attribute, entity, attribute_2, entity_2):
-   raise NotImplementedError
+
+def conjunction(*args):
+    return And(*args)
+
+
+def disjunction(*args):
+    return Or(*args)
+
+
+def implication(*args):
+    return If(*args)
+
+
+def equivalence(*args):
+    return args[0] == args[1]
+
+
+def negation_op(*args):
+    return Not(*args)
+
 
