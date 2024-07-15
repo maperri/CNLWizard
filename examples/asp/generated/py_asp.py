@@ -89,9 +89,9 @@ def constant(string, attribute_value):
 
 
 def constraint(constraint_body, whenever_clause):
-    if not isinstance(constraint_body, list):
+    if constraint_body and not isinstance(constraint_body, list):
         constraint_body = [constraint_body]
-    if not isinstance(whenever_clause, list):
+    if whenever_clause and not isinstance(whenever_clause, list):
         whenever_clause = [whenever_clause]
     return Constraint(constraint_body + whenever_clause) if whenever_clause else Constraint(constraint_body)
 
@@ -277,7 +277,8 @@ def attribute_concat(*args):
 
 def entity(negation, string, attribute):
     try:
-        entity = CnlWizardCompiler.signatures[string]
+        entity = Atom(CnlWizardCompiler.signatures[string])
+        entity.negation = 'not ' if negation else ''
         for name, value in attribute:
             entity.fields[name] = value
         return entity
@@ -285,10 +286,11 @@ def entity(negation, string, attribute):
         return None
 
 
-def verb(name, attributes):
+def verb(string_1, attribute, string_2):
+    name = string_1 + string_2
     try:
-        entity = CnlWizardCompiler.signatures[name]
-        for name, value in attributes:
+        entity = Atom(CnlWizardCompiler.signatures[name])
+        for name, value in attribute:
             entity.fields[name] = value
         return entity
     except KeyError:
