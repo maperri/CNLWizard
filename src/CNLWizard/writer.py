@@ -92,6 +92,8 @@ class LarkGrammarWriter(RuleVisitor):
 
     def __concat_rule(self, rule: Rule):
         concat_symbol = f'"{rule.concat}"'
+        if not rule.concat.strip():
+            concat_symbol = ''
         return f'{rule.name} {concat_symbol} {rule.name} -> {rule.name}_concat\n'
 
 
