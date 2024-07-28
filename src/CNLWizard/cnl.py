@@ -19,8 +19,6 @@ class Rule:
         pass
 
     def get_non_terminal_symbols(self) -> list[str]:
-        # TODO handle the case in which syntax rules have different
-        #   terminal symbols length / name
         if self.non_terminal_symbols:
             # non-terminal symbols have been already computed
             # or syntax is empty
@@ -97,8 +95,10 @@ class SupportRule(Rule):
 
 
 class AttributeRule(Rule):
-    def __init__(self, name: str, concat: str | None = None):
-        super().__init__(name, ['"with" string "equal to" (string | number)'], concat)
+    def __init__(self, name: str, syntax: str = None, concat: str | None = None):
+        if syntax is None:
+            syntax = '"with" string "equal to" (string | number)'
+        super().__init__(name, [syntax], concat)
 
     def accept(self, v: RuleVisitor):
         return v.visit_attribute_rule(self)

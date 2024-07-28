@@ -18,6 +18,8 @@ class Signature:
         self.fields = fields
         self.keys: list[str] = []
         self.type = ''
+        self.lb = 0
+        self.ub = 0
 
     def __str__(self):
         return f'{self.name}({",".join(map(str, self.fields.values()))})'
@@ -29,7 +31,7 @@ class Signatures:
         self.signature_type = signature_type
         self.signature_field_null_value = signature_field_null_value
 
-    def __getitem__(self, item):
+    def __getitem__(self, item) -> Signature:
         return copy.deepcopy(self.signatures[item])
 
     def __setitem__(self, key: str, value: (str, list, list, (str, int, int))):

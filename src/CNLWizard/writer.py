@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import collections
 from textwrap import dedent, indent
-from typing import TYPE_CHECKING, Callable
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from CNLWizard.cnl import CompiledRule, SupportRule, AttributeRule, EntityRule, ListRule, OperationRule, \
@@ -123,7 +123,7 @@ class PythonFunctionWriter(RuleVisitor):
         if not fn_args:
             fn_args.append('*args')
         return f'def {name}({", ".join(fn_args)}):\n' \
-               f'   raise NotImplementedError\n\n\n'
+               f'    raise NotImplementedError\n\n\n'
 
     def visit_support_rule(self, r: SupportRule) -> str:
         py_fn = ''
@@ -161,6 +161,7 @@ class PythonFunctionWriter(RuleVisitor):
         if r.name not in self.implemented_fn:
             py_fn += dedent(f'''\
                     def {r.name}({', '.join(self.__create_unique_args(r.get_rule_function_args()))}):
+                        from CNLWizard.cnl_wizard_compiler import CnlWizardCompiler
                         try:
                             entity = CnlWizardCompiler.signatures[string]
                             for name, value in attribute:

@@ -4,6 +4,7 @@ import os
 import sys
 from collections import defaultdict
 from pathlib import Path
+from textwrap import indent
 
 import yaml
 
@@ -86,7 +87,10 @@ class YAMLReader:
         concat = None
         if 'concat' in data:
             concat = data['concat']
-        return AttributeRule(name, concat)
+        syntax = None
+        if 'syntax' in data:
+            syntax = data['syntax']
+        return AttributeRule(name, syntax, concat)
 
     def entity_rule(self, name: str, data: dict) -> EntityRule:
         concat = None
@@ -111,11 +115,19 @@ class YAMLReader:
                 value = value['fun']
                 fn = PureFunction(value['name'], value['args'])
                 functions[value['name']] = fn
-                operators[key] = functions[value['name']].name
+                ns = {}
+                fn = self._create_fn(functions[value['name']].name, value['args'],
+                                                 '    return None')
+                exec(f'{fn}', ns)
+                operators[key] = ns[functions[value['name']].name]
             else:
                 # adorn string operators with quotes
                 operators[key] = f'\'{value}\''
         return OperationRule(name, operators, syntax), list(functions.values())
+
+    def _create_fn(self, name: str, args: list[str], body: str):
+        declaration = f'def {name}({",".join(args)}):'
+        return f'{declaration}\n{indent(body, "    ")}'
 
     def list_rule(self, name: str):
         return ListRule(name)
