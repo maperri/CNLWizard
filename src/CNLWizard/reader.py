@@ -159,12 +159,16 @@ class YAMLReader:
 
 class pyReader:
     def read_module(self, path: str) -> list[str]:
-        parsed_ast = ast.parse(Path(path).read_text())
+        text = Path(path).read_text()
+        parsed_ast = ast.parse(text)
         functions = [
             node.name
             for node in ast.walk(parsed_ast)
             if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
         ]
+        for line in text.splitlines():
+            if line.startswith('CnlWizardCompiler.config'):
+                functions.append(line)
         return functions
 
     def import_module(self, path: str):

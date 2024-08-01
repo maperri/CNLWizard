@@ -105,6 +105,7 @@ class PythonFunctionWriter(RuleVisitor):
         if implemented_functions is None:
             implemented_functions = set()
         self.implemented_fn = implemented_functions
+        self.import_libs = ['from CNLWizard.cnl_wizard_compiler import CnlWizardCompiler']
 
     def __create_unique_args(self, args: list[str]) -> list[str]:
         args_counter = collections.Counter(args)
@@ -244,4 +245,7 @@ class PythonFunctionWriter(RuleVisitor):
                         return res\n\n\n''')
 
     def visit_preprocess_config_rule(self, r: GrammarConfigRule) -> str:
-        return f'CnlWizardCompiler.config[\'{r.name}\'] = False\n\n'
+        res = f'CnlWizardCompiler.config[\'{r.name}\'] = False'
+        if res not in self.implemented_fn:
+            return f'{res}\n\n\n'
+        return ''

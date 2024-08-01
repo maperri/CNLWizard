@@ -1,3 +1,5 @@
+from CNLWizard.cnl_wizard_compiler import CnlWizardCompiler
+
 def constraint(arithmetic):
    raise NotImplementedError
 

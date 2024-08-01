@@ -2,7 +2,6 @@ import os
 import unittest
 
 from CNLWizard.cnl_wizard_generator import CnlWizardGenerator
-from CNLWizard.writer import PythonFunctionWriter
 from tests.utils import py_func_str
 
 
@@ -17,13 +16,13 @@ class TestCNLWizardGenerator(unittest.TestCase):
         cnl_wizard = CnlWizardGenerator(os.path.join(base_path, 'res',
                                                      'cnlwizard_generator_test.yaml'),
                                         os.path.join(base_path, 'res'))
-
+        self.maxDiff = None
         cnl_wizard.generate()
         # Add arithmetic function to lang1 file
         # It has no non-terminal symbols, but it is written in lower case.
         # Instead, TERMINAL rule, as it is upper case, it is not added
         with open(os.path.join(base_path, 'res', 'py_lang1.py'), 'r') as file:
-            self.assertEqual(file.read(), lang1 + py_func_str('arithmetic', ['*args']))
+            self.assertEqual(file.read(), lang1  + 'CnlWizardCompiler.config[\'signatures\'] = False\n\n\n' + py_func_str('arithmetic', ['*args']))
         with open(os.path.join(base_path, 'res', 'grammar_lang1.lark'), 'r') as file:
             # as there is an instance of entity called entity, we do not have to add
             # a composite rule in lark

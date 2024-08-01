@@ -1,3 +1,7 @@
+from CNLWizard.cnl_wizard_compiler import CnlWizardCompiler
+
+
+CnlWizardCompiler.config['signatures'] = False
 
 
 def arithmetic(number, number_2):

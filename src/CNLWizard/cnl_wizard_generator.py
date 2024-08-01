@@ -19,9 +19,10 @@ class CnlWizardGenerator:
             if os.path.exists(py_path):
                 py_writer = PythonFunctionWriter(set(pyReader().read_module(py_path)))
                 with open(os.path.join(self._out_dir, f'py_{lang}.py'), 'a') as out:
-                    out.write(cnl.print(lang, py_writer))
+                    out.write(f'{cnl.print(lang, py_writer)}')
             else:
                 py_writer = PythonFunctionWriter()
                 with open(os.path.join(self._out_dir, f'py_{lang}.py'), 'w') as out:
-                    out.write('\n\n' + cnl.print(lang, py_writer))
+                    libs = '\n'.join(py_writer.import_libs)
+                    out.write(f'{libs}\n\n\n{cnl.print(lang, py_writer)}')
                     
