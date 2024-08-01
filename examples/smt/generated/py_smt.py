@@ -30,38 +30,38 @@ def function_definition(string_1, string_2, string_3):
 
 
 def constraint(clause_body):
-   return clause_body
+    return clause_body
 
 
 def there_is_clause(entity):
-   return entity
+    return entity
 
 
 def if_then(clause_body_1, clause_body_2):
-   return If(clause_body_1, clause_body_2)
+    return If(clause_body_1, clause_body_2)
 
 
 def propositions(function_definition):
-   return function_definition
+    return function_definition
 
 
 def clause_body(there_is_clause):
-   return there_is_clause
+    return there_is_clause
 
 
 def simple_clause(entity_1, negation, entity_2):
-    for key, value in entity.fields.items():
-        field_name = entity.name + key
+    for key, value in entity_1.fields.items():
+        field_name = entity_1.name + key
         entity_2.fields[field_name] = value
     return Not(entity_2) if negation else entity_2
 
 
 def negation(*args):
-   return True
+    return True
 
 
 def attributes(*attribute):
-   return attribute
+    return attribute
 
 
 def math_operator(*args):
@@ -82,7 +82,8 @@ def math(*args):
 
 
 def comparison_operator(*args):
-    items_dict = {'equal to': '==', 'different from': '!=', 'lower than': '<', 'greater than': '>', 'lower than or equal to': '<=', 'greater than or equal to': '>='}
+    items_dict = {'equal to': '==', 'different from': '!=', 'lower than': '<', 'greater than': '>',
+                  'lower than or equal to': '<=', 'greater than or equal to': '>='}
     item = ' '.join(args)
     return items_dict[item]
 
@@ -98,8 +99,6 @@ def comparison(*args):
     return ns['res']
 
 
-
-
 def formula(*args):
     operator_index = 1
     operator = args[operator_index]
@@ -112,11 +111,11 @@ def formula(*args):
 
 
 def comparison_operand(math):
-   return math
+    return math
 
 
 def math_operand(entity):
-   return entity
+    return entity
 
 
 def attribute(name, attribute_value):
@@ -158,11 +157,7 @@ def negation_op(*args):
 
 
 def formula_operator(*args):
-    items_dict = {'and': conjunction, 'or': disjunction, 'imply': implication, 'implies': implication, 'is equivalent to': equivalence, 'not': negation}
+    items_dict = {'and': conjunction, 'or': disjunction, 'imply': implication, 'implies': implication,
+                  'is equivalent to': equivalence, 'not': negation}
     item = ' '.join(args)
     return items_dict[item]
-
-
-
-
-

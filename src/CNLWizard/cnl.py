@@ -151,6 +151,17 @@ class PureFunction(Rule):
         return v.visit_pure_function(self)
 
 
+class PreprocessConfigRule(Rule):
+    def __init__(self, config_name: str):
+        super().__init__(config_name, [])
+
+    def get_non_terminal_symbols(self) -> list[str]:
+        return [self.name]
+
+    def accept(self, v: RuleVisitor):
+        return v.visit_preprocess_config_rule(self)
+
+
 class Grammar:
     def __init__(self):
         self.rules: dict[str, list[Rule]] = defaultdict(list)  # dictionary target language - rule

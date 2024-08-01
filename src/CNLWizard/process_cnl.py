@@ -136,16 +136,19 @@ def substitute_variable(proposition, variables):
     return '\n'.join(res)
 
 
-def process_cnl_specification(cnl: CnlWizardCompiler, cnl_specification: str):
+def process_cnl_specification(cnl: CnlWizardCompiler, cnl_specification: str, config: dict):
     # grammar for identifying variable substitution proposition parts
     # that are the constructions supported by the where_token
-    lark = Lark(dedent(f'''\
+    grammar = dedent(f'''\
                 %import common.WS
                 %ignore WS
                 %import common.NUMBER
                 %import common.CNAME
                 LABEL: /[A-Z]+/
-                start: definition | proposition
+                ''')
+    start_rules = []
+    if config['signatures']:
+        grammar += dedent('''\
                 signature_definition: ("A" | "An")? CNAME [typed_signature] "is identified by" signature_parameters ["and has" signature_parameters]
                 typed_signature: "is" ("a"|"an")? CNAME "concept" ["that ranges from" NUMBER "to" NUMBER] ", and it"
                 cnl_list_elem: NUMBER | CNAME
@@ -154,6 +157,10 @@ def process_cnl_specification(cnl: CnlWizardCompiler, cnl_specification: str):
                                     | signature_parameters "," signature_parameters -> signature_parameters_concat
                 cnl_list_definition: ("A" | "An") CNAME "is a list made of" cnl_list_elem
                 ?definition.1: signature_definition | cnl_list_definition
+                ''')
+        start_rules.append('definition')
+    if config['var_substitution']:
+        grammar += dedent('''\
                 proposition: any+ "," where_token
                 any: /.+?/ 
                 ?where_token.1: where_token_between | where_token_one_of | where_distinct | where_token "," where_token
@@ -161,7 +168,13 @@ def process_cnl_specification(cnl: CnlWizardCompiler, cnl_specification: str):
                 where_token_one_of: "where" LABEL "is" [respectively] "one" "of" (CNAME | NUMBER) (","? "and"? (CNAME | NUMBER))*
                 where_distinct: "where" LABEL (","? "and"? LABEL) "are distinct"
                 respectively: "respectively"
-                '''), propagate_positions=True)
+                ''')
+        start_rules.append('proposition')
+    if not start_rules:
+        'No need of pre-process. Everything is disabled'
+        return cnl_specification
+    grammar += f'start:  {" | ".join(start_rules)}'
+    lark = Lark(grammar, propagate_positions = True)
     res = ''
     for idx, proposition in enumerate(cnl_specification.split('.')):
         try:

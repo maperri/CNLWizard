@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from CNLWizard.cnl import CompiledRule, SupportRule, AttributeRule, EntityRule, ListRule, OperationRule, \
-        GrammarConfigRule, Rule, PureFunction
+        GrammarConfigRule, Rule, PureFunction, PreprocessConfigRule
 
 
 class RuleVisitor:
@@ -32,6 +32,9 @@ class RuleVisitor:
         return ''
 
     def visit_pure_function(self, r: PureFunction) -> str:
+        return ''
+
+    def visit_preprocess_config_rule(self, r: PreprocessConfigRule) -> str:
         return ''
 
 
@@ -239,3 +242,6 @@ class PythonFunctionWriter(RuleVisitor):
                                 arg = [arg]
                             res += arg
                         return res\n\n\n''')
+
+    def visit_preprocess_config_rule(self, r: GrammarConfigRule) -> str:
+        return f'CnlWizardCompiler.config[\'{r.name}\'] = False\n\n'

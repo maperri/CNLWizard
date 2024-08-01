@@ -9,7 +9,7 @@ from textwrap import indent
 import yaml
 
 from CNLWizard.cnl import Cnl, SupportRule, CompiledRule, AttributeRule, EntityRule, OperationRule, ListRule, \
-    PureFunction
+    PureFunction, PreprocessConfigRule
 
 
 class YAMLReader:
@@ -18,7 +18,9 @@ class YAMLReader:
         with open(path, 'r') as stream:
             rules = yaml.safe_load(stream)
         for key, value in rules.items():
-            if isinstance(value, list):
+            if key == 'config':
+                cnl.add_rules('_all', self.config(value))
+            elif isinstance(value, list):
                 for target, rules in self.composite_rule(key.lower(), value).items():
                     cnl.add_rules(target, rules)
             else:
@@ -33,6 +35,14 @@ class YAMLReader:
                 else:
                     cnl.add_rule('_all', rule)
         return cnl
+
+    def config(self, data: dict) -> list[PreprocessConfigRule]:
+        res = []
+        if 'signatures' in data and data['signatures'] == 'disabled':
+            res.append(PreprocessConfigRule('signatures'))
+        elif 'var_substitution' in data and data['var_substitution'] == 'disabled':
+            res.append(PreprocessConfigRule('var_substitution'))
+        return res
 
     def support_rule(self, name: str, data: dict) -> SupportRule:
         concat = None

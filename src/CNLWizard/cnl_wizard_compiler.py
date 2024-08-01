@@ -85,6 +85,10 @@ class CNLTransformer(Transformer):
 
 class CnlWizardCompiler:
     signatures = Signatures()
+    config = {
+        'signatures': True,
+        'var_substitution': True
+    }
 
     def __init__(self):
         self.vars = dict()
@@ -108,11 +112,12 @@ class CnlWizardCompiler:
             grammar = grammar.read()
         with open(cnl_text_file, 'r') as cnl_text_file:
             cnl_text_file = cnl_text_file.read()
+        functions = self.get_functions(py_file)
         lark = Lark(grammar)
-        processed_cnl = process_cnl_specification(self, cnl_text_file)
+        processed_cnl = process_cnl_specification(self, cnl_text_file, self.config)
         try:
             parse_tree = lark.parse(processed_cnl)
         except UnexpectedInput as e:
             self.logger.error(e)
             return ''
-        return CNLTransformer(self.get_functions(py_file)).transform(parse_tree)
+        return CNLTransformer(functions).transform(parse_tree)
