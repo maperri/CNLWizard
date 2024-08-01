@@ -1,11 +1,12 @@
 from CNLWizard.cnl_wizard_compiler import CnlWizardCompiler
 
+
 def constraint(arithmetic):
-   raise NotImplementedError
+    raise NotImplementedError
 
 
 def start(arithmetic):
-   raise  NotImplementedError
+    raise NotImplementedError
 
 
 def entity(name, attributes):
@@ -16,4 +17,3 @@ def entity(name, attributes):
         return entity
     except KeyError:
         return None
-

@@ -32,12 +32,11 @@ def test_operation_operator(*args):
 
 
 def test_operation(*args):
-    operator_index = None
-    raise NotImplementedError('replace operator_index value')
+    operator_index = 0
     operator = args[operator_index]
     args = list(args)
     args.pop(operator_index)
-    return operator.join(map(str, args))
+    return operator(*args)
 
 
 def operation(test_operation):

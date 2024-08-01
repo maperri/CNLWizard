@@ -208,10 +208,14 @@ class PythonFunctionWriter(RuleVisitor):
                                 
                             ''')
         if r.name not in self.implemented_fn:
+            operator_index = 0
+            for o in r.get_rule_function_args():
+                if o.endswith('operator'):
+                    break
+                operator_index += 1
             py_fn += dedent(f'''\
                         def {r.name}(*args):
-                            operator_index = None
-                            raise NotImplementedError('replace operator_index value')
+                            operator_index = {operator_index}
                             operator = args[operator_index]
                             args = list(args)
                             args.pop(operator_index)
