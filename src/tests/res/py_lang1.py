@@ -17,3 +17,8 @@ def entity(name, attributes):
         return entity
     except KeyError:
         return None
+
+
+def there_is_clause(entity):
+    raise NotImplementedError
+

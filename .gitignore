@@ -8,3 +8,4 @@ out.txt
 old*
 *.egg-info
 build
+metrics

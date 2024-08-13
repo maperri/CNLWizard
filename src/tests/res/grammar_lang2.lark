@@ -1,4 +1,4 @@
-start: arithmetic | constraint | TERMINAL | entity | operation
+start: arithmetic | constraint | TERMINAL | entity | operation | there_is_clause
 %import common.WS 
 %import common.CNAME 
 %import common.SIGNED_NUMBER 
@@ -12,6 +12,7 @@ start: arithmetic | constraint | TERMINAL | entity | operation
 ?number: NUMBER
 
 //  ----- Defined grammar below
+there_is_clause: "there is" entity
 !arithmetic: "the sum between 1 and 2"
 constraint: "it is prohibited that" arithmetic
 entity: ("a" | "an")? string attribute

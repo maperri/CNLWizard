@@ -9,10 +9,24 @@ from textwrap import indent
 import yaml
 
 from CNLWizard.cnl import Cnl, SupportRule, CompiledRule, AttributeRule, EntityRule, OperationRule, ListRule, \
-    PureFunction, PreprocessConfigRule
+    PureFunction, PreprocessConfigRule, Rule
 
 
 class YAMLReader:
+    def __init__(self):
+        self.default_rules = self._init_default_rules()
+
+    def _init_default_rules(self) -> dict:
+        res = {}
+        with open(os.path.join(os.path.join(os.path.dirname(__file__), 'cnl_wizard_propositions.yaml')), 'r') as stream:
+            rules = yaml.safe_load(stream)
+        for name, data in rules.items():
+            res[name] = self.compiled_rule(name, data)
+        return res
+
+    def get_default_rule(self, rule: str) -> Rule:
+        return self.default_rules[rule]
+
     def read_specification(self, path: str) -> Cnl:
         cnl = Cnl()
         with open(path, 'r') as stream:
@@ -20,6 +34,8 @@ class YAMLReader:
         for key, value in rules.items():
             if key == 'config':
                 cnl.add_rules('_all', self.config(value))
+            elif key == 'import':
+                cnl.add_rules('_all', self.import_rules(value))
             elif isinstance(value, list):
                 for target, rules in self.composite_rule(key.lower(), value).items():
                     cnl.add_rules(target, rules)
@@ -42,6 +58,12 @@ class YAMLReader:
             res.append(PreprocessConfigRule('signatures'))
         elif 'var_substitution' in data and data['var_substitution'] == 'disabled':
             res.append(PreprocessConfigRule('var_substitution'))
+        return res
+
+    def import_rules(self, rules: list) -> list[Rule]:
+        res = []
+        for rule in rules:
+            res.append(self.get_default_rule(rule))
         return res
 
     def support_rule(self, name: str, data: dict) -> SupportRule:
@@ -127,7 +149,7 @@ class YAMLReader:
                 functions[value['name']] = fn
                 ns = {}
                 fn = self._create_fn(functions[value['name']].name, value['args'],
-                                                 '    return None')
+                                     '    return None')
                 exec(f'{fn}', ns)
                 operators[key] = ns[functions[value['name']].name]
             else:

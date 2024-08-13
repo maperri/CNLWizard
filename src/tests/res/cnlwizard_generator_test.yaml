@@ -1,3 +1,6 @@
+import:
+  - there_is_clause
+
 config:
   signatures:
     disabled
@@ -48,6 +51,7 @@ start:
     - TERMINAL
     - entity
     - operation
+    - there_is_clause
   target:
     - lang1
     - lang2

@@ -12,9 +12,9 @@ setup(
     maintainer_email='simone.caruso@edu.unige.it',
     package_dir={'': 'src'},
     packages=find_packages('src', exclude=['tests*']),
-    package_data={'CNLWizard': ['components.yaml']},
+    package_data={'CNLWizard': ['cnl_wizard_propositions.yaml']},
     entry_points={
-        'console_scripts': ['CNLWizard = main:main'],
+        'console_scripts': ['CNLWizard = CNLWizard.cnl_wizard:main'],
     },
     install_requires=['lark'],
     python_requires=">=3.10"

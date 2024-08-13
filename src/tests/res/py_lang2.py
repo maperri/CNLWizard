@@ -50,3 +50,7 @@ def operand(number):
 def sum(operand_1, operand_2):
         raise NotImplementedError
 
+def there_is_clause(entity):
+    raise NotImplementedError
+
+
