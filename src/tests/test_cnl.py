@@ -25,3 +25,11 @@ class TestCnl(unittest.TestCase):
         self.assertEqual(rule.get_rule_function_args(), ['attr', 'attr', 'attr'])
         rule = CompiledRule('test', ['attr+'])
         self.assertEqual(rule.get_rule_function_args(), ['*attr'])
+
+    def test_rule_symbols(self):
+        rule = CompiledRule('test', ['"this is" "a" test'])
+        self.assertEqual(rule.get_symbols(), ['"this is"', '"a"', 'test'])
+        rule = CompiledRule('test', ['("this is" "a") test'])
+        self.assertEqual(rule.get_symbols(), ['"this is"', '"a"', 'test'])
+        rule = CompiledRule('test', ['("this is" | "This is") "a" test'])
+        self.assertEqual(rule.get_symbols(), ['"this is"', '"This is"', '"a"', 'test'])

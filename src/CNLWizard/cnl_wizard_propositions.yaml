@@ -1,5 +1,5 @@
 there_is_clause:
-  syntax: '"there is" entity'
+  syntax: '("there" | "There") "is" entity'
 
 positive_constraint:
   syntax: '"It is required that" positive_constraint_body'
@@ -42,3 +42,9 @@ entity:
 attribute:
   - name: attribute
     concat: ","
+
+simple_proposition:
+  syntax: entity ("have" | "has" | "are" | "is") entity
+
+negated_simple_proposition:
+  syntax: entity ("do not have" | "does not have" | "are not" | "is not") entity

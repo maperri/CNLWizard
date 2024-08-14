@@ -26,7 +26,9 @@ class TestCNLWizardGenerator(unittest.TestCase):
         with open(os.path.join(base_path, 'res', 'grammar_lang1.lark'), 'r') as file:
             # as there is an instance of entity called entity, we do not have to add
             # a composite rule in lark
-            self.assertTrue('entity: ("a" | "an")? string attribute | entity' not in file.read())
+            grammar = file.read()
+            self.assertTrue('entity: ("a" | "an")? string attribute | entity' not in grammar)
+            self.assertTrue('there_is_clause: ("it is" | "There") "is" entity' in grammar)
             # dummy is unused, thus it is not added
             self.assertTrue('dummy' not in file.read())
         # Do not add anything to lang2 file

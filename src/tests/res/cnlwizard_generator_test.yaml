@@ -1,5 +1,5 @@
 import:
-  - there_is_clause
+  - there_is_clause("it is")
 
 config:
   signatures:

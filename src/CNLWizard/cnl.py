@@ -42,6 +42,25 @@ class Rule:
                 curr = ''
         return self.non_terminal_symbols
 
+    def get_symbols(self):
+        res = []
+        curr = ''
+        open_quotes = False
+        for rule in self.syntax:
+            for c in rule:
+                if c in ['(', ')', '|', '*', '+']:
+                    continue
+                curr += c
+                if c == '"':
+                    open_quotes = not open_quotes
+                elif c == ' ' and not open_quotes:
+                    if curr.strip():
+                        res.append(curr.strip())
+                    curr = ''
+            if curr:
+                res.append(curr)
+        return res
+
     def get_rule_function_args(self) -> list[str]:
         curr = ''
         res = []

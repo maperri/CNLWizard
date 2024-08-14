@@ -165,7 +165,6 @@ class PythonFunctionWriter(RuleVisitor):
         if r.name not in self.implemented_fn:
             py_fn += dedent(f'''\
                     def {r.name}({', '.join(self.__create_unique_args(r.get_rule_function_args()))}):
-                        from CNLWizard.cnl_wizard_compiler import CnlWizardCompiler
                         try:
                             entity = CnlWizardCompiler.signatures[string]
                             for name, value in attribute:
