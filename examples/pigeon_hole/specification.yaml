@@ -1,0 +1,38 @@
+import:
+  - simple_proposition
+  - negated_simple_proposition
+  - positive_constraint
+  - entity
+  - attribute
+  - there_is_clause
+
+start:
+  syntax: (proposition ".")+
+  target:
+    - smt
+    - cp
+    - asp
+
+proposition:
+  syntax:
+    - positive_constraint
+    - there_is_clause
+
+positive_constraint_body:
+  syntax:
+    - disjunction
+    - consequential
+
+simple_clause:
+  syntax:
+    - simple_proposition
+    - negated_simple_proposition
+
+disjunction:
+  syntax: simple_clause "or" simple_clause
+
+consequential:
+  syntax: simple_clause ", when" simple_clause
+
+
+

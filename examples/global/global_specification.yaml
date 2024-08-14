@@ -1,21 +1,11 @@
 start:
-  syntax:
-    - >
-      (propositions ".")+
+  syntax: (propositions ".")+
 
 propositions:
   - name: function_definition
     syntax: >
       ("A" | "An") string "is a function which takes" string "and returns" string
     target:
-      - smt
-
-  - name: there_is_clause
-    syntax: >
-      ("There" | "there") "is" entity
-    target:
-      - asp
-      - sat
       - smt
 
   - name: constant
@@ -320,7 +310,7 @@ math_operand:
       - cp
       - smt
 
-Attribute:
+attribute:
   - name: attribute
     concat: ","
     target:
@@ -338,7 +328,7 @@ attributes:
     target:
       - smt
 
-Entity:
+entity:
   - name: entity
     syntax: >
       [negation] ("a"| "an") string attribute
