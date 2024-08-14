@@ -126,7 +126,7 @@ class AttributeRule(Rule):
 class EntityRule(Rule):
     def __init__(self, name: str, syntax: list[str] = None, concat: str | None = None):
         if not syntax:
-            syntax = ['("a" | "an")? string attribute']
+            syntax = ['("A" | "An" | "a" | "an")? string attribute']
         super().__init__(name, syntax, concat)
 
     def accept(self, v: RuleVisitor):

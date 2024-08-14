@@ -14,13 +14,11 @@ start: (proposition ".")+
 //  ----- Defined grammar below
 simple_proposition: entity ("have" | "has" | "are" | "is") entity
 negated_simple_proposition: entity ("do not have" | "does not have" | "are not" | "is not") entity
-positive_constraint: "It is required that" positive_constraint_body
-entity: ("a" | "an")? string attribute
+entity: ("A" | "An" | "a" | "an")? string attribute
 attribute: "with" string "equal to" (string | number)
          | attribute "," attribute -> attribute_concat
 there_is_clause: ("there" | "There") "is" entity
-proposition: positive_constraint | there_is_clause
-positive_constraint_body: disjunction | consequential
+proposition: disjunction | consequential | there_is_clause
 simple_clause: simple_proposition | negated_simple_proposition
 disjunction: simple_clause "or" simple_clause
 consequential: simple_clause ", when" simple_clause

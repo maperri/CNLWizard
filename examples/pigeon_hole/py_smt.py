@@ -26,10 +26,6 @@ def negated_simple_proposition(entity_1, entity_2):
     return Bool(str(entity_1)), Not(Bool(str(entity_2)))
 
 
-def positive_constraint(positive_constraint_body):
-    return positive_constraint_body
-
-
 def entity(string, attribute):
     from CNLWizard.cnl_wizard_compiler import CnlWizardCompiler
     entity = CnlWizardCompiler.signatures[string]
@@ -51,12 +47,8 @@ def attribute_concat(*args):
     return res
 
 
-def proposition(positive_constraint):
-    return positive_constraint
-
-
-def positive_constraint_body(simple_clause):
-    return simple_clause
+def proposition(disjunction):
+    return disjunction
 
 
 def simple_clause(simple_proposition):

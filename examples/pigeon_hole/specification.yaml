@@ -1,7 +1,6 @@
 import:
   - simple_proposition
   - negated_simple_proposition
-  - positive_constraint
   - entity
   - attribute
   - there_is_clause
@@ -15,13 +14,9 @@ start:
 
 proposition:
   syntax:
-    - positive_constraint
-    - there_is_clause
-
-positive_constraint_body:
-  syntax:
     - disjunction
     - consequential
+    - there_is_clause
 
 simple_clause:
   syntax:

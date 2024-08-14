@@ -61,15 +61,6 @@ def negated_simple_proposition(entity_1, entity_2):
     return (entity_1, entity_2)
 
 
-def positive_constraint(positive_constraint_body):
-    if positive_constraint_body[0] == 'consequential':
-        if not positive_constraint_body[1].body[0].negation:
-            positive_constraint_body[1].body[0].negation = 'not '
-        else:
-            positive_constraint_body[1].body[0].negation = ''
-    return positive_constraint_body[1]
-
-
 def entity(string, attribute):
     try:
         entity = Atom(CnlWizardCompiler.signatures[string])
@@ -93,12 +84,8 @@ def attribute_concat(*args):
     return res
 
 
-def proposition(positive_constraint):
-    return positive_constraint
-
-
-def positive_constraint_body(simple_clause):
-    return simple_clause
+def proposition(disjunction):
+    return disjunction
 
 
 def simple_clause(simple_proposition):
@@ -108,11 +95,16 @@ def simple_clause(simple_proposition):
 
 
 def disjunction(simple_1, simple_2):
-    return 'disjunction', Assignment([simple_1[1], simple_2[1]], [simple_1[0]])
+    return Assignment([simple_1[1], simple_2[1]], [simple_1[0]])
 
 
 def consequential(simple_1, simple_2):
-    return 'consequential', Constraint([simple_1[1], simple_2[1]])
+    if not simple_1[1].negation:
+        simple_1[1].negation = 'not '
+    else:
+        simple_1[1].negation = ''
+    constraint = Constraint([simple_1[1], simple_2[1]])
+    return constraint
 
 
 def there_is_clause(entity):

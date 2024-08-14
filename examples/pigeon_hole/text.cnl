@@ -5,7 +5,7 @@ There is a pigeon with number equal to 1.
 There is a pigeon with number equal to 2.
 There is a pigeon with number equal to 3.
 
-It is required that pigeon with number equal to X has an assignment with holeNumber equal to 1 or pigeon with number equal to X has an assignment with holeNumber equal to 2, where X is between 1 and 3.
-It is required that pigeon with number equal to X does not have an assignment with holeNumber equal to 1, when pigeon with number equal to Y have an assignment with holeNumber equal to 1, where X is between 1 and 3, where Y is between 1 and 3, where X and Y are distinct.
-It is required that pigeon with number equal to X does not have an assignment with holeNumber equal to 2, when pigeon with number equal to Y have an assignment with holeNumber equal to 2, where X is between 1 and 3, where X is between 1 and 3, where Y is between 1 and 3, where X and Y are distinct.
+A pigeon with number equal to X has an assignment with holeNumber equal to 1 or pigeon with number equal to X has an assignment with holeNumber equal to 2, where X is between 1 and 3.
+A pigeon with number equal to X does not have an assignment with holeNumber equal to 1, when pigeon with number equal to Y has an assignment with holeNumber equal to 1, where X is between 1 and 3, where Y is between 1 and 3, where X and Y are distinct.
+A pigeon with number equal to X does not have an assignment with holeNumber equal to 2, when pigeon with number equal to Y has an assignment with holeNumber equal to 2, where X is between 1 and 3, where X is between 1 and 3, where Y is between 1 and 3, where X and Y are distinct.
 

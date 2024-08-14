@@ -38,9 +38,6 @@ def negated_simple_proposition(entity_1, entity_2):
     return get_entity_var(entity_1), get_entity_var(entity_2).negated()
 
 
-def positive_constraint(positive_constraint_body):
-    return positive_constraint_body
-
 
 def entity(string, attribute):
     try:
@@ -65,12 +62,8 @@ def attribute_concat(*args):
     return res
 
 
-def proposition(positive_constraint):
-    return positive_constraint
-
-
-def positive_constraint_body(simple_clause):
-    return simple_clause
+def proposition(disjunction):
+    return disjunction
 
 
 def simple_clause(simple_proposition):
