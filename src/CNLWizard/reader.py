@@ -21,7 +21,9 @@ class YAMLReader:
         with open(os.path.join(os.path.join(os.path.dirname(__file__), 'cnl_wizard_propositions.yaml')), 'r') as stream:
             rules = yaml.safe_load(stream)
         for name, data in rules.items():
-            res[name] = self.compiled_rule(name, data)
+            for target, rules in self.read_entry(name, data).items():
+                for rule in rules:
+                    res[rule.name] = rule
         return res
 
     def get_default_rule(self, rule: str) -> Rule:
@@ -32,25 +34,35 @@ class YAMLReader:
         with open(path, 'r') as stream:
             rules = yaml.safe_load(stream)
         for key, value in rules.items():
-            if key == 'config':
-                cnl.add_rules('_all', self.config(value))
-            elif key == 'import':
-                cnl.add_rules('_all', self.import_rules(value))
-            elif isinstance(value, list):
-                for target, rules in self.composite_rule(key.lower(), value).items():
-                    cnl.add_rules(target, rules)
-            else:
-                if key.isupper():
-                    # The rule is a terminal symbol
-                    rule = self.support_rule(key, value)
-                else:
-                    rule = self.compiled_rule(key, value)
-                if 'target' in value:
-                    for target in self.target(value['target']):
-                        cnl.add_rule(target, rule)
-                else:
-                    cnl.add_rule('_all', rule)
+            for target, rules in self.read_entry(key, value).items():
+                cnl.add_rules(target, rules)
         return cnl
+
+    def read_entry(self, key, value) -> dict[str, list]:
+        res = defaultdict(list)
+        if key == 'config':
+            res['_all'] += self.config(value)
+        elif key == 'import':
+            if isinstance(value, list):
+                res['_all'] += self.import_rules(value)
+            else:
+                for target, rules in value.items():
+                    res[target] += self.import_rules(rules)
+        elif isinstance(value, list):
+            for target, rules in self.composite_rule(key.lower(), value).items():
+                res[target] += rules
+        else:
+            if key.isupper():
+                # The rule is a terminal symbol
+                rule = self.support_rule(key, value)
+            else:
+                rule = self.compiled_rule(key, value)
+            if 'target' in value:
+                for target in self.target(value['target']):
+                    res[target].append(rule)
+            else:
+                res['_all'].append(rule)
+        return res
 
     def config(self, data: dict) -> list[PreprocessConfigRule]:
         res = []

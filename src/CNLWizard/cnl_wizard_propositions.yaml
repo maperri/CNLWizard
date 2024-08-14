@@ -1,2 +1,44 @@
 there_is_clause:
   syntax: '"there is" entity'
+
+positive_constraint:
+  syntax: '"It is required that" positive_constraint_body'
+
+negative_constraint:
+  syntax: '"It is prohibited that" negative_constraint_body'
+
+operation:
+  - name: math
+    operators:
+      sum: '+'
+      difference: '-'
+      division: '/'
+      multiplication: '*'
+    syntax: '"the" math_operator "between" math_operand "and" math_operand'
+
+  - name: comparison
+    operators:
+      equal to: '=='
+      different from: '!='
+      lower than: '<'
+      greater than: '>'
+      lower than or equal to: '<='
+      greater than or equal to: '>='
+    syntax: comparison_operand "is"? comparison_operator comparison_operand
+
+  - name: formula
+    syntax: formula_operand formula_operator formula_operand
+    operators:
+      and: '&'
+      or: '|'
+      imply: '>>'
+      implies: '>>'
+      is equivalent to: '<->'
+      not: '~'
+
+entity:
+  - name: entity
+
+attribute:
+  - name: attribute
+    concat: ","
