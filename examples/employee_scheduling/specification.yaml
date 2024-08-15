@@ -1,0 +1,57 @@
+import:
+  - attribute
+  - there_is_clause
+  - math("The", "the", math_operator, "between", math_first,,)
+  - comparison
+  - simple_proposition
+  - negated_simple_proposition
+  - entity
+  - verb
+
+start:
+  syntax: (proposition ".")*
+  target:
+    - smt
+    - cp
+    - asp
+
+proposition:
+    - name: disjunction
+      syntax: simple_clause "or" attribute
+      concat:
+        ", and"
+    - name: there_is_clause
+    - name: comparison
+    - name: weak_constraint
+      syntax: '"It is preferred as much as possible, with" level "priority that" comparison'
+      target:
+        - asp
+
+simple_clause:
+  syntax:
+    - simple_proposition
+    - negated_simple_proposition
+
+
+comparison_first:
+  syntax:
+    - math
+    - aggregate
+
+aggregate:
+  syntax: '"The number of" entity verb entity'
+
+comparison_second:
+  syntax: number
+
+math_first:
+  syntax: '"the" string "of the" entity "that are" verb entity'
+
+
+level:
+  syntax:
+    - '"low"'
+    - '"medium"'
+    - '"high"'
+  target:
+    - asp

@@ -1,0 +1,18 @@
+A employee is identified by a name, and a salary.
+A team is identified by an id.
+assigned is identified by a employee_name, and a team_id.
+
+There is an employee with name equal to 1, with salary equal to 2000.
+There is an employee with name equal to 2, with salary equal to 3000.
+There is an employee with name equal to 3, with salary equal to 2000.
+There is a team with id equal to X, where X is between 1 and 2.
+
+Employee with name equal to X is assigned to a team with id equal to 1 or with id equal to 2, where X is between 1 and 3.
+
+The number of employees assigned to a team with id equal to X is greater than or equal to 1, where X is between 1 and 2.
+The number of employees assigned to a team with id equal to X is less than 3, where X is between 1 and 2.
+
+The sum between the salary of the employees that are assigned to a team with id equal to X
+    is less than 5000, where X is between 1 and 2.
+//It is preferred as much as possible, with low priority that the sum between the salary of the employees that are assigned to a team with id equal to X
+//    is less than 5000, where X is between 1 and 2.
