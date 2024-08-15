@@ -102,11 +102,16 @@ class ProcessCNLTransformer(Transformer):
         return lark.Discard
 
     def where_distinct(self, args):
+        to_remove = []
         for variable in self.variable_substitution:
-            curr_value = variable[args[0]]
-            for distinct_var in args[1:]:
-                if variable[distinct_var] == curr_value:
-                    self.variable_substitution.remove(variable)
+            values = set()
+            for distinct_var in args:
+                if variable[distinct_var] in values:
+                    to_remove.append(variable)
+                    break
+                values.add(variable[distinct_var])
+        for remove in to_remove:
+            self.variable_substitution.remove(remove)
         return lark.Discard
 
     def respectively(self, args):
@@ -154,7 +159,7 @@ def process_cnl_specification(cnl: CnlWizardCompiler, cnl_specification: str, co
                 cnl_list_elem: NUMBER | CNAME
                              | cnl_list_elem "," cnl_list_elem -> cnl_list_elem_concat
                 signature_parameters: ("a" | "an")? CNAME 
-                                    | signature_parameters "," signature_parameters -> signature_parameters_concat
+                                    | signature_parameters "," "and"? signature_parameters -> signature_parameters_concat
                 cnl_list_definition: ("A" | "An") CNAME "is a list made of" cnl_list_elem
                 ?definition.1: signature_definition | cnl_list_definition
                 ''')
@@ -166,7 +171,7 @@ def process_cnl_specification(cnl: CnlWizardCompiler, cnl_specification: str, co
                 ?where_token.1: where_token_between | where_token_one_of | where_distinct | where_token "," where_token
                 where_token_between: "where" LABEL "is" [respectively] "between" NUMBER "and" NUMBER 
                 where_token_one_of: "where" LABEL "is" [respectively] "one" "of" (CNAME | NUMBER) (","? "and"? (CNAME | NUMBER))*
-                where_distinct: "where" LABEL (","? "and"? LABEL) "are distinct"
+                where_distinct: "where" LABEL (","? "and"? LABEL)+ "are distinct"
                 respectively: "respectively"
                 ''')
         start_rules.append('proposition')

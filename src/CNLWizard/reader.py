@@ -26,7 +26,7 @@ class YAMLReader:
                     res[rule.name] = rule
         return res
 
-    def substitutte_symbols(self, rule: Rule, symbols):
+    def substitute_symbols(self, rule: Rule, symbols):
         rule_symbols = rule.get_symbols()
         for i in range(len(symbols)):
             rule.syntax[0] = rule.syntax[0].replace(rule_symbols[i], symbols[i])
@@ -36,7 +36,7 @@ class YAMLReader:
         res = self.default_rules[rule[0]]
         if len(rule) > 1:
             symbols = rule[1].removesuffix(')').split(',')
-            self.substitutte_symbols(res, symbols)
+            self.substitute_symbols(res, symbols)
         return res
 
     def read_specification(self, path: str) -> Cnl:

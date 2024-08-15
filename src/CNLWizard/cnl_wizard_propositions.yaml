@@ -14,20 +14,20 @@ operation:
       difference: '-'
       division: '/'
       multiplication: '*'
-    syntax: '"the" math_operator "between" math_operand "and" math_operand'
+    syntax: '("The" | "the") math_operator "between" math_first "and" math_second'
 
   - name: comparison
     operators:
       equal to: '=='
       different from: '!='
-      lower than: '<'
+      less than: '<'
       greater than: '>'
-      lower than or equal to: '<='
+      less than or equal to: '<='
       greater than or equal to: '>='
-    syntax: comparison_operand "is"? comparison_operator comparison_operand
+    syntax: comparison_first "is"? comparison_operator comparison_second
 
   - name: formula
-    syntax: formula_operand formula_operator formula_operand
+    syntax: formula_first formula_operator formula_second
     operators:
       and: '&'
       or: '|'
@@ -38,13 +38,20 @@ operation:
 
 entity:
   - name: entity
+    syntax: ("a " | "an ")? string [attribute]
+
+  - name: verb
+    syntax: ("a " | "an ")? string [attribute] string
 
 attribute:
   - name: attribute
     concat: ","
 
 simple_proposition:
-  syntax: entity ("have" | "has" | "are" | "is") entity
+  syntax: entity ("have" | "has" | "are" | "is") verb entity
 
 negated_simple_proposition:
-  syntax: entity ("do not have" | "does not have" | "are not" | "is not") entity
+  syntax: entity ("do not have" | "does not have" | "are not" | "is not") verb entity
+
+consequence:
+  syntax: '"If" (simple_proposition | negated_simple_proposition) ", then" (simple_proposition | negated_simple_proposition)'
