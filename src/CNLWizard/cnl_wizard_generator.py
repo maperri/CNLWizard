@@ -1,6 +1,6 @@
 import os
 
-from CNLWizard.reader import YAMLReader, pyReader
+from CNLWizard.reader import YAMLReader
 from CNLWizard.writer import LarkGrammarWriter, PythonFunctionWriter
 
 
@@ -11,18 +11,14 @@ class CnlWizardGenerator:
 
     def generate(self):
         cnl = YAMLReader().read_specification(self._specification)
-        grammarWriter = LarkGrammarWriter()
+        grammar_writer = LarkGrammarWriter()
         for lang in cnl.get_languages():
             with open(os.path.join(self._out_dir, f'grammar_{lang}.lark'), 'w') as out:
-                out.write(cnl.print(lang, grammarWriter))
-            py_path = os.path.join(self._out_dir, f'py_{lang}.py')
-            if os.path.exists(py_path):
-                py_writer = PythonFunctionWriter(set(pyReader().read_module(py_path)))
-                with open(os.path.join(self._out_dir, f'py_{lang}.py'), 'a') as out:
-                    out.write(f'{cnl.print(lang, py_writer)}')
-            else:
-                py_writer = PythonFunctionWriter()
-                with open(os.path.join(self._out_dir, f'py_{lang}.py'), 'w') as out:
-                    libs = '\n'.join(py_writer.import_libs)
-                    out.write(f'{libs}\n\n\n{cnl.print(lang, py_writer)}')
+                out.write(cnl.print(lang, grammar_writer))
+            py_file = os.path.join(self._out_dir, f'py_{lang}.py')
+            py_writer = PythonFunctionWriter()
+            if os.path.exists(py_file):
+                py_writer.import_fn(py_file)
+            py_writer.write(cnl.print(lang, py_writer), py_file)
+
                     
