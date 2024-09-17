@@ -183,15 +183,15 @@ class PreprocessConfigRule(Rule):
 
 class Grammar:
     def __init__(self):
-        self.rules: dict[str, list[Rule]] = defaultdict(list)  # dictionary target language - rule
+        self.rules: dict[str, dict] = defaultdict(dict)  # dictionary target language - rule
 
     def get_rules(self, target: str) -> list[Rule]:
         visited = {}
         non_terminal_symbols: set = set()
         non_terminal_symbols.add('start')
-        for rule in self.rules['_all'] + self.rules[target]:
+        for rule in list(self.rules['_all'].values()) + list(self.rules[target].values()):
             non_terminal_symbols.update(rule.get_non_terminal_symbols())
-        for rule in self.rules['_all'] + self.rules[target]:
+        for rule in list(self.rules['_all'].values()) + list(self.rules[target].values()):
             if rule.name not in non_terminal_symbols:
                 # do not include unused rules
                 # they can be initialized in rules because of composite rules
@@ -248,10 +248,14 @@ class Cnl:
         self.add_rule('_all', GrammarConfigRule('\n//', [' ----- Defined grammar below']))
 
     def add_rule(self, target: str, rule: Rule):
-        self._grammar[target].append(rule)
+        self._grammar[target][rule.name] = rule
 
     def add_rules(self, target: str, rules: list[Rule]):
-        self._grammar[target] += rules
+        for rule in rules:
+            self.add_rule(target, rule)
+
+    def get_grammar(self, target='_all'):
+        return self._grammar[target]
 
     def get_languages(self) -> list[str]:
         languages = list(self._grammar.keys())

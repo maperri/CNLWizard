@@ -1,5 +1,6 @@
 import:
-  - there_is_clause("it is")
+  cnl_wizard:
+    - there_is_clause("it is")
 
 config:
   signatures:

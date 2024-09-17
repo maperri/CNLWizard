@@ -13,27 +13,17 @@ from CNLWizard.cnl import Cnl, SupportRule, CompiledRule, AttributeRule, EntityR
 
 
 class YAMLReader:
-    def __init__(self):
-        self.default_rules = self._init_default_rules()
-
-    def _init_default_rules(self) -> dict:
-        res = {}
-        with open(os.path.join(os.path.join(os.path.dirname(__file__), 'cnl_wizard_propositions.yaml')), 'r') as stream:
-            rules = yaml.safe_load(stream)
-        for name, data in rules.items():
-            for target, rules in self.read_entry(name, data).items():
-                for rule in rules:
-                    res[rule.name] = rule
-        return res
+    def __init__(self, imported_libs: dict = None):
+        self._imported_libs = imported_libs
 
     def substitute_symbols(self, rule: Rule, symbols):
         rule_symbols = rule.get_symbols()
         for i in range(len(symbols)):
             rule.syntax[0] = rule.syntax[0].replace(rule_symbols[i], symbols[i])
 
-    def get_default_rule(self, rule: str) -> Rule:
+    def get_imported_rule(self, lib: str, rule: str) -> Rule:
         rule = rule.split('(')
-        res = self.default_rules[rule[0]]
+        res = self._imported_libs[lib].get_grammar()[rule[0]]
         if len(rule) > 1:
             symbols = rule[1].removesuffix(')').split(',')
             self.substitute_symbols(res, symbols)
@@ -43,6 +33,8 @@ class YAMLReader:
         cnl = Cnl()
         with open(path, 'r') as stream:
             rules = yaml.safe_load(stream)
+        if not rules:
+            return cnl
         for key, value in rules.items():
             for target, rules in self.read_entry(key, value).items():
                 cnl.add_rules(target, rules)
@@ -53,11 +45,7 @@ class YAMLReader:
         if key == 'config':
             res['_all'] += self.config(value)
         elif key == 'import':
-            if isinstance(value, list):
-                res['_all'] += self.import_rules(value)
-            else:
-                for target, rules in value.items():
-                    res[target] += self.import_rules(rules)
+            res['_all'] += self.import_rules(value)
         elif isinstance(value, list):
             for target, rules in self.composite_rule(key.lower(), value).items():
                 res[target] += rules
@@ -82,10 +70,11 @@ class YAMLReader:
             res.append(PreprocessConfigRule('var_substitution'))
         return res
 
-    def import_rules(self, rules: list) -> list[Rule]:
+    def import_rules(self, to_import: dict) -> list[Rule]:
         res = []
-        for rule in rules:
-            res.append(self.get_default_rule(rule))
+        for lib, rules in to_import.items():
+            for rule in rules:
+                res.append(self.get_imported_rule(lib, rule))
         return res
 
     def support_rule(self, name: str, data: dict) -> SupportRule:

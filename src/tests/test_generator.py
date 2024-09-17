@@ -15,6 +15,7 @@ class TestCNLWizardGenerator(unittest.TestCase):
             lang2 = file.read()
         cnl_wizard = CnlWizardGenerator(os.path.join(base_path, 'res',
                                                      'cnlwizard_generator_test.yaml'),
+                                        None,
                                         os.path.join(base_path, 'res'))
         self.maxDiff = None
         cnl_wizard.generate()
