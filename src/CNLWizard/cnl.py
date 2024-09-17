@@ -181,6 +181,19 @@ class PreprocessConfigRule(Rule):
         return v.visit_preprocess_config_rule(self)
 
 
+class ImportedRule(Rule):
+    def __init__(self, origin: str, rule: Rule):
+        super().__init__(rule.name, rule.syntax)
+        self.origin = origin
+        self.rule = rule
+
+    def get_non_terminal_symbols(self) -> list[str]:
+        return [self.name]
+
+    def accept(self, v: RuleVisitor):
+        return v.import_rule(self.rule, self.origin)
+
+
 class Grammar:
     def __init__(self):
         self.rules: dict[str, dict] = defaultdict(dict)  # dictionary target language - rule

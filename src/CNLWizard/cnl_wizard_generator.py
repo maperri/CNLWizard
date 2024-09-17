@@ -1,8 +1,6 @@
 import os
 
-import yaml
-
-from CNLWizard.reader import YAMLReader
+from CNLWizard.reader import YAMLReader, pyReader
 from CNLWizard.writer import LarkGrammarWriter, PythonFunctionWriter
 
 
@@ -12,6 +10,7 @@ class CnlWizardGenerator:
         if import_dir is None:
             import_dir = ''
         self._imported_libs = self._get_imported_grammars(import_dir)
+        self._imported_fn = self._get_imported_functions(import_dir)
         self._out_dir = out_dir
 
     def _import_internal_lib(self):
@@ -19,6 +18,11 @@ class CnlWizardGenerator:
 
     def _is_specification_file(self, file: str) -> bool:
         if os.path.splitext(file)[1] == '.yaml':
+            return True
+        return False
+
+    def _is_py_file(self, file: str) -> bool:
+        if os.path.splitext(file)[1] == '.py':
             return True
         return False
 
@@ -33,6 +37,17 @@ class CnlWizardGenerator:
                     res[self._get_filename(file)] = YAMLReader().read_specification(os.path.join(import_dir, file))
         return res
 
+    def _import_internal_fn(self):
+        return pyReader().get_functions(os.path.join(os.path.join(os.path.dirname(__file__), 'cnl_wizard_propositions.py')))
+
+    def _get_imported_functions(self, import_dir: str) -> dict:
+        res = {'cnl_wizard': self._import_internal_fn()}
+        if import_dir:
+            for file in os.listdir(import_dir):
+                if self._is_py_file(file):
+                    res[self._get_filename(file)] = pyReader().get_functions(os.path.join(import_dir, file))
+        return res
+
     def generate(self):
         cnl = YAMLReader(self._imported_libs).read_specification(self._specification)
         grammar_writer = LarkGrammarWriter()
@@ -40,7 +55,7 @@ class CnlWizardGenerator:
             with open(os.path.join(self._out_dir, f'grammar_{lang}.lark'), 'w') as out:
                 out.write(cnl.print(lang, grammar_writer))
             py_file = os.path.join(self._out_dir, f'py_{lang}.py')
-            py_writer = PythonFunctionWriter()
+            py_writer = PythonFunctionWriter(self._imported_fn)
             if os.path.exists(py_file):
                 py_writer.import_fn(py_file)
             py_writer.write(cnl.print(lang, py_writer), py_file)

@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 import collections
+import inspect
 from textwrap import dedent, indent
 from typing import TYPE_CHECKING
 
 
 if TYPE_CHECKING:
     from CNLWizard.cnl import CompiledRule, SupportRule, AttributeRule, EntityRule, ListRule, OperationRule, \
-    GrammarConfigRule, Rule, PureFunction, PreprocessConfigRule, Cnl
+        GrammarConfigRule, Rule, PureFunction, PreprocessConfigRule, Cnl
 
 
 class RuleVisitor:
@@ -36,6 +37,9 @@ class RuleVisitor:
         return ''
 
     def visit_preprocess_config_rule(self, r: PreprocessConfigRule) -> str:
+        return ''
+
+    def import_rule(self, r: Rule, origin: str) -> str:
         return ''
 
 
@@ -100,11 +104,15 @@ class LarkGrammarWriter(RuleVisitor):
             concat_symbol = ''
         return f'{rule.name} {concat_symbol} {rule.name} -> {rule.name}_concat\n'
 
+    def import_rule(self, r: Rule, origin: str) -> str:
+        return r.accept(self)
+
 
 class PythonFunctionWriter(RuleVisitor):
-    def __init__(self):
+    def __init__(self, imported_fn: dict = None):
         self._implemented_fn = set()
         self._import_libs = ['from CNLWizard.cnl_wizard_compiler import CnlWizardCompiler']
+        self._imported_fn = imported_fn
 
     def __create_unique_args(self, args: list[str]) -> list[str]:
         args_counter = collections.Counter(args)
@@ -254,7 +262,7 @@ class PythonFunctionWriter(RuleVisitor):
 
     def import_fn(self, py_file):
         from CNLWizard.reader import pyReader
-        self._implemented_fn = set(pyReader().read_module(py_file))
+        self._implemented_fn = set(pyReader().get_functions(py_file).keys())
 
     def write(self, content: str, py_file: str):
         if self._implemented_fn:
@@ -264,3 +272,9 @@ class PythonFunctionWriter(RuleVisitor):
             with open(py_file, 'w') as out:
                 libs = '\n'.join(self._import_libs)
                 out.write(f'{libs}\n\n\n{content}')
+
+    def import_rule(self, r: Rule, origin: str) -> str:
+        from CNLWizard.reader import pyReader
+        if r.name in self._imported_fn[origin]:
+            return inspect.getsource(self._imported_fn[origin][r.name])
+        return r.accept(self)

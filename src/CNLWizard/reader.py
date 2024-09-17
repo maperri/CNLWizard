@@ -5,11 +5,12 @@ import sys
 from collections import defaultdict
 from pathlib import Path
 from textwrap import indent
+from typing import Callable
 
 import yaml
 
 from CNLWizard.cnl import Cnl, SupportRule, CompiledRule, AttributeRule, EntityRule, OperationRule, ListRule, \
-    PureFunction, PreprocessConfigRule, Rule
+    PureFunction, PreprocessConfigRule, Rule, ImportedRule
 
 
 class YAMLReader:
@@ -27,7 +28,7 @@ class YAMLReader:
         if len(rule) > 1:
             symbols = rule[1].removesuffix(')').split(',')
             self.substitute_symbols(res, symbols)
-        return res
+        return ImportedRule(lib, res)
 
     def read_specification(self, path: str) -> Cnl:
         cnl = Cnl()
@@ -191,7 +192,7 @@ class YAMLReader:
 
 
 class pyReader:
-    def read_module(self, path: str) -> list[str]:
+    def _get_functions_name_in(self, path: str) -> list[str]:
         text = Path(path).read_text()
         parsed_ast = ast.parse(text)
         functions = [
@@ -204,9 +205,21 @@ class pyReader:
                 functions.append(line)
         return functions
 
-    def import_module(self, path: str):
+    def _import_module(self, path: str):
         module_name = os.path.basename(path).split('.')[0]
         spec = importlib.util.spec_from_file_location(module_name, path)
         module = importlib.util.module_from_spec(spec)
         sys.modules[module_name] = module
         spec.loader.exec_module(module)
+
+    def get_functions(self, file: str) -> dict[str, Callable]:
+        if not os.path.exists(file):
+            return {}
+        functions = self._get_functions_name_in(file)
+        self._import_module(file)
+        module_name = os.path.basename(file).split('.')[0]
+        module = sys.modules[module_name]
+        res = {}
+        for fn in functions:
+            exec(f'res["{fn}"] = module.{fn}', locals())
+        return res
