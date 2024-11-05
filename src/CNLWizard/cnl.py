@@ -14,6 +14,9 @@ class Rule:
         self.non_terminal_symbols = []
         self.concat: str | None = concat
 
+    def get_to_import(self):
+        return [self.name]
+
     @abstractmethod
     def accept(self, v: RuleVisitor):
         pass
@@ -141,6 +144,9 @@ class OperationRule(Rule):
         if syntax is not None:
             self.syntax = syntax
 
+    def get_to_import(self):
+        return self.name, f'{self.name}_operator'
+
     def accept(self, v: RuleVisitor):
         return v.visit_operation_rule(self)
 
@@ -182,16 +188,14 @@ class PreprocessConfigRule(Rule):
 
 
 class ImportedRule(Rule):
-    def __init__(self, origin: str, rule: Rule):
+    def __init__(self, origin: str, target: str, rule: Rule):
         super().__init__(rule.name, rule.syntax)
         self.origin = origin
+        self.target = target
         self.rule = rule
 
-    def get_non_terminal_symbols(self) -> list[str]:
-        return [self.name]
-
     def accept(self, v: RuleVisitor):
-        return v.import_rule(self.rule, self.origin)
+        return v.import_rule(self.rule, self.origin, self.target)
 
 
 class Grammar:

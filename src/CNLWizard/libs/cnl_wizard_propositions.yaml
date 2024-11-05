@@ -1,11 +1,19 @@
 there_is_clause:
   syntax: '("there" | "There") "is" entity'
+  target:
+    - asp
+    - cp
+    - smt
 
 positive_constraint:
   syntax: '"It is required that" positive_constraint_body'
+  target:
+    - asp
 
 negative_constraint:
   syntax: '"It is prohibited that" negative_constraint_body'
+  target:
+    - asp
 
 operation:
   - name: math
@@ -15,6 +23,10 @@ operation:
       division: '/'
       multiplication: '*'
     syntax: '("The" | "the") math_operator "between" math_first "and" math_second'
+    target:
+      - asp
+      - cp
+      - smt
 
   - name: comparison
     operators:
@@ -25,33 +37,45 @@ operation:
       less than or equal to: '<='
       greater than or equal to: '>='
     syntax: comparison_first "is"? comparison_operator comparison_second
+    target:
+      - asp
+      - cp
+      - smt
 
-  - name: formula
-    syntax: formula_first formula_operator formula_second
-    operators:
-      and: '&'
-      or: '|'
-      imply: '>>'
-      implies: '>>'
-      is equivalent to: '<->'
-      not: '~'
 
 entity:
   - name: entity
     syntax: ("a " | "an ")? string [attribute]
+    target:
+      - asp
+      - cp
+      - smt
 
   - name: verb
     syntax: ("a " | "an ")? string [attribute] string
+    target:
+      - asp
+      - cp
+      - smt
 
 attribute:
   - name: attribute
     concat: ","
+    target:
+      - asp
+      - cp
+      - smt
 
 simple_proposition:
   syntax: entity ("have" | "has" | "are" | "is") verb entity
+  target:
+    - asp
+    - cp
+    - smt
 
 negated_simple_proposition:
   syntax: entity ("do not have" | "does not have" | "are not" | "is not") verb entity
-
-consequence:
-  syntax: '"If" (simple_proposition | negated_simple_proposition) ", then" (simple_proposition | negated_simple_proposition)'
+  target:
+    - asp
+    - cp
+    - smt

@@ -22,13 +22,13 @@ class YAMLReader:
         for i in range(len(symbols)):
             rule.syntax[0] = rule.syntax[0].replace(rule_symbols[i], symbols[i])
 
-    def get_imported_rule(self, lib: str, rule: str) -> Rule:
+    def get_imported_rule(self, lib: str, target: str, rule: str) -> Rule:
         rule = rule.split('(')
-        res = self._imported_libs[lib].get_grammar()[rule[0]]
+        res = self._imported_libs[lib].get_grammar(target)[rule[0]]
         if len(rule) > 1:
             symbols = rule[1].removesuffix(')').split(',')
             self.substitute_symbols(res, symbols)
-        return ImportedRule(lib, res)
+        return ImportedRule(lib, target, res)
 
     def read_specification(self, path: str) -> Cnl:
         cnl = Cnl()
@@ -46,7 +46,9 @@ class YAMLReader:
         if key == 'config':
             res['_all'] += self.config(value)
         elif key == 'import':
-            res['_all'] += self.import_rules(value)
+            for lib, targets_lib in value.items():
+                for target_lib, rules_dict in targets_lib.items():
+                    res[target_lib] += self.import_rules(lib, target_lib, rules_dict['rules'])
         elif isinstance(value, list):
             for target, rules in self.composite_rule(key.lower(), value).items():
                 res[target] += rules
@@ -71,11 +73,10 @@ class YAMLReader:
             res.append(PreprocessConfigRule('var_substitution'))
         return res
 
-    def import_rules(self, to_import: dict) -> list[Rule]:
+    def import_rules(self, lib, target_lib, rules) -> [list[Rule], str]:
         res = []
-        for lib, rules in to_import.items():
-            for rule in rules:
-                res.append(self.get_imported_rule(lib, rule))
+        for rule in rules:
+            res.append(self.get_imported_rule(lib, target_lib, rule))
         return res
 
     def support_rule(self, name: str, data: dict) -> SupportRule:

@@ -39,7 +39,7 @@ class RuleVisitor:
     def visit_preprocess_config_rule(self, r: PreprocessConfigRule) -> str:
         return ''
 
-    def import_rule(self, r: Rule, origin: str) -> str:
+    def import_rule(self, r: Rule, origin: str, target: str) -> str:
         return ''
 
 
@@ -104,7 +104,7 @@ class LarkGrammarWriter(RuleVisitor):
             concat_symbol = ''
         return f'{rule.name} {concat_symbol} {rule.name} -> {rule.name}_concat\n'
 
-    def import_rule(self, r: Rule, origin: str) -> str:
+    def import_rule(self, r: Rule, origin: str, target: str) -> str:
         return r.accept(self)
 
 
@@ -273,8 +273,12 @@ class PythonFunctionWriter(RuleVisitor):
                 libs = '\n'.join(self._import_libs)
                 out.write(f'{libs}\n\n\n{content}')
 
-    def import_rule(self, r: Rule, origin: str) -> str:
-        from CNLWizard.reader import pyReader
-        if r.name in self._imported_fn[origin]:
-            return inspect.getsource(self._imported_fn[origin][r.name])
+    def import_rule(self, r: Rule, origin: str, target: str) -> str:
+        if r.name in self._implemented_fn:
+            return ''
+        if r.name in self._imported_fn[origin][target]:
+            res = ''
+            for name in r.get_to_import():
+                res += inspect.getsource(self._imported_fn[origin][target][name]) + '\n\n'
+            return res
         return r.accept(self)
