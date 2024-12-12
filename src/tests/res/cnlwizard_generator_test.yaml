@@ -1,6 +1,10 @@
 import:
   cnl_wizard:
-    - there_is_clause("it is")
+      asp:
+        rules:
+          - there_is_clause("it is")
+        target:
+          - lang1
 
 config:
   signatures:

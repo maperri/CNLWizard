@@ -48,7 +48,9 @@ class YAMLReader:
         elif key == 'import':
             for lib, targets_lib in value.items():
                 for target_lib, rules_dict in targets_lib.items():
-                    res[target_lib] += self.import_rules(lib, target_lib, rules_dict['rules'])
+                    to_import = self.import_rules(lib, target_lib, rules_dict['rules'])
+                    for target in rules_dict['target']:
+                        res[target] += to_import
         elif isinstance(value, list):
             for target, rules in self.composite_rule(key.lower(), value).items():
                 res[target] += rules

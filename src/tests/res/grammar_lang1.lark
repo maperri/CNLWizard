@@ -11,8 +11,8 @@ start: arithmetic | constraint | TERMINAL | entity | operation | there_is_clause
 ?string: CNAME
 
 //  ----- Defined grammar below
-there_is_clause: ("it is" | "There") "is" entity
 !arithmetic: "the sum between 1 and 2"
 constraint: "it is prohibited that" arithmetic
 entity: ("A" | "An" | "a" | "an")? string attribute
 TERMINAL: "TERMINAL"
+there_is_clause: ("it is" | "There") "is" entity
