@@ -153,7 +153,12 @@ class PythonFunctionWriter(RuleVisitor):
     def visit_compiled_rule(self, r: CompiledRule) -> str:
         py_fn = ''
         if r.name not in self._implemented_fn:
-            py_fn += self.__py_not_implemented_fn(r.name, r.get_rule_function_args())
+            if not r.code:
+                py_fn += self.__py_not_implemented_fn(r.name, r.get_rule_function_args())
+            else:
+                py_fn += dedent(f'''\
+                                def {r.name}({", ".join(r.get_rule_function_args())}):
+                                {indent(r.code, '    ')}\n\n\n''')
         if r.concat is not None and f'{r.name}_concat' not in self._implemented_fn:
             py_fn += self.__concat_rule(r)
         return py_fn

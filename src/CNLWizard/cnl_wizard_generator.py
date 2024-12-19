@@ -14,7 +14,8 @@ class CnlWizardGenerator:
         self._out_dir = out_dir
 
     def _import_internal_lib(self):
-        return YAMLReader().read_specification(os.path.join(os.path.join(os.path.dirname(__file__), 'libs', 'cnl_wizard_propositions.yaml')))
+        return YAMLReader().read_specification(
+            os.path.join(os.path.join(os.path.dirname(__file__), 'libs', 'cnl_wizard_propositions.yaml')))
 
     def _is_specification_file(self, file: str) -> bool:
         if os.path.splitext(file)[1] == '.yaml':
@@ -41,7 +42,8 @@ class CnlWizardGenerator:
         res = {}
         for file in os.listdir(os.path.join(os.path.dirname(__file__), 'libs')):
             if self._is_py_file(file):
-                res[self._get_filename(file)] = pyReader().get_functions(os.path.join(os.path.dirname(__file__), 'libs', file))
+                res[self._get_filename(file)] = pyReader().get_functions(
+                    os.path.join(os.path.dirname(__file__), 'libs', file))
         return res
 
     def _get_imported_functions(self, import_dir: str) -> dict:
@@ -64,4 +66,3 @@ class CnlWizardGenerator:
                 py_writer.import_fn(py_file)
             py_writer.write(cnl.print(lang, py_writer), py_file)
 
-                    

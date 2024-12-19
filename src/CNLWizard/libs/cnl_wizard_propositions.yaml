@@ -5,6 +5,12 @@ there_is_clause:
     - cp
     - smt
 
+constant_definition:
+  syntax: string "is a constant" ["equal to" number]
+  target:
+    - asp
+
+
 positive_constraint:
   syntax: '"It is required that" positive_constraint_body'
   target:
@@ -12,6 +18,63 @@ positive_constraint:
 
 negative_constraint:
   syntax: '"It is prohibited that" negative_constraint_body'
+  target:
+    - asp
+
+compounded_range_clause:
+  syntax: '("A" | "An") string "goes from" (number | string) "to" (number | string)'
+  target:
+    - asp
+
+
+cardinality:
+  - name: exactly
+    syntax:
+      - '"exactly" number'
+    target:
+      - asp
+
+  - name: at_least
+    syntax:
+      - '"at least" number'
+    target:
+      - asp
+
+  - name: at_most
+    syntax:
+      - '"at most" number'
+    target:
+      - asp
+
+  - name: between
+    syntax:
+      - '"between" number "and" number'
+    target:
+      - asp
+
+quantified_choice:
+  syntax: '"Every" entity "can" ("be" | "have")? verb cardinality entity'
+  target:
+    - asp
+
+
+quantified_assignment:
+  syntax: '"Every" entity "must" ("be" | "have")? verb entity'
+  target:
+    - asp
+
+whenever_then_clause_choice:
+  syntax: 'whenever_clauses "then" entity "can" ("have" | "be")? [cardinality] verb [cardinality] [list_of_entities]'
+  target:
+    - asp
+
+whenever_then_clause_assignment:
+  syntax: 'whenever_clauses "then" entity "must" ("have" | "be")? verb'
+  target:
+    - asp
+
+whenever_clauses:
+  syntax: (whenever_clause ","?)+
   target:
     - asp
 
@@ -36,6 +99,7 @@ operation:
       greater than: '>'
       less than or equal to: '<='
       greater than or equal to: '>='
+      at most: '<='
     syntax: comparison_first "is"? comparison_operator comparison_second
     target:
       - asp
@@ -52,7 +116,7 @@ entity:
       - smt
 
   - name: verb
-    syntax: ("a " | "an ")? string [attribute] string
+    syntax: ("a" | "an")? word [attribute] [word]
     target:
       - asp
       - cp
@@ -67,7 +131,7 @@ attribute:
       - smt
 
 simple_proposition:
-  syntax: entity ("have" | "has" | "are" | "is") verb entity
+  syntax: entity ("have" | "has" | "are" | "is")? verb list_of_entities
   target:
     - asp
     - cp
@@ -79,3 +143,44 @@ negated_simple_proposition:
     - asp
     - cp
     - smt
+
+aggregate_operator:
+  - name: count
+    syntax: '"the number of"'
+    target:
+      - asp
+
+  - name: sum
+    syntax: '"the total of"'
+    target:
+      - asp
+
+list_of_entities:
+  syntax: 'entity ("," "and"? entity)*'
+  target:
+    - asp
+
+simple_aggregate:
+  syntax: 'aggregate_operator string [string] "that" verb list_of_entities'
+  target:
+    - asp
+
+passive_aggregate:
+  syntax: 'aggregate_operator string [string] [", in" ("a"|"an") string ","] "where" entity verb [entity]'
+  target:
+    - asp
+
+active_aggregate:
+  syntax: 'aggregate_operator string "that" ("have" | "has" | "is" | "are") verb list_of_entities'
+  target:
+    - asp
+
+negation:
+  syntax: '"not"'
+  target:
+    - asp
+
+whenever_clause:
+  syntax: '("Whenever" | "whenever") "there is" [negation] entity'
+  target:
+    - asp

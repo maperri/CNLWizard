@@ -154,11 +154,11 @@ def process_cnl_specification(cnl: CnlWizardCompiler, cnl_specification: str, co
     start_rules = []
     if config['signatures']:
         grammar += dedent('''\
-                signature_definition: ("A" | "An")? CNAME [typed_signature] "is identified by" signature_parameters ["and has" signature_parameters]
+                signature_definition: ("A" | "An")? CNAME [typed_signature] "is identified by" signature_parameters [","? "and has" signature_parameters]
                 typed_signature: "is" ("a"|"an")? CNAME "concept" ["that ranges from" NUMBER "to" NUMBER] ", and it"
                 cnl_list_elem: NUMBER | CNAME
                              | cnl_list_elem "," cnl_list_elem -> cnl_list_elem_concat
-                signature_parameters: ("a" | "an")? CNAME 
+                signature_parameters: "by"? ("a" | "an")? CNAME 
                                     | signature_parameters "," "and"? signature_parameters -> signature_parameters_concat
                 cnl_list_definition: ("A" | "An") CNAME "is a list made of" cnl_list_elem
                 ?definition.1: signature_definition | cnl_list_definition

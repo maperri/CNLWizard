@@ -101,8 +101,9 @@ class GrammarConfigRule(Rule):
 
 
 class CompiledRule(Rule):
-    def __init__(self, name: str, syntax: list[str], concat: str | None = None):
+    def __init__(self, name: str, syntax: list[str], concat: str | None = None, code=None):
         super().__init__(name, syntax, concat)
+        self.code = code
 
     def accept(self, v: RuleVisitor) -> str:
         return v.visit_compiled_rule(self)
@@ -119,7 +120,7 @@ class SupportRule(Rule):
 class AttributeRule(Rule):
     def __init__(self, name: str, syntax: str = None, concat: str | None = None):
         if syntax is None:
-            syntax = '"with" string "equal to" (string | number)'
+            syntax = '"with" ("a" | "an")? string "equal to"? (string | number)'
         super().__init__(name, [syntax], concat)
 
     def accept(self, v: RuleVisitor):
@@ -246,18 +247,21 @@ class Cnl:
     FLOAT = 'common.FLOAT'
     NUMBER = 'common.NUMBER'
     COMMENT = 'common.CPP_COMMENT'
+    LCASE_LETTER = 'common.LCASE_LETTER'
 
     def __init__(self):
         self._grammar: Grammar = Grammar()  # dictionary target language - rule
         self.imports()
 
     def imports(self):
-        for value in [Cnl.WHITE_SPACE, Cnl.CNAME, Cnl.SIGNED_NUMBER, Cnl.INT, Cnl.FLOAT, Cnl.NUMBER, Cnl.COMMENT]:
+        for value in [Cnl.WHITE_SPACE, Cnl.CNAME, Cnl.SIGNED_NUMBER, Cnl.INT, Cnl.FLOAT, Cnl.NUMBER, Cnl.COMMENT, Cnl.LCASE_LETTER]:
             rule = GrammarConfigRule(f'%import {value}', [])
             self.add_rule('_all', rule)
         self.add_rule('_all', GrammarConfigRule(f'%ignore WS', []))
         self.add_rule('_all', GrammarConfigRule(f'%ignore CPP_COMMENT', []))
         self.add_rule('_all', SupportRule('string', ['CNAME']))
+        self.add_rule('_all', SupportRule('l_case', ['LCASE_LETTER']))
+        self.add_rule('_all', CompiledRule('word', ['l_case string'], code="""return f'{l_case}{string}'"""))
         self.add_rule('_all', SupportRule('signed_number', ['SIGNED_NUMBER']))
         self.add_rule('_all', SupportRule('int', ['INT']))
         self.add_rule('_all', SupportRule('float', ['FLOAT']))

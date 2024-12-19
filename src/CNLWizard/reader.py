@@ -198,11 +198,7 @@ class pyReader:
     def _get_functions_name_in(self, path: str) -> list[str]:
         text = Path(path).read_text()
         parsed_ast = ast.parse(text)
-        functions = [
-            node.name
-            for node in ast.walk(parsed_ast)
-            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
-        ]
+        functions = [n.name for n in parsed_ast.body if isinstance(n, ast.FunctionDef)]
         for line in text.splitlines():
             if line.startswith('CnlWizardCompiler.config'):
                 functions.append(line)

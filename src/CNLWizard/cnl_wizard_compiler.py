@@ -3,7 +3,7 @@ import logging
 import os
 import sys
 from typing import Callable
-
+import uuid
 import lark
 
 from lark import Lark, UnexpectedInput, Transformer
@@ -33,6 +33,12 @@ class Signatures:
 
     def __getitem__(self, item) -> Signature:
         return copy.deepcopy(self.signatures[item])
+
+    def __contains__(self, key):
+        return key in self.signatures
+
+    def values(self):
+        return self.signatures.values()
 
     def __setitem__(self, key: str, value: (str, list, list, (str, int, int))):
         """
@@ -89,6 +95,8 @@ class CnlWizardCompiler:
         'signatures': True,
         'var_substitution': True
     }
+    vars = dict()
+    constants = dict()
 
     def __init__(self):
         self.vars = dict()
@@ -110,3 +118,6 @@ class CnlWizardCompiler:
             self.logger.error(e)
             return ''
         return CNLTransformer(functions).transform(parse_tree)
+
+def create_var():
+    return f'X_{str(uuid.uuid4()).replace("-", "_")}'
