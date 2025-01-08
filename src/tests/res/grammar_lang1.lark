@@ -6,9 +6,11 @@ start: arithmetic | constraint | TERMINAL | entity | operation | there_is_clause
 %import common.FLOAT 
 %import common.NUMBER 
 %import common.CPP_COMMENT 
+%import common.LCASE_LETTER 
 %ignore WS 
 %ignore CPP_COMMENT 
 ?string: CNAME
+?l_case: LCASE_LETTER
 
 //  ----- Defined grammar below
 !arithmetic: "the sum between 1 and 2"

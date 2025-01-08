@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import collections
 import inspect
+from inspect import signature
 from textwrap import dedent, indent
 from typing import TYPE_CHECKING
-
+import types
 
 if TYPE_CHECKING:
     from CNLWizard.cnl import CompiledRule, SupportRule, AttributeRule, EntityRule, ListRule, OperationRule, \
@@ -204,6 +205,8 @@ class PythonFunctionWriter(RuleVisitor):
     def __dict_to_str(self, d: dict) -> str:
         res = '{'
         for key, value in d.items():
+            if isinstance(value,  types.FunctionType):
+                value = f'{value.__name__}{signature(value)}'
             res += f'\'{key}\': {value}, '
         return res.removesuffix(', ') + '}'
 

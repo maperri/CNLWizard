@@ -5,12 +5,12 @@ from CNLWizard.writer import LarkGrammarWriter, PythonFunctionWriter
 
 
 class CnlWizardGenerator:
-    def __init__(self, yaml_file: str, import_dir: str, out_dir: str):
+    def __init__(self, yaml_file: str, import_dirs: list[str], out_dir: str):
         self._specification = yaml_file
-        if import_dir is None:
-            import_dir = ''
-        self._imported_libs = self._get_imported_grammars(import_dir)
-        self._imported_fn = self._get_imported_functions(import_dir)
+        if import_dirs is None:
+            import_dirs = []
+        self._imported_libs = self._get_imported_grammars(import_dirs)
+        self._imported_fn = self._get_imported_functions(import_dirs)
         self._out_dir = out_dir
 
     def _import_internal_lib(self):
@@ -30,9 +30,9 @@ class CnlWizardGenerator:
     def _get_filename(self, file: str) -> str:
         return os.path.splitext(file)[0]
 
-    def _get_imported_grammars(self, import_dir: str) -> dict:
+    def _get_imported_grammars(self, import_dirs: list[str]) -> dict:
         res = {'cnl_wizard': self._import_internal_lib()}
-        if import_dir:
+        for import_dir in import_dirs:
             for file in os.listdir(import_dir):
                 if self._is_specification_file(file):
                     res[self._get_filename(file)] = YAMLReader().read_specification(os.path.join(import_dir, file))
@@ -46,12 +46,17 @@ class CnlWizardGenerator:
                     os.path.join(os.path.dirname(__file__), 'libs', file))
         return res
 
-    def _get_imported_functions(self, import_dir: str) -> dict:
+    def _get_imported_functions(self, import_dirs: list[str]) -> dict:
         res = {'cnl_wizard': self._import_internal_fn()}
-        if import_dir:
+        for import_dir in import_dirs:
+            yaml_file_name = ''
+            functions = {}
             for file in os.listdir(import_dir):
+                if self._is_specification_file(file):
+                    yaml_file_name = self._get_filename(file)
                 if self._is_py_file(file):
-                    res[self._get_filename(file)] = pyReader().get_functions(os.path.join(import_dir, file))
+                    functions[self._get_filename(file)] = pyReader().get_functions(os.path.join(import_dir, file))
+            res[yaml_file_name] = functions
         return res
 
     def generate(self):

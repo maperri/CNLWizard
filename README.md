@@ -15,5 +15,14 @@ In the root directory:
 Generate grammar and python functions
 `CNLWizard -g specification.yaml`
 
+Import from folder
+`CNLWizard -g specification.yaml -i list_of_folders`
+each folder should contain:
+- a yaml file
+- a py file containing the implemented functions. 
+  The py file must have the name of the corresponding target language.
+
+
 Compile the CNL
 `CNLWizard -c grammar.lark py_fn.py cnl_text.txt`
+

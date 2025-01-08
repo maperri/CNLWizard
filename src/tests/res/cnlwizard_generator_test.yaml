@@ -5,6 +5,12 @@ import:
           - there_is_clause("it is")
         target:
           - lang1
+  import_test:
+      lang:
+        rules:
+          - test_rule
+        target:
+          - lang1
 
 config:
   signatures:
