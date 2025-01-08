@@ -6,16 +6,17 @@ start: arithmetic | constraint | TERMINAL | entity | operation | there_is_clause
 %import common.FLOAT 
 %import common.NUMBER 
 %import common.CPP_COMMENT 
+%import common.LCASE_LETTER 
 %ignore WS 
 %ignore CPP_COMMENT 
 ?string: CNAME
+?l_case: LCASE_LETTER
 ?number: NUMBER
 
 //  ----- Defined grammar below
-there_is_clause: ("it is" | "There") "is" entity
 !arithmetic: "the sum between 1 and 2"
 constraint: "it is prohibited that" arithmetic
-entity: ("a" | "an")? string attribute
+entity: ("A" | "An" | "a" | "an")? string attribute
 TERMINAL: "TERMINAL"
 !test_operation_operator: "sum"
 test_operation: "the" test_operation_operator "between" operand "and" operand

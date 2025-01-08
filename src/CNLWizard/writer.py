@@ -1,12 +1,15 @@
 from __future__ import annotations
 
 import collections
+import inspect
+from inspect import signature
 from textwrap import dedent, indent
 from typing import TYPE_CHECKING
+import types
 
 if TYPE_CHECKING:
     from CNLWizard.cnl import CompiledRule, SupportRule, AttributeRule, EntityRule, ListRule, OperationRule, \
-        GrammarConfigRule, Rule, PureFunction, PreprocessConfigRule
+        GrammarConfigRule, Rule, PureFunction, PreprocessConfigRule, Cnl
 
 
 class RuleVisitor:
@@ -35,6 +38,9 @@ class RuleVisitor:
         return ''
 
     def visit_preprocess_config_rule(self, r: PreprocessConfigRule) -> str:
+        return ''
+
+    def import_rule(self, r: Rule, origin: str, target: str) -> str:
         return ''
 
 
@@ -99,13 +105,15 @@ class LarkGrammarWriter(RuleVisitor):
             concat_symbol = ''
         return f'{rule.name} {concat_symbol} {rule.name} -> {rule.name}_concat\n'
 
+    def import_rule(self, r: Rule, origin: str, target: str) -> str:
+        return r.accept(self)
+
 
 class PythonFunctionWriter(RuleVisitor):
-    def __init__(self, implemented_functions: set[str] = None):
-        if implemented_functions is None:
-            implemented_functions = set()
-        self.implemented_fn = implemented_functions
-        self.import_libs = ['from CNLWizard.cnl_wizard_compiler import CnlWizardCompiler']
+    def __init__(self, imported_fn: dict = None):
+        self._implemented_fn = set()
+        self._import_libs = ['from CNLWizard.cnl_wizard_compiler import CnlWizardCompiler']
+        self._imported_fn = imported_fn
 
     def __create_unique_args(self, args: list[str]) -> list[str]:
         args_counter = collections.Counter(args)
@@ -131,7 +139,7 @@ class PythonFunctionWriter(RuleVisitor):
 
     def visit_support_rule(self, r: SupportRule) -> str:
         py_fn = ''
-        if r.name not in self.implemented_fn:
+        if r.name not in self._implemented_fn:
             if (not r.non_terminal_symbols and not r.name.isupper()) or len(r.get_rule_function_args()) > 1:
                 # If the rule has only terminal symbols, but it is written in lower case, or
                 # it has more than 1 non-terminal symbol then process it
@@ -139,30 +147,35 @@ class PythonFunctionWriter(RuleVisitor):
                 if not args:
                     args = ['value']
                 py_fn += self.__py_not_implemented_fn(r.name, args)
-        if r.concat is not None and f'{r.name}_concat' not in self.implemented_fn:
+        if r.concat is not None and f'{r.name}_concat' not in self._implemented_fn:
             py_fn += self.__concat_rule(r)
         return py_fn
 
     def visit_compiled_rule(self, r: CompiledRule) -> str:
         py_fn = ''
-        if r.name not in self.implemented_fn:
-            py_fn += self.__py_not_implemented_fn(r.name, r.get_rule_function_args())
-        if r.concat is not None and f'{r.name}_concat' not in self.implemented_fn:
+        if r.name not in self._implemented_fn:
+            if not r.code:
+                py_fn += self.__py_not_implemented_fn(r.name, r.get_rule_function_args())
+            else:
+                py_fn += dedent(f'''\
+                                def {r.name}({", ".join(r.get_rule_function_args())}):
+                                {indent(r.code, '    ')}\n\n\n''')
+        if r.concat is not None and f'{r.name}_concat' not in self._implemented_fn:
             py_fn += self.__concat_rule(r)
         return py_fn
 
     def visit_attribute_rule(self, r: AttributeRule) -> str:
         py_fn = ''
-        if r.name not in self.implemented_fn:
+        if r.name not in self._implemented_fn:
             py_fn += f'def {r.name}(name, attribute_value):\n' \
                      '    return [(name, attribute_value)]\n\n\n'
-        if r.concat is not None and f'{r.name}_concat' not in self.implemented_fn:
+        if r.concat is not None and f'{r.name}_concat' not in self._implemented_fn:
             py_fn += self.__concat_rule(r)
         return py_fn
 
     def visit_entity_rule(self, r: EntityRule) -> str:
         py_fn = ''
-        if r.name not in self.implemented_fn:
+        if r.name not in self._implemented_fn:
             py_fn += dedent(f'''\
                     def {r.name}({', '.join(self.__create_unique_args(r.get_rule_function_args()))}):
                         try:
@@ -172,32 +185,34 @@ class PythonFunctionWriter(RuleVisitor):
                             return entity
                         except KeyError:
                             return None\n\n\n''')
-        if r.concat is not None and f'{r.name}_concat' not in self.implemented_fn:
+        if r.concat is not None and f'{r.name}_concat' not in self._implemented_fn:
             py_fn += self.__concat_rule(r)
         return py_fn
 
     def visit_list_rule(self, r: ListRule) -> str:
         py_fn = ''
-        if r.name not in self.implemented_fn:
+        if r.name not in self._implemented_fn:
             py_fn += dedent('''\
                             def list_index_element(idx, list_name):
                                 return self.cnl.lists[list_name][idx]
                     
                             def list_contains(list_name, elem):
                                 return elem in self.cnl.lists[list_name]\n\n\n''')
-        if r.concat is not None and f'{r.name}_concat' not in self.implemented_fn:
+        if r.concat is not None and f'{r.name}_concat' not in self._implemented_fn:
             py_fn += self.__concat_rule(r)
         return py_fn
 
     def __dict_to_str(self, d: dict) -> str:
         res = '{'
         for key, value in d.items():
+            if isinstance(value,  types.FunctionType):
+                value = f'{value.__name__}{signature(value)}'
             res += f'\'{key}\': {value}, '
         return res.removesuffix(', ') + '}'
 
     def visit_operation_rule(self, r: OperationRule) -> str:
         py_fn = ''
-        if f'{r.name}_operator' not in self.implemented_fn:
+        if f'{r.name}_operator' not in self._implemented_fn:
             py_fn += dedent(f'''\
                             def {r.name}_operator(*args):
                                 items_dict = {self.__dict_to_str(r.operators)}
@@ -206,7 +221,7 @@ class PythonFunctionWriter(RuleVisitor):
                                 
                                 
                             ''')
-        if r.name not in self.implemented_fn:
+        if r.name not in self._implemented_fn:
             operator_index = 0
             for o in r.get_rule_function_args():
                 if o.endswith('operator'):
@@ -225,12 +240,12 @@ class PythonFunctionWriter(RuleVisitor):
                 py_fn += '    return operator(*args)\n\n\n'
             else:
                 py_fn += '\n\n\n'
-        if r.concat is not None and f'{r.name}_concat' not in self.implemented_fn:
+        if r.concat is not None and f'{r.name}_concat' not in self._implemented_fn:
             py_fn += self.__concat_rule(r)
         return py_fn
 
     def visit_pure_function(self, r: PureFunction) -> str:
-        if r.name in self.implemented_fn:
+        if r.name in self._implemented_fn:
             return ''
         return dedent(f'''\
                 def {r.name}({", ".join(r.syntax)}):
@@ -249,6 +264,29 @@ class PythonFunctionWriter(RuleVisitor):
 
     def visit_preprocess_config_rule(self, r: GrammarConfigRule) -> str:
         res = f'CnlWizardCompiler.config[\'{r.name}\'] = False'
-        if res not in self.implemented_fn:
+        if res not in self._implemented_fn:
             return f'{res}\n\n\n'
         return ''
+
+    def import_fn(self, py_file):
+        from CNLWizard.reader import pyReader
+        self._implemented_fn = set(pyReader().get_functions(py_file).keys())
+
+    def write(self, content: str, py_file: str):
+        if self._implemented_fn:
+            with open(py_file, 'a') as out:
+                out.write(f'{content}')
+        else:
+            with open(py_file, 'w') as out:
+                libs = '\n'.join(self._import_libs)
+                out.write(f'{libs}\n\n\n{content}')
+
+    def import_rule(self, r: Rule, origin: str, target: str) -> str:
+        if r.name in self._implemented_fn:
+            return ''
+        if r.name in self._imported_fn[origin][target]:
+            res = ''
+            for name in r.get_to_import():
+                res += inspect.getsource(self._imported_fn[origin][target][name]) + '\n\n'
+            return res
+        return r.accept(self)

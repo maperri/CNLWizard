@@ -5,44 +5,37 @@ import sys
 from collections import defaultdict
 from pathlib import Path
 from textwrap import indent
+from typing import Callable
 
 import yaml
 
 from CNLWizard.cnl import Cnl, SupportRule, CompiledRule, AttributeRule, EntityRule, OperationRule, ListRule, \
-    PureFunction, PreprocessConfigRule, Rule
+    PureFunction, PreprocessConfigRule, Rule, ImportedRule
 
 
 class YAMLReader:
-    def __init__(self):
-        self.default_rules = self._init_default_rules()
-
-    def _init_default_rules(self) -> dict:
-        res = {}
-        with open(os.path.join(os.path.join(os.path.dirname(__file__), 'cnl_wizard_propositions.yaml')), 'r') as stream:
-            rules = yaml.safe_load(stream)
-        for name, data in rules.items():
-            for target, rules in self.read_entry(name, data).items():
-                for rule in rules:
-                    res[rule.name] = rule
-        return res
+    def __init__(self, imported_libs: dict = None):
+        self._imported_libs = imported_libs
 
     def substitute_symbols(self, rule: Rule, symbols):
         rule_symbols = rule.get_symbols()
         for i in range(len(symbols)):
             rule.syntax[0] = rule.syntax[0].replace(rule_symbols[i], symbols[i])
 
-    def get_default_rule(self, rule: str) -> Rule:
+    def get_imported_rule(self, lib: str, target: str, rule: str) -> Rule:
         rule = rule.split('(')
-        res = self.default_rules[rule[0]]
+        res = self._imported_libs[lib].get_grammar(target)[rule[0]]
         if len(rule) > 1:
             symbols = rule[1].removesuffix(')').split(',')
             self.substitute_symbols(res, symbols)
-        return res
+        return ImportedRule(lib, target, res)
 
     def read_specification(self, path: str) -> Cnl:
         cnl = Cnl()
         with open(path, 'r') as stream:
             rules = yaml.safe_load(stream)
+        if not rules:
+            return cnl
         for key, value in rules.items():
             for target, rules in self.read_entry(key, value).items():
                 cnl.add_rules(target, rules)
@@ -53,11 +46,11 @@ class YAMLReader:
         if key == 'config':
             res['_all'] += self.config(value)
         elif key == 'import':
-            if isinstance(value, list):
-                res['_all'] += self.import_rules(value)
-            else:
-                for target, rules in value.items():
-                    res[target] += self.import_rules(rules)
+            for lib, targets_lib in value.items():
+                for target_lib, rules_dict in targets_lib.items():
+                    to_import = self.import_rules(lib, target_lib, rules_dict['rules'])
+                    for target in rules_dict['target']:
+                        res[target] += to_import
         elif isinstance(value, list):
             for target, rules in self.composite_rule(key.lower(), value).items():
                 res[target] += rules
@@ -82,10 +75,10 @@ class YAMLReader:
             res.append(PreprocessConfigRule('var_substitution'))
         return res
 
-    def import_rules(self, rules: list) -> list[Rule]:
+    def import_rules(self, lib, target_lib, rules) -> [list[Rule], str]:
         res = []
         for rule in rules:
-            res.append(self.get_default_rule(rule))
+            res.append(self.get_imported_rule(lib, target_lib, rule))
         return res
 
     def support_rule(self, name: str, data: dict) -> SupportRule:
@@ -202,22 +195,30 @@ class YAMLReader:
 
 
 class pyReader:
-    def read_module(self, path: str) -> list[str]:
+    def _get_functions_name_in(self, path: str) -> list[str]:
         text = Path(path).read_text()
         parsed_ast = ast.parse(text)
-        functions = [
-            node.name
-            for node in ast.walk(parsed_ast)
-            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
-        ]
+        functions = [n.name for n in parsed_ast.body if isinstance(n, ast.FunctionDef)]
         for line in text.splitlines():
             if line.startswith('CnlWizardCompiler.config'):
                 functions.append(line)
         return functions
 
-    def import_module(self, path: str):
+    def _import_module(self, path: str):
         module_name = os.path.basename(path).split('.')[0]
         spec = importlib.util.spec_from_file_location(module_name, path)
         module = importlib.util.module_from_spec(spec)
         sys.modules[module_name] = module
         spec.loader.exec_module(module)
+
+    def get_functions(self, file: str) -> dict[str, Callable]:
+        if not os.path.exists(file):
+            return {}
+        functions = self._get_functions_name_in(file)
+        self._import_module(file)
+        module_name = os.path.basename(file).split('.')[0]
+        module = sys.modules[module_name]
+        res = {}
+        for fn in functions:
+            exec(f'res["{fn}"] = module.{fn}', locals())
+        return res

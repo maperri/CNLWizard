@@ -1,12 +1,43 @@
 import:
-  - attribute
-  - there_is_clause
-  - math("The", "the", math_operator, "between", math_first,,)
-  - comparison
-  - simple_proposition
-  - negated_simple_proposition
-  - entity
-  - verb
+  cnl_wizard:
+    asp:
+      rules:
+        - attribute
+        - there_is_clause
+        - math("The", "the", math_operator, "between", math_first,,)
+        - comparison
+        - simple_proposition
+        - negated_simple_proposition
+        - entity
+        - verb
+      target:
+        - asp
+    cp:
+      rules:
+        - attribute
+        - there_is_clause
+        - math("The", "the", math_operator, "between", math_first,,)
+        - comparison
+        - simple_proposition
+        - negated_simple_proposition
+        - entity
+        - verb
+      target:
+        - cp
+    smt:
+      rules:
+        - attribute
+        - there_is_clause
+        - math("The", "the", math_operator, "between", math_first,,)
+        - comparison
+        - simple_proposition
+        - negated_simple_proposition
+        - entity
+        - verb
+      target:
+          - smt
+
+
 
 start:
   syntax: (proposition ".")*

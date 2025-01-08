@@ -27,5 +27,5 @@ class TestReader(unittest.TestCase):
     def test_py_reader(self):
         reader = pyReader()
         self.assertEqual({'arith', 'Operation', 'constraint', 'Proposition'},
-                         set(reader.read_module(os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                         set(reader._get_functions_name_in(os.path.join(os.path.dirname(os.path.abspath(__file__)),
                              'res', 'functions.py'))))

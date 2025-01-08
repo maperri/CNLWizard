@@ -3,7 +3,7 @@ import logging
 import os
 import sys
 from typing import Callable
-
+import uuid
 import lark
 
 from lark import Lark, UnexpectedInput, Transformer
@@ -33,6 +33,12 @@ class Signatures:
 
     def __getitem__(self, item) -> Signature:
         return copy.deepcopy(self.signatures[item])
+
+    def __contains__(self, key):
+        return key in self.signatures
+
+    def values(self):
+        return self.signatures.values()
 
     def __setitem__(self, key: str, value: (str, list, list, (str, int, int))):
         """
@@ -89,6 +95,8 @@ class CnlWizardCompiler:
         'signatures': True,
         'var_substitution': True
     }
+    vars = dict()
+    constants = dict()
 
     def __init__(self):
         self.vars = dict()
@@ -96,23 +104,12 @@ class CnlWizardCompiler:
         logging.basicConfig(format='%(levelname)s :: %(name)s :: %(message)s')
         self.logger = logging.getLogger(type(self).__name__)
 
-    def get_functions(self, file: str) -> dict[str, Callable]:
-        py_reader = pyReader()
-        functions = py_reader.read_module(file)
-        py_reader.import_module(file)
-        module_name = os.path.basename(file).split('.')[0]
-        module = sys.modules[module_name]
-        res = {}
-        for fn in functions:
-            exec(f'res["{fn}"] = module.{fn}', locals())
-        return res
-
     def compile(self, grammar_file: str, py_file: str, cnl_text_file: str):
         with open(grammar_file, 'r') as grammar:
             grammar = grammar.read()
         with open(cnl_text_file, 'r') as cnl_text_file:
             cnl_text_file = cnl_text_file.read()
-        functions = self.get_functions(py_file)
+        functions = pyReader().get_functions(py_file)
         lark = Lark(grammar)
         processed_cnl = process_cnl_specification(self, cnl_text_file, self.config)
         try:
@@ -121,3 +118,6 @@ class CnlWizardCompiler:
             self.logger.error(e)
             return ''
         return CNLTransformer(functions).transform(parse_tree)
+
+def create_var():
+    return f'X_{str(uuid.uuid4()).replace("-", "_")}'

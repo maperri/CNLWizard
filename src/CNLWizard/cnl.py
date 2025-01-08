@@ -14,6 +14,9 @@ class Rule:
         self.non_terminal_symbols = []
         self.concat: str | None = concat
 
+    def get_to_import(self):
+        return [self.name]
+
     @abstractmethod
     def accept(self, v: RuleVisitor):
         pass
@@ -98,8 +101,9 @@ class GrammarConfigRule(Rule):
 
 
 class CompiledRule(Rule):
-    def __init__(self, name: str, syntax: list[str], concat: str | None = None):
+    def __init__(self, name: str, syntax: list[str], concat: str | None = None, code=None):
         super().__init__(name, syntax, concat)
+        self.code = code
 
     def accept(self, v: RuleVisitor) -> str:
         return v.visit_compiled_rule(self)
@@ -116,7 +120,7 @@ class SupportRule(Rule):
 class AttributeRule(Rule):
     def __init__(self, name: str, syntax: str = None, concat: str | None = None):
         if syntax is None:
-            syntax = '"with" string "equal to" (string | number)'
+            syntax = '"with" ("a" | "an")? string "equal to"? (string | number)'
         super().__init__(name, [syntax], concat)
 
     def accept(self, v: RuleVisitor):
@@ -140,6 +144,9 @@ class OperationRule(Rule):
         self.operators = operators
         if syntax is not None:
             self.syntax = syntax
+
+    def get_to_import(self):
+        return self.name, f'{self.name}_operator'
 
     def accept(self, v: RuleVisitor):
         return v.visit_operation_rule(self)
@@ -181,17 +188,28 @@ class PreprocessConfigRule(Rule):
         return v.visit_preprocess_config_rule(self)
 
 
+class ImportedRule(Rule):
+    def __init__(self, origin: str, target: str, rule: Rule):
+        super().__init__(rule.name, rule.syntax)
+        self.origin = origin
+        self.target = target
+        self.rule = rule
+
+    def accept(self, v: RuleVisitor):
+        return v.import_rule(self.rule, self.origin, self.target)
+
+
 class Grammar:
     def __init__(self):
-        self.rules: dict[str, list[Rule]] = defaultdict(list)  # dictionary target language - rule
+        self.rules: dict[str, dict] = defaultdict(dict)  # dictionary target language - rule
 
     def get_rules(self, target: str) -> list[Rule]:
         visited = {}
         non_terminal_symbols: set = set()
         non_terminal_symbols.add('start')
-        for rule in self.rules['_all'] + self.rules[target]:
+        for rule in list(self.rules['_all'].values()) + list(self.rules[target].values()):
             non_terminal_symbols.update(rule.get_non_terminal_symbols())
-        for rule in self.rules['_all'] + self.rules[target]:
+        for rule in list(self.rules['_all'].values()) + list(self.rules[target].values()):
             if rule.name not in non_terminal_symbols:
                 # do not include unused rules
                 # they can be initialized in rules because of composite rules
@@ -229,18 +247,21 @@ class Cnl:
     FLOAT = 'common.FLOAT'
     NUMBER = 'common.NUMBER'
     COMMENT = 'common.CPP_COMMENT'
+    LCASE_LETTER = 'common.LCASE_LETTER'
 
     def __init__(self):
         self._grammar: Grammar = Grammar()  # dictionary target language - rule
         self.imports()
 
     def imports(self):
-        for value in [Cnl.WHITE_SPACE, Cnl.CNAME, Cnl.SIGNED_NUMBER, Cnl.INT, Cnl.FLOAT, Cnl.NUMBER, Cnl.COMMENT]:
+        for value in [Cnl.WHITE_SPACE, Cnl.CNAME, Cnl.SIGNED_NUMBER, Cnl.INT, Cnl.FLOAT, Cnl.NUMBER, Cnl.COMMENT, Cnl.LCASE_LETTER]:
             rule = GrammarConfigRule(f'%import {value}', [])
             self.add_rule('_all', rule)
         self.add_rule('_all', GrammarConfigRule(f'%ignore WS', []))
         self.add_rule('_all', GrammarConfigRule(f'%ignore CPP_COMMENT', []))
         self.add_rule('_all', SupportRule('string', ['CNAME']))
+        self.add_rule('_all', SupportRule('l_case', ['LCASE_LETTER']))
+        self.add_rule('_all', CompiledRule('word', ['l_case string'], code="""return f'{l_case}{string}'"""))
         self.add_rule('_all', SupportRule('signed_number', ['SIGNED_NUMBER']))
         self.add_rule('_all', SupportRule('int', ['INT']))
         self.add_rule('_all', SupportRule('float', ['FLOAT']))
@@ -248,10 +269,14 @@ class Cnl:
         self.add_rule('_all', GrammarConfigRule('\n//', [' ----- Defined grammar below']))
 
     def add_rule(self, target: str, rule: Rule):
-        self._grammar[target].append(rule)
+        self._grammar[target][rule.name] = rule
 
     def add_rules(self, target: str, rules: list[Rule]):
-        self._grammar[target] += rules
+        for rule in rules:
+            self.add_rule(target, rule)
+
+    def get_grammar(self, target='_all'):
+        return self._grammar[target]
 
     def get_languages(self) -> list[str]:
         languages = list(self._grammar.keys())
