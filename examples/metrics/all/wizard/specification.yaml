@@ -1,0 +1,145 @@
+import:
+  - rules:
+      - constant_definition
+      - compounded_range_clause
+      - quantified_choice
+      - cardinality
+      - at_most
+      - at_least
+      - between
+      - exactly
+      - list_of_entities
+      - whenever_clause
+      - whenever_clauses
+      - comparison
+      - sum
+      - count
+      - math
+      - simple_proposition
+      - aggregate_operator
+      - active_aggregate
+      - simple_aggregate
+      - passive_aggregate
+      - count
+      - sum
+      - quantified_choice
+      - negation
+    source: [asp]
+    target: [asp]
+start:
+  syntax: ((temporal_definition | proposition) [duration_clause] ".")+
+  target:
+    - asp
+duration_clause:
+  syntax: '"for" string "timeslots"'
+proposition:
+  - name: whenever_then_clause_assignment
+  - name: whenever_then_clause_choice_ext
+    syntax: 'whenever_then_clause_choice [such_that_clause]'
+  - name: compounded_range_clause
+  - name: constant_definition
+  - name: quantified_choice_proposition
+    syntax: quantified_choice [for_each]
+  - name: compound_match_clause
+    syntax: >
+      "A" string "is one of" string ("," string)+
+  - name: simple_clause
+    syntax: simple_proposition
+  - name: positive_constraint
+    syntax: '"It is required that" positive_constraint_body ["," terminal_clause]'
+  - name: negative_constraint
+    syntax: '"It is prohibited that" negative_constraint_body ["," terminal_clause]'
+  - name: preference_with_simple_proposition
+    syntax: '"It is preferred" "as much as possible"? ", with" level "priority, that" simple_proposition ["," terminal_clause]'
+  - name: preference_with_math
+    syntax: '"It is preferred" "as much as possible"? ", with" level "priority, that" math "is minimized" ["," terminal_clause]'
+such_that_clause:
+  syntax: '"such that there is" list_of_entities'
+sum_string:
+  syntax: 'string "+" (number | string)'
+diff_string:
+  syntax: 'string "-" number'
+math_first:
+  syntax: [equation, string, linked_attribute]
+  concat: ','
+math_second:
+  syntax: [string, linked_attribute, equation]
+equation:
+  - name: abs_eq
+    syntax: '"|" equation "|"'
+  - name: sum_eq
+    syntax: 'equation "+" equation'
+  - name: diff_eq
+    syntax: 'equation "-" equation'
+  - name: div_eq
+    syntax: 'equation "/" equation'
+  - name: mult_eq
+    syntax: 'equation "*" equation'
+  - name: par_eq
+    syntax: '"(" equation ")"'
+  - name: num_eq
+    syntax: 'number'
+  - name: string_eq
+    syntax: 'string'
+level:
+  syntax: ['"low"', '"medium"', '"high"']
+time_modifier:
+  syntax: ['"next "', '"previous "', '"before "', '"after "']
+entity:
+  - name: entity
+    syntax: ("a " | "an ")? word [label] ["the" time_modifier "step"] [attribute] ["that is"? [negation] time_modifier (string | number)]
+label:
+  syntax: ['/[A-Z]/ [string | number]', 'number']
+attribute:
+  syntax: '"and "? "with" ("a " | "an ")? string [attribute_value] [comparison_operator attribute_value]'
+  concat: ','
+verb:
+  syntax: >
+    [negation] ("a " | "an ")? word [attribute] word
+inhead_verb:
+    syntax: ("a " | "an ")? word [attribute] [word]
+attribute_value:
+  syntax:
+    [string, number, sum_string, diff_string]
+positive_constraint_body:
+  syntax: [comparison, simple_proposition, temporal_clause, when_then_clause]
+when_then_clause:
+  syntax: >
+    "when" simple_clause "then" simple_clause "and also" simple_clause
+whenever_then_clause_choice:
+  syntax: 'whenever_clauses "then" (entity | subj_label) "can" ("have" | "be")? [cardinality] inhead_verb [cardinality] [list_of_entities]'
+whenever_then_clause_assignment:
+  syntax: 'whenever_clauses "then" (entity | subj_label) "must" ("have" | "be")? inhead_verb'
+subj_label:
+  syntax: label
+temporal_clause:
+  syntax: '"the" entity "is" temporal_operator time'
+temporal_definition:
+  syntax: '"A" string "is a temporal concept expressed in" ("days" | "minutes") "ranging from" (date | time) "to" (date | time) ["with a length of" number "minutes"]'
+time:
+  syntax: number ":" number string
+date:
+  syntax: number "/" number "/" number
+temporal_operator:
+  syntax: ['"before"', '"after"']
+terminal_clause:
+  syntax: [comparison_where_clause, between_where_clause, whenever_clause, whenever_aggregate, when_clause]
+  concat: ','
+whenever_aggregate:
+  syntax: '"whenever we have that" comparison'
+comparison_where_clause:
+  syntax: '"where" comparison'
+when_clause:
+  syntax: '"when" simple_proposition'
+between_where_clause:
+  syntax: '"where" string "is between " (string | sum_string | diff_string) "and" (string | sum_string | diff_string)'
+negative_constraint_body:
+  syntax: [comparison, simple_proposition]
+comparison_first:
+  syntax: [math, string, linked_attribute, active_aggregate, simple_aggregate, passive_aggregate]
+comparison_second:
+  syntax: [math, number, string, sum_string, diff_string, linked_attribute, equation]
+linked_attribute:
+  syntax: '"the " string [string] "of the" entity'
+for_each:
+  syntax: '"for each" entity'

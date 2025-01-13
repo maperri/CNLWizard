@@ -1,0 +1,20 @@
+A day is a temporal concept expressed in days ranging from 01/01/2022 to 07/01/2022.
+A timeslot is a temporal concept expressed in minutes ranging from 07:30 AM to 01:30 PM with a length of 10 minutes.
+A patient is identified by a patient_id, and has a preference.
+A registration is identified by a patient_id, and by an order, and has a number_of_waiting_days,
+    a duration_of_the_first_phase, a duration_of_the_second_phase,
+    a duration_of_the_third_phase, and a duration_of_the_fourth_phase.
+A seat is identified by an seat_id, and has a type.
+An assignment is identified by a patient_id, by an order, by a day_id, and by a timeslot_id.
+A position_in is identified by a patient_id, by an order, by a seat_id, by a timeslot_id, and by a day_id.
+Whenever there is a registration R with an order equal to 0, then R can have assignment to exactly 1 day D, and timeslot T.
+Whenever there is a registration R with patient_id P, with order OR, with a number_of_waiting_days W, whenever there is an assignment with patient_id P, with order OR-1, and with day_id D, whenever there is a day with day_id D+W, then we can have an assignment with registration R, and with day_id D+W to exactly 1 timeslot.
+It is required that the sum between the duration_of_the_first_phase of the registration R, the duration_of_the_second_phase of the registration R and the duration_of_the_third_phase of the registration R is greater than the timeslot of the assignment A, whenever there is a registration R, whenever there is an assignment A with registration R, with timeslot T.
+Whenever there is a patient P,
+    whenever there is an assignment with patient_id P, with timeslot_id T, and with day_id D,
+    whenever there is a registration R with patient_id P, and with a duration_of_the_fourth_phase PH4 greater than 0,
+    then P can have a position with seat_id S, with timeslot_id T, with day_id D in exactly 1 seat S
+    for PH4 timeslots.
+It is required that the number of patient_id that have position in seat S, day D, timeslot TS is less than 2, whenever there is a day D, whenever there is a timeslot TS, whenever there is a seat with seat_id S.
+It is required that the assignment A is after 11:20 AM, whenever there is a registration R with a duration_of_the_fourth_phase greater than 50, whenever there is an assignment A with registration R.
+It is preferred as much as possible, with high priority, that a patient P with preference T has a position in a seat S, whenever there is a seat S with type T.

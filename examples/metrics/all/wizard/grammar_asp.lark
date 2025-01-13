@@ -1,0 +1,95 @@
+start: ((temporal_definition | proposition) [duration_clause] ".")+
+%import common.WS 
+%import common.CNAME 
+%import common.SIGNED_NUMBER 
+%import common.INT 
+%import common.FLOAT 
+%import common.NUMBER 
+%import common.CPP_COMMENT 
+%import common.LCASE_LETTER 
+%ignore WS 
+%ignore CPP_COMMENT 
+?string: CNAME
+?l_case: LCASE_LETTER
+word: l_case string
+?number: NUMBER
+
+//  ----- Defined grammar below
+duration_clause: "for" string "timeslots"
+whenever_then_clause_choice_ext: whenever_then_clause_choice [such_that_clause]
+quantified_choice_proposition: quantified_choice [for_each]
+compound_match_clause: "A" string "is one of" string ("," string)+
+simple_clause: simple_proposition
+positive_constraint: "It is required that" positive_constraint_body ["," terminal_clause]
+negative_constraint: "It is prohibited that" negative_constraint_body ["," terminal_clause]
+preference_with_simple_proposition: "It is preferred" "as much as possible"? ", with" level "priority, that" simple_proposition ["," terminal_clause]
+preference_with_math: "It is preferred" "as much as possible"? ", with" level "priority, that" math "is minimized" ["," terminal_clause]
+proposition: whenever_then_clause_assignment | whenever_then_clause_choice_ext | compounded_range_clause | constant_definition | quantified_choice_proposition | compound_match_clause | simple_clause | positive_constraint | negative_constraint | preference_with_simple_proposition | preference_with_math
+such_that_clause: "such that there is" list_of_entities
+sum_string: string "+" (number | string)
+diff_string: string "-" number
+math_first: equation | string | linked_attribute
+          | math_first "," math_first -> math_first_concat
+math_second: string | linked_attribute | equation
+abs_eq: "|" equation "|"
+sum_eq: equation "+" equation
+diff_eq: equation "-" equation
+div_eq: equation "/" equation
+mult_eq: equation "*" equation
+par_eq: "(" equation ")"
+num_eq: number
+string_eq: string
+equation: abs_eq | sum_eq | diff_eq | div_eq | mult_eq | par_eq | num_eq | string_eq
+!level: "low" | "medium" | "high"
+!time_modifier: "next " | "previous " | "before " | "after "
+entity: ("a " | "an ")? word [label] ["the" time_modifier "step"] [attribute] ["that is"? [negation] time_modifier (string | number)]
+label: /[A-Z]/ [string | number] | number
+attribute: "and "? "with" ("a " | "an ")? string [attribute_value] [comparison_operator attribute_value]
+         | attribute "," attribute -> attribute_concat
+verb: [negation] ("a " | "an ")? word [attribute] word
+inhead_verb: ("a " | "an ")? word [attribute] [word]
+attribute_value: string | number | sum_string | diff_string
+positive_constraint_body: comparison | simple_proposition | temporal_clause | when_then_clause
+when_then_clause: "when" simple_clause "then" simple_clause "and also" simple_clause
+whenever_then_clause_choice: whenever_clauses "then" (entity | subj_label) "can" ("have" | "be")? [cardinality] inhead_verb [cardinality] [list_of_entities]
+whenever_then_clause_assignment: whenever_clauses "then" (entity | subj_label) "must" ("have" | "be")? inhead_verb
+subj_label: label
+temporal_clause: "the" entity "is" temporal_operator time
+temporal_definition: "A" string "is a temporal concept expressed in" ("days" | "minutes") "ranging from" (date | time) "to" (date | time) ["with a length of" number "minutes"]
+time: number ":" number string
+date: number "/" number "/" number
+!temporal_operator: "before" | "after"
+terminal_clause: comparison_where_clause | between_where_clause | whenever_clause | whenever_aggregate | when_clause
+               | terminal_clause "," terminal_clause -> terminal_clause_concat
+whenever_aggregate: "whenever we have that" comparison
+comparison_where_clause: "where" comparison
+when_clause: "when" simple_proposition
+between_where_clause: "where" string "is between " (string | sum_string | diff_string) "and" (string | sum_string | diff_string)
+negative_constraint_body: comparison | simple_proposition
+comparison_first: math | string | linked_attribute | active_aggregate | simple_aggregate | passive_aggregate
+comparison_second: math | number | string | sum_string | diff_string | linked_attribute | equation
+linked_attribute: "the " string [string] "of the" entity
+for_each: "for each" entity
+constant_definition: string "is a constant" ["equal to" number]
+compounded_range_clause: ("A" | "An") string "goes from" (number | string) "to" (number | string)
+quantified_choice: "Every" entity "can" ("be" | "have")? verb cardinality entity
+cardinality: exactly | at_least | at_most | between
+at_most: "at most" number
+at_least: "at least" number
+between: "between" number "and" number
+exactly: "exactly" number
+list_of_entities: entity ("," "and"? entity)*
+whenever_clause: ("Whenever" | "whenever") "there is" [negation] entity
+whenever_clauses: (whenever_clause ","?)+
+!comparison_operator: "equal to" | "different from" | "less than" | "greater than" | "less than or equal to" | "greater than or equal to" | "at most"
+comparison: comparison_first "is"? comparison_operator comparison_second
+!sum: "the total of"
+!count: "the number of"
+!math_operator: "sum" | "difference" | "division" | "multiplication"
+math: ("The" | "the") math_operator "between" math_first "and" math_second
+simple_proposition: entity ("have" | "has" | "are" | "is")? verb list_of_entities
+aggregate_operator: count | sum
+active_aggregate: aggregate_operator string "that" ("have" | "has" | "is" | "are") verb list_of_entities
+simple_aggregate: aggregate_operator string [string] "that" verb list_of_entities
+passive_aggregate: aggregate_operator string [string] [", in" ("a"|"an") string ","] "where" entity verb [entity]
+!negation: "not"
