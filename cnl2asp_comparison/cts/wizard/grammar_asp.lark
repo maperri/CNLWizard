@@ -1,0 +1,60 @@
+start: ((temporal_definition | proposition) [duration_clause] ".")+
+%import common.WS 
+%import common.CNAME 
+%import common.SIGNED_NUMBER 
+%import common.INT 
+%import common.FLOAT 
+%import common.NUMBER 
+%import common.CPP_COMMENT 
+%import common.LCASE_LETTER 
+%ignore WS 
+%ignore CPP_COMMENT 
+?string: CNAME
+?l_case: LCASE_LETTER
+word: l_case string
+?number: NUMBER
+
+//  ----- Defined grammar below
+duration_clause: "for" string "timeslots"
+positive_constraint: "It is required that" positive_constraint_body ["," whenever_clauses]
+preference: "It is preferred" "as much as possible"? ", with" level "priority, that" simple_proposition ["," whenever_clauses]
+proposition: whenever_then_clause_choice | positive_constraint | preference
+sum_string: string "+" (number | string)
+diff_string: string "-" number
+math_first: string | linked_attribute
+          | math_first "," math_first -> math_first_concat
+math_second: string | linked_attribute
+!level: "low" | "medium" | "high"
+entity: ("a " | "an ")? string [string] [attribute]
+attribute: "and"? "with" ("a " | "an ")? string [attribute_value] [comparison_operator attribute_value]
+         | attribute "," attribute -> attribute_concat
+attribute_value: string | number | sum_string | diff_string
+positive_constraint_body: comparison | simple_proposition | temporal_clause
+temporal_clause: "the" entity "is" temporal_operator time
+temporal_definition: "A" string "is a temporal concept expressed in" ("days" | "minutes") "ranging from" (date | time) "to" (date | time) ["with a length of" number "minutes"]
+time: number ":" number string
+date: number "/" number "/" number
+!temporal_operator: "before" | "after"
+comparison_first: math | string | linked_attribute | active_aggregate
+comparison_second: number | string | sum_string | diff_string | linked_attribute
+linked_attribute: "the" string [string] "of the" entity
+cardinality: exactly | at_least | at_most | between
+verb: ("a " | "an ")? word [attribute] [word]
+at_most: "at most" number
+at_least: "at least" number
+between: "between" number "and" number
+exactly: "exactly" number
+list_of_entities: entity ("," "and"? entity)*
+whenever_clause: ("Whenever" | "whenever") "there is" [negation] entity
+whenever_clauses: (whenever_clause ","?)+
+!comparison_operator: "equal to" | "different from" | "less than" | "greater than" | "less than or equal to" | "greater than or equal to" | "at most"
+comparison: comparison_first "is"? comparison_operator comparison_second
+!sum: "the total of"
+!count: "the number of"
+!math_operator: "sum" | "difference" | "division" | "multiplication"
+math: ("The" | "the") math_operator "between" math_first ", and" math_second
+simple_proposition: entity ("have" | "has" | "are" | "is")? verb list_of_entities
+whenever_then_clause_choice: whenever_clauses "then" entity "can" ("have" | "be")? [cardinality] verb [cardinality] [list_of_entities]
+aggregate_operator: count | sum
+active_aggregate: aggregate_operator string "that" ("have" | "has" | "is" | "are") verb list_of_entities
+!negation: "not"

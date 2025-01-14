@@ -1,0 +1,81 @@
+start: ((temporal_definition | proposition) ".")+
+%import common.WS 
+%import common.CNAME 
+%import common.SIGNED_NUMBER 
+%import common.INT 
+%import common.FLOAT 
+%import common.NUMBER 
+%import common.CPP_COMMENT 
+%import common.LCASE_LETTER 
+%ignore WS 
+%ignore CPP_COMMENT 
+?string: CNAME
+?l_case: LCASE_LETTER
+word: l_case string
+?number: NUMBER
+
+//  ----- Defined grammar below
+quantified_choice_proposition: quantified_choice [for_each]
+whenever_then_clause_choice_ext: whenever_then_clause_choice [such_that_clause]
+positive_constraint: "It is required that" positive_constraint_body ["," terminal_clause]
+negative_constraint: "It is prohibited that" negative_constraint_body ["," terminal_clause]
+preference: "It is preferred" "as much as possible"? ", with" level "priority, that" math "is minimized" ["," terminal_clause]
+proposition: constant_definition | compounded_range_clause | quantified_choice_proposition | whenever_then_clause_assignment | whenever_then_clause_choice_ext | positive_constraint | negative_constraint | preference
+attribute: "and"? "with" ("a " | "an ")? string attribute_value [comparison_operator attribute_value]
+         | attribute "," attribute -> attribute_concat
+attribute_value: string | number | sum_string | diff_string
+when_clause: "when" simple_proposition
+terminal_clause: comparison_where_clause | between_where_clause | whenever_clause | whenever_aggregate | when_clause
+               | terminal_clause "," terminal_clause -> terminal_clause_concat
+whenever_aggregate: "whenever we have that" comparison
+comparison_where_clause: "where" comparison
+between_where_clause: "where" string "is between" (string | sum_string | diff_string) "and" (string | sum_string | diff_string)
+sum_string: string "+" number
+diff_string: string "-" number
+temporal_definition: "A" string "is a temporal concept expressed in steps ranging from" (number) "to" (number) ["with a length of" number "minutes"]
+math_first: equation | string | linked_attribute
+abs_eq: "|" equation "|"
+sum_eq: equation "+" equation
+diff_eq: equation "-" equation
+div_eq: equation "/" equation
+mult_eq: equation "*" equation
+par_eq: "(" equation ")"
+num_eq: number
+string_eq: string
+equation: abs_eq | sum_eq | diff_eq | div_eq | mult_eq | par_eq | num_eq | string_eq
+math_second: string | equation
+!level: "low" | "medium" | "high"
+!time_modifier: "next" | "previous" | "before" | "after"
+entity: ("a " | "an ")? string [string] ["the" time_modifier "step"] [attribute] ["that is"? [negation] time_modifier (string | number)]
+such_that_clause: "such that there is" list_of_entities
+positive_constraint_body: comparison | simple_proposition
+negative_constraint_body: comparison | simple_proposition
+comparison_first: math | simple_aggregate | passive_aggregate | string | linked_attribute
+comparison_second: number | string | sum_string | diff_string | linked_attribute | equation
+linked_attribute: "the" string string "of the" entity
+for_each: "for each" entity
+constant_definition: string "is a constant" ["equal to" number]
+compounded_range_clause: ("A" | "An") string "goes from" (number | string) "to" (number | string)
+quantified_choice: "Every" entity "can" ("be" | "have")? verb cardinality entity
+cardinality: exactly | at_least | at_most | between
+verb: ("a " | "an ")? word [attribute] [word]
+at_most: "at most" number
+at_least: "at least" number
+between: "between" number "and" number
+exactly: "exactly" number
+simple_aggregate: aggregate_operator string [string] "that" verb list_of_entities
+list_of_entities: entity ("," "and"? entity)*
+aggregate_operator: count | sum
+whenever_clause: ("Whenever" | "whenever") "there is" [negation] entity
+whenever_clauses: (whenever_clause ","?)+
+!comparison_operator: "equal to" | "different from" | "less than" | "greater than" | "less than or equal to" | "greater than or equal to" | "at most"
+comparison: comparison_first "is"? comparison_operator comparison_second
+!sum: "the total of"
+!count: "the number of"
+passive_aggregate: aggregate_operator string [string] [", in" ("a"|"an") string ","] "where" entity verb [entity]
+!math_operator: "sum" | "difference" | "division" | "multiplication"
+math: ("The" | "the") math_operator "between" math_first ", and" math_second
+simple_proposition: entity ("have" | "has" | "are" | "is")? verb list_of_entities
+whenever_then_clause_assignment: whenever_clauses "then" entity "must" ("have" | "be")? verb
+whenever_then_clause_choice: whenever_clauses "then" entity "can" ("have" | "be")? [cardinality] verb [cardinality] [list_of_entities]
+!negation: "not"

@@ -1,0 +1,14 @@
+A day is a temporal concept expressed in days ranging from 01/01/2022 to 07/01/2022.
+A timeslot is a temporal concept expressed in minutes ranging from 07:30 AM to 01:30 PM with a length of 10 minutes.
+A patient is identified by an id, and has a preference.
+A registration is identified by a patient, and by an order, and has a number_of_waiting_days, a duration_of_the_first_phase, a duration_of_the_second_phase, a duration_of_the_third_phase, and a duration_of_the_fourth_phase.
+A seat is identified by an id, and has a type.
+An assignment is identified by a patient, by an order, by a day, and by a timeslot.
+A position_in is identified by a patient, by a seat, by a timeslot, and by a day.
+Whenever there is a registration R with an order equal to 0, then R can have an assignment to exactly 1 day, and timeslot.
+Whenever there is a registration R with patient P, with order OR, and with a number_of_waiting_days W, whenever there is an assignment with patient P, and with day D, whenever there is a day with day D+W, then we can have an assignment with registration R, and with day D+W to exactly 1 timeslot.
+It is required that the sum between the duration_of_the_first_phase of the registration R, the duration_of_the_second_phase of the registration R, and the duration_of_the_third_phase of the registration R is greater than the timeslot of the assignment A, whenever there is a registration R, whenever there is an assignment A with registration R.
+Whenever there is a patient P, whenever there is an assignment with patient P, with timeslot T, and with day D, whenever there is a registration R with patient P, and with a duration_of_the_fourth_phase PH4 greater than 0, then P can have a position with seat S, with timeslot T, with day D in exactly 1 seat S for PH4 timeslots.
+It is required that the number of patient that have position in seat S, day D, timeslot TS is less than 2, whenever there is a day D, whenever there is a timeslot TS, whenever there is a seat with id S.
+It is required that the assignment A is after 11:20 AM, whenever there is a registration R with a duration_of_the_fourth_phase greater than 50, whenever there is an assignment A with registration R.
+It is preferred as much as possible, with high priority, that a patient P with preference T has a position in a seat S, whenever there is a seat S with type T.

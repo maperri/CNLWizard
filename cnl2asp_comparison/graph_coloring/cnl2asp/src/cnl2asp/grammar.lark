@@ -1,0 +1,174 @@
+%import common.WS
+%import common.LETTER
+%import common.INT
+%import common.UCASE_LETTER
+%import common.LCASE_LETTER
+%import common._EXP
+%import common.CPP_COMMENT
+%import common.C_COMMENT
+%ignore WS
+%ignore CPP_COMMENT
+%ignore C_COMMENT
+start: ((implicit_definition_proposition) END_OF_LINE)* (specification)*
+specification: ((standard_proposition | implicit_definition_proposition) END_OF_LINE)+
+_CNL_IS: "is"
+_CNL_COMMA: ","
+_CNL_AND: "and"
+_CNL_HAS: "has"
+_CNL_BY: "by"
+_CNL_A: "a"i
+_CNL_TEMPORAL: "temporal"
+_CNL_CONCEPT: "concept"
+_CNL_EXPRESSED: "expressed"
+_CNL_IN: "in"
+cnl_is_a_temporal_concept_expressed_in: _CNL_IS " " _CNL_A " " _CNL_TEMPORAL " " _CNL_CONCEPT " " _CNL_EXPRESSED " " _CNL_IN
+_CNL_RANGING: "ranging"
+_CNL_FROM: "from"
+cnl_ranging_from: _CNL_RANGING " " _CNL_FROM
+_CNL_TO: "to"
+_CNL_WITH: "with"
+_CNL_OF: "of"
+_CNL_MINUTES: "minutes"
+_CNL_DAYS: "days"
+_CNL_MINUTE: "minute"
+_CNL_DAY: "day"
+_CNL_STEP: "step"
+_CNL_STEPS: "steps"
+TEMPORAL_TYPE: _CNL_MINUTES | _CNL_MINUTE | _CNL_DAYS | _CNL_DAY | _CNL_STEPS | _CNL_STEP
+temporal_value: NUMBER ":" NUMBER string | NUMBER "/" NUMBER "/" NUMBER | NUMBER | string
+implicit_definition_proposition:  compounded_range_clause
+                                 | compounded_match_clause
+                                 | enumerative_definition_clause [terminal_clauses]
+_CNL_CONSTANT: "constant"
+_CNL_EQUAL: "equal"
+_CNL_EQUAL_TO: _CNL_EQUAL " " _CNL_TO
+_CNL_AN: "an"i
+_CNL_INDEFINITE_ARTICLE: _CNL_A | _CNL_AN
+_CNL_GOES: "goes"
+_CNL_RANGES: "ranges"
+cnl_goes_from: (_CNL_GOES | _CNL_RANGES) " " _CNL_FROM
+compounded_range_clause: _CNL_INDEFINITE_ARTICLE? string cnl_goes_from (NUMBER | string) _CNL_TO (NUMBER | string) [compounded_match_tail]
+_CNL_ONE: "one"
+cnl_is_one_of: _CNL_IS " " _CNL_ONE " " _CNL_OF
+compounded_match_clause: _CNL_INDEFINITE_ARTICLE? string cnl_is_one_of string_list [compounded_match_tail]
+_CNL_THAT: "that"
+_CNL_ARE: "are"
+_CNL_RESPECTIVELY: "respectively"
+cnl_that_are_equal_to_respectively: _CNL_THAT " " _CNL_ARE " " _CNL_EQUAL_TO " " _CNL_RESPECTIVELY
+cnl_that_is_equal_to_respectively: _CNL_THAT " " _CNL_IS " " _CNL_EQUAL_TO " " _CNL_RESPECTIVELY
+_CNL_ALSO: "also"
+compounded_match_tail: _CNL_AND _CNL_HAS string (cnl_that_are_equal_to_respectively | cnl_that_is_equal_to_respectively) string_list (_CNL_AND _CNL_ALSO string (cnl_that_are_equal_to_respectively | cnl_that_is_equal_to_respectively) string_list)*
+enumerative_definition_clause: entity verb [conjunctive_object_list]
+standard_proposition:  quantified_choice_proposition
+                    | constraint_proposition
+_CNL_WHENEVER: "whenever"i
+_CNL_THERE: "there"i
+_CNL_HAVE: "have"
+_CNL_WE: "we"
+cnl_whenever_we_have_that: _CNL_WHENEVER " " _CNL_WE " " _CNL_HAVE " " _CNL_THAT
+_CNL_THEN: "then"
+_CNL_OR: "or"
+fact_proposition: _CNL_THERE _CNL_IS entity
+!quantified_choice_proposition: [_QUANTIFIER] entity ASSIGNMENT_VERB predicate [(_CNL_COMMA? _CNL_OR predicate)*] [foreach_clause] [terminal_clauses]
+_CNL_FOR: "for"
+_CNL_EACH: "each"
+_CNL_FOR_EACH: _CNL_FOR " " _CNL_EACH
+foreach_clause: _CNL_FOR_EACH conjunctive_object_list
+_CNL_IT: "it"i
+_CNL_PROHIBITED: "prohibited"
+cnl_it_is_prohibited_that: _CNL_IT " " _CNL_IS " " _CNL_PROHIBITED " " _CNL_THAT
+_CNL_REQUIRED: "required"
+cnl_it_is_required_that: _CNL_IT " " _CNL_IS " " _CNL_REQUIRED " " _CNL_THAT
+?constraint_operator: cnl_it_is_prohibited_that | cnl_it_is_required_that
+constraint_proposition: constraint_operator (when_then_clause [terminal_clauses]
+                                            | simple_clause_conjunction [terminal_clauses])
+simple_clause_conjunction.-1: simple_clause_wrv (_CNL_AND _CNL_ALSO simple_clause_wrv)*
+when_then_clause: when_clause _CNL_THEN simple_clause_conjunction
+_CNL_WHEN: "when"
+when_clause: _CNL_WHEN simple_clause_conjunction
+_CNL_THE: "the"
+_CNL_BEFORE: "before"
+_CNL_AFTER: "after"
+ORDERING_OPERATOR: _CNL_BEFORE | _CNL_AFTER
+terminal_clauses: (_CNL_COMMA? (_CNL_WHERE where_clause
+                   | when_clause))+
+_CNL_WHERE: "where"
+_CNL_ONE_OF: _CNL_ONE " " _CNL_OF
+where_clause: VARIABLE COPULA _CNL_ONE_OF string_list -> variable_substitution
+            | where_clause _CNL_AND where_clause
+string_list: string (_CNL_COMMA string)*
+_CNL_SUCH: "such"
+_CNL_SUCH_THAT_THERE_IS: _CNL_SUCH " " _CNL_THAT " " _CNL_THERE " " _CNL_IS
+such_that_clause: _CNL_COMMA _CNL_SUCH_THAT_THERE_IS conjunctive_object_list
+_CNL_SAME: "same"
+_CNL_AS: "as"
+_CNL_THE_SAME_AS: _CNL_THE " " _CNL_SAME " " _CNL_AS
+_CNL_DIFFERENT: "different"
+_CNL_DIFFERENT_FROM: _CNL_DIFFERENT " " _CNL_FROM
+_CNL_MORE: "more"
+_CNL_THAN: "than"
+_CNL_MORE_THAN: _CNL_MORE " " _CNL_THAN
+_CNL_GREATER: "greater"
+_CNL_GREATER_THAN: _CNL_GREATER " " _CNL_THAN
+_CNL_LESS: "less"
+_CNL_LESS_THAN: _CNL_LESS " " _CNL_THAN
+_CNL_GREATER_THAN_OR_EQUAL_TO: _CNL_GREATER_THAN " " _CNL_OR " " _CNL_EQUAL_TO
+_CNL_LESS_THAN_OR_EQUAL_TO: _CNL_LESS_THAN " " _CNL_OR " " _CNL_EQUAL_TO
+_CNL_AT: "at"
+_CNL_LEAST: "least"
+_CNL_AT_LEAST: _CNL_AT " " _CNL_LEAST
+_CNL_MOST: "most"
+_CNL_AT_MOST: _CNL_AT " " _CNL_MOST
+_CNL_NOT: "not"
+_CNL_NOT_AFTER: _CNL_NOT " " _CNL_AFTER
+COMPARISON_OPERATOR: _CNL_THE_SAME_AS
+          | _CNL_DIFFERENT_FROM
+          | _CNL_EQUAL_TO
+          | _CNL_MORE_THAN
+          | _CNL_GREATER_THAN
+          | _CNL_LESS_THAN
+          | _CNL_GREATER_THAN_OR_EQUAL_TO
+          | _CNL_LESS_THAN_OR_EQUAL_TO
+          | _CNL_AT_LEAST
+          | _CNL_AT_MOST
+          | _CNL_NOT_AFTER
+cardinality: QUANTITY_OPERATOR string -> single_quantity_cardinality
+conjunctive_object_list.-1: entity ((_CNL_COMMA _CNL_AND?) entity)*
+predicate: verb [cardinality] _CNL_SUCH_THAT_THERE_IS? [conjunctive_object_list] [_CNL_FOR (NUMBER | VARIABLE) PARAMETER_NAME] -> predicate_with_objects
+simple_clause_wrv.-2: entity verb [conjunctive_object_list]
+?entity: TELINGO_ENTITY_TEMPORAL_OPERATOR? (simple_entity)
+simple_entity: _CNL_INDEFINITE_ARTICLE? string [string] [entity_temporal_order_constraint] [define_subsequent_event] [parameter_list]
+_CNL_ELEMENT: "element"
+TELINGO_ENTITY_TEMPORAL_OPERATOR: "previously" | "subsequently" | "initially" | "finally"
+verb.1: [COPULA] [cardinality] [VERB_NEGATION] [TELINGO_ENTITY_TEMPORAL_OPERATOR] _CNL_INDEFINITE_ARTICLE? string [entity_temporal_order_constraint] [define_subsequent_event] [parameter_list] [VERB_PREPOSITION]
+entity_temporal_order_constraint: _CNL_THAT _CNL_IS ORDERING_OPERATOR temporal_value
+define_subsequent_event: SHIFT_OPERATOR TEMPORAL_TYPE
+parameter_list.1: PARAMETER_PREPOSITION parameter (_CNL_COMMA _CNL_AND? PARAMETER_PREPOSITION parameter)*
+_CNL_RESPECT: "respect"
+_CNL_RESPECT_TO: _CNL_RESPECT " " _CNL_TO
+parameter.-1: _CNL_INDEFINITE_ARTICLE? (PARAMETER_NAME)+ [expression] [COMPARISON_OPERATOR (expression | string) [string]]
+?expression_operand: VARIABLE | NUMBER
+!expression: expression_operand
+            | expression ("+" | "-" | "*" | "/" | "\\") expression
+            | "(" expression ")"
+            | "|" expression "|"
+ASSIGNMENT_VERB: "can" | "must"
+COPULA: "be " | "be a " | "be an "
+          | "are " | "are a " | "are an "
+          | "is " | "is a " | "is an "
+          | "have " | "have a " | "have an "
+          | "has " | "has a " | "has an "
+SHIFT_OPERATOR: _CNL_THE " " ("next" | "previous")
+PARAMETER_NAME: /\b(?!(is|identified|and|equal|to|are|has|be|have|by|with|in|exactly|most|least|exaclty|any|every|more|less|greater|after|highest|lowest|smallest|biggest|sum|difference|product|division|where|between|whenever|such|that|there|than|also|then|required|prohibited|or)\b)[a-z0-9][A-Za-z0-9\_]+/ //has to start with lower case letter
+string: /\b(?!(is|identified|and|equal|to|are|has|be|have|by|with|in|exactly|most|least|exaclty|any|every|more|less|greater|after|highest|lowest|smallest|biggest|sum|difference|product|division|where|between|whenever|such|that|there|than|also|then|required|prohibited|or)\b)[A-Za-z0-9\_]+/i
+VARIABLE: UCASE_LETTER (UCASE_LETTER | INT | "_")*
+PARAMETER_PREPOSITION: _CNL_BY | "with"
+VERB_PREPOSITION: _CNL_BY | "to" | "in" | "from"
+VERB_NEGATION: "do not" | "does not" | "don't"
+              | "doesn't" | "are not" | "aren't" | "not"
+QUANTITY_OPERATOR: "exactly" | "at most" | "at least"
+_QUANTIFIER: "every"i | "any"i
+NUMBER: INT | FLOAT
+FLOAT: INT _EXP | DECIMAL _EXP?
+DECIMAL: INT "." INT | "." INT
+END_OF_LINE: /\./

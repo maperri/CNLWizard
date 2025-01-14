@@ -1,0 +1,111 @@
+import:
+  - rules:
+      - constant_definition
+      - compounded_range_clause
+      - quantified_choice
+      - cardinality
+      - verb
+      - at_most
+      - at_least
+      - between
+      - exactly
+      - list_of_entities
+      - whenever_clause
+      - whenever_clauses
+      - comparison
+      - sum
+      - count
+      - math
+      - simple_proposition
+      - whenever_then_clause_assignment
+      - whenever_then_clause_choice
+      - aggregate_operator
+      - active_aggregate
+      - count
+      - sum
+      - negation
+    source: [asp]
+    target: [asp]
+start:
+  syntax:
+    - >
+      ((temporal_definition | proposition) [duration_clause] ".")+
+  target:
+    - asp
+duration_clause:
+  syntax: '"for" string "timeslots"'
+proposition:
+  - name: whenever_then_clause_choice
+  - name: positive_constraint
+    syntax: '"It is required that" positive_constraint_body ["," whenever_clauses]'
+  - name: preference
+    syntax: '"It is preferred" "as much as possible"? ", with" level "priority, that" simple_proposition ["," whenever_clauses]'
+sum_string:
+  syntax: 'string "+" (number | string)'
+diff_string:
+  syntax: 'string "-" number'
+math_first:
+  syntax:
+    - string
+    - linked_attribute
+  concat: ','
+math_second:
+  syntax:
+    - string
+    - linked_attribute
+level:
+  syntax:
+    - '"low"'
+    - '"medium"'
+    - '"high"'
+time_modifier:
+  syntax:
+    - '"next"'
+    - '"previous"'
+    - '"before"'
+    - '"after"'
+entity:
+  - name: entity
+    syntax: ("a " | "an ")? string [string] [attribute]
+attribute:
+  syntax: '"and"? "with" ("a " | "an ")? string [attribute_value] [comparison_operator attribute_value]'
+  concat: ','
+attribute_value:
+  syntax:
+    - string
+    - number
+    - sum_string
+    - diff_string
+positive_constraint_body:
+  syntax:
+    - comparison
+    - simple_proposition
+    - temporal_clause
+temporal_clause:
+  syntax: '"the" entity "is" temporal_operator time'
+temporal_definition:
+  syntax: '"A" string "is a temporal concept expressed in" ("days" | "minutes") "ranging from" (date | time) "to" (date | time) ["with a length of" number "minutes"]'
+time:
+  syntax: number ":" number string
+date:
+  syntax: number "/" number "/" number
+temporal_operator:
+  syntax:
+    - '"before"'
+    - '"after"'
+comparison_first:
+  syntax:
+    - math
+    - string
+    - linked_attribute
+    - active_aggregate
+comparison_second:
+  syntax:
+    - number
+    - string
+    - sum_string
+    - diff_string
+    - linked_attribute
+linked_attribute:
+  syntax: '"the" string [string] "of the" entity'
+
