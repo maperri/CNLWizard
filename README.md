@@ -11,6 +11,8 @@ In the root directory:
 
 - lark
 
+Some examples also require 
+
 ## Usage
 Generate grammar and python functions
 `CNLWizard -g specification.yaml`

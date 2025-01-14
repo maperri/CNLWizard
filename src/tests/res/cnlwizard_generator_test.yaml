@@ -1,16 +1,13 @@
 import:
-  cnl_wizard:
-      asp:
-        rules:
-          - there_is_clause("it is")
-        target:
-          - lang1
-  import_test:
-      lang:
-        rules:
-          - test_rule
-        target:
-          - lang1
+  - rules:
+      - there_is_clause("it is")
+    source: [asp]
+    target: [lang1]
+  - from: import_test
+    rules:
+      - test_rule
+    source: [lang]
+    target: [lang1]
 
 config:
   signatures:

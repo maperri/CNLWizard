@@ -18,7 +18,7 @@ import:
       - count
       - passive_aggregate
       - math
-      - simple_proposition
+      - simple_proposition_with_entities
       - negation
     source: [asp]
     target: [asp]
@@ -61,7 +61,7 @@ attribute_value:
     - diff_string
 
 when_clause:
-  syntax: '"when" simple_proposition'
+  syntax: '"when" simple_proposition_with_entities'
 
 terminal_clause:
   syntax:
@@ -102,12 +102,12 @@ level:
 positive_constraint_body:
   syntax:
     - comparison
-    - simple_proposition
+    - simple_proposition_with_entities
 
 negative_constraint_body:
   syntax:
     - comparison
-    - simple_proposition
+    - simple_proposition_with_entities
 
 comparison_first:
   syntax:

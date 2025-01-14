@@ -19,7 +19,7 @@ import:
       - count
       - passive_aggregate
       - math
-      - simple_proposition
+      - simple_proposition_with_entities
       - whenever_then_clause_assignment
       - whenever_then_clause_choice
       - negation
@@ -55,7 +55,7 @@ attribute_value:
     - sum_string
     - diff_string
 when_clause:
-  syntax: '"when" simple_proposition'
+  syntax: '"when" simple_proposition_with_entities'
 terminal_clause:
   syntax: 'comparison_where_clause | between_where_clause | whenever_clause | whenever_aggregate | when_clause'
   concat: ','
@@ -116,11 +116,11 @@ such_that_clause:
 positive_constraint_body:
   syntax:
     - comparison
-    - simple_proposition
+    - simple_proposition_with_entities
 negative_constraint_body:
   syntax:
     - comparison
-    - simple_proposition
+    - simple_proposition_with_entities
 comparison_first:
   syntax:
     - math

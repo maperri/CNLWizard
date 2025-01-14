@@ -356,7 +356,7 @@ def diff_string(*string):
     return '-'.join(string)
 
 
-def simple_proposition(entity_1, entity_2, entity_3):
+def simple_proposition_with_entities(entity_1, entity_2, entity_3):
     def set_fields(first, second):
         for field, value in second.fields.items():
             if field in first.fields:
@@ -371,8 +371,8 @@ def whenever_aggregate(aggregate):
     return aggregate
 
 
-def when_clause(simple_proposition):
-    return simple_proposition
+def when_clause(simple_proposition_with_entities):
+    return simple_proposition_with_entities
 
 
 def whenever_clauses(*entity):

@@ -1,0 +1,35 @@
+start: (propositions ".")+
+%import common.WS 
+%import common.CNAME 
+%import common.SIGNED_NUMBER 
+%import common.INT 
+%import common.FLOAT 
+%import common.NUMBER 
+%import common.CPP_COMMENT 
+%import common.LCASE_LETTER 
+%ignore WS 
+%ignore CPP_COMMENT 
+?string: CNAME
+?l_case: LCASE_LETTER
+?number: NUMBER
+
+//  ----- Defined grammar below
+there_is_clause: ("There" | "there") "is" entity
+propositions: there_is_clause | function_definition | constraint | comparison | if_then
+function_definition: ("A" | "An") string "is a function which takes" string "and returns" string
+constraint: "It is required that" clause_body
+if_then: "If" clause_body ", then" clause_body
+simple_clause: entity [negation] ("is" | "be" | "have" | "has") entity
+!negation: "not" | "cannot"
+!math_operator: "sum" | "difference" | "division" | "multiplication"
+math: "the" math_operator "between" math_operand "and" math_operand
+!comparison_operator: "equal to" | "different from" | "lower than" | "greater than" | "lower than or equal to" | "greater than or equal to"
+comparison: comparison_operand "is"? comparison_operator comparison_operand
+!formula_operator: "and" | "or" | "imply" | "implies" | "is equivalent to" | "not"
+formula: clause_body formula_operator clause_body
+clause_body: there_is_clause | simple_clause | formula | comparison
+comparison_operand: math | number | ("the" | "The")? entity
+math_operand: entity | number
+attribute: "with" ("a" | "an")? string "equal to"? (string | number)
+attributes: (attribute | ("with" entity)) ("," (attribute | ("with" entity)))*
+entity: ("a" | "an")? string attributes

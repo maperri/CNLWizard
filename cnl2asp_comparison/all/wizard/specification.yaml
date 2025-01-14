@@ -15,7 +15,7 @@ import:
       - sum
       - count
       - math
-      - simple_proposition
+      - simple_proposition_with_entities
       - aggregate_operator
       - active_aggregate
       - simple_aggregate
@@ -44,13 +44,13 @@ proposition:
     syntax: >
       "A" string "is one of" string ("," string)+
   - name: simple_clause
-    syntax: simple_proposition
+    syntax: simple_proposition_with_entities
   - name: positive_constraint
     syntax: '"It is required that" positive_constraint_body ["," terminal_clause]'
   - name: negative_constraint
     syntax: '"It is prohibited that" negative_constraint_body ["," terminal_clause]'
   - name: preference_with_simple_proposition
-    syntax: '"It is preferred" "as much as possible"? ", with" level "priority, that" simple_proposition ["," terminal_clause]'
+    syntax: '"It is preferred" "as much as possible"? ", with" level "priority, that" simple_proposition_with_entities ["," terminal_clause]'
   - name: preference_with_math
     syntax: '"It is preferred" "as much as possible"? ", with" level "priority, that" math "is minimized" ["," terminal_clause]'
 such_that_clause:
@@ -102,7 +102,7 @@ attribute_value:
   syntax:
     [string, number, sum_string, diff_string]
 positive_constraint_body:
-  syntax: [comparison, simple_proposition, temporal_clause, when_then_clause]
+  syntax: [comparison, simple_proposition_with_entities, temporal_clause, when_then_clause]
 when_then_clause:
   syntax: >
     "when" simple_clause "then" simple_clause "and also" simple_clause
@@ -130,11 +130,11 @@ whenever_aggregate:
 comparison_where_clause:
   syntax: '"where" comparison'
 when_clause:
-  syntax: '"when" simple_proposition'
+  syntax: '"when" simple_proposition_with_entities'
 between_where_clause:
   syntax: '"where" string "is between " (string | sum_string | diff_string) "and" (string | sum_string | diff_string)'
 negative_constraint_body:
-  syntax: [comparison, simple_proposition]
+  syntax: [comparison, simple_proposition_with_entities]
 comparison_first:
   syntax: [math, string, linked_attribute, active_aggregate, simple_aggregate, passive_aggregate]
 comparison_second:

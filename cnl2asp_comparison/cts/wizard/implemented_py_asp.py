@@ -240,7 +240,7 @@ def math_operator(*args):
     return items_dict[item]
 
 
-def simple_proposition(entity_1, entity_2, entity_3):
+def simple_proposition_with_entities(entity_1, entity_2, entity_3):
     return entity_1, entity_2, entity_3
 
 

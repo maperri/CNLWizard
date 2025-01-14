@@ -46,11 +46,16 @@ class YAMLReader:
         if key == 'config':
             res['_all'] += self.config(value)
         elif key == 'import':
-            for lib, targets_lib in value.items():
-                for target_lib, rules_dict in targets_lib.items():
-                    to_import = self.import_rules(lib, target_lib, rules_dict['rules'])
-                    for target in rules_dict['target']:
-                        res[target] += to_import
+            if not isinstance(value, list):
+                value = [value]
+            for import_query in value:
+                lib_name = 'cnl_wizard'
+                if 'from' in import_query:
+                    lib_name = import_query['from']
+                rules_to_import = import_query['rules']
+                for i in range(len(import_query['source'])):
+                    to_import = self.import_rules(lib_name, import_query['source'][i], rules_to_import)
+                    res[import_query['target'][i]] += to_import
         elif isinstance(value, list):
             for target, rules in self.composite_rule(key.lower(), value).items():
                 res[target] += rules

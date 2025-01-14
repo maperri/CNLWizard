@@ -266,7 +266,7 @@ def math_operator(*args):
     return items_dict[item]
 
 
-def simple_proposition(entity_1, entity_2, entity_3):
+def simple_proposition_with_entities(entity_1, entity_2, entity_3):
     def set_fields(first, second):
         for field, value in second.fields.items():
             if field in first.fields:
@@ -614,8 +614,8 @@ def between_where_clause(label, first, second):
     return
 
 
-def when_clause(simple_proposition):
-    return simple_proposition
+def when_clause(simple_proposition_with_entities):
+    return simple_proposition_with_entities
 
 
 def comparison_where_clause(comparison):
@@ -626,16 +626,16 @@ def whenever_aggregate(aggregate):
     return aggregate
 
 
-def preference_with_simple_proposition(level, simple_proposition, terminal_clause):
+def preference_with_simple_proposition(level, simple_proposition_with_entities, terminal_clause):
     def set_fields(first, second):
         for field, value in second.fields.items():
             if field in first.fields:
                 first.fields[field] = value
             if field == 'id' and second.name in first.fields:
                 first.fields[second.name] = value
-    set_fields(simple_proposition[1], simple_proposition[0])
-    set_fields(simple_proposition[1], terminal_clause[0])
-    return WeakConstraint([simple_proposition[0], simple_proposition[1]] + terminal_clause, 1, level)
+    set_fields(simple_proposition_with_entities[1], simple_proposition_with_entities[0])
+    set_fields(simple_proposition_with_entities[1], terminal_clause[0])
+    return WeakConstraint([simple_proposition_with_entities[0], simple_proposition_with_entities[1]] + terminal_clause, 1, level)
 
 
 def preference_with_math(level, math, where_clause):

@@ -2,6 +2,9 @@ start:
   syntax: (propositions ".")+
 
 propositions:
+  - name: there_is_clause
+    syntax: >
+      ("There" | "there") "is" entity
   - name: function_definition
     syntax: >
       ("A" | "An") string "is a function which takes" string "and returns" string

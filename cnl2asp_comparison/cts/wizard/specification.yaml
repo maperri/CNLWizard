@@ -16,7 +16,7 @@ import:
       - sum
       - count
       - math
-      - simple_proposition
+      - simple_proposition_with_entities
       - whenever_then_clause_assignment
       - whenever_then_clause_choice
       - aggregate_operator
@@ -39,7 +39,7 @@ proposition:
   - name: positive_constraint
     syntax: '"It is required that" positive_constraint_body ["," whenever_clauses]'
   - name: preference
-    syntax: '"It is preferred" "as much as possible"? ", with" level "priority, that" simple_proposition ["," whenever_clauses]'
+    syntax: '"It is preferred" "as much as possible"? ", with" level "priority, that" simple_proposition_with_entities ["," whenever_clauses]'
 sum_string:
   syntax: 'string "+" (number | string)'
 diff_string:
@@ -79,7 +79,7 @@ attribute_value:
 positive_constraint_body:
   syntax:
     - comparison
-    - simple_proposition
+    - simple_proposition_with_entities
     - temporal_clause
 temporal_clause:
   syntax: '"the" entity "is" temporal_operator time'

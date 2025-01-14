@@ -1,43 +1,15 @@
 import:
-  cnl_wizard:
-    asp:
-      rules:
-        - attribute
-        - there_is_clause
-        - math("The", "the", math_operator, "between", math_first,,)
-        - comparison
-        - simple_proposition
-        - negated_simple_proposition
-        - entity
-        - verb
-      target:
-        - asp
-    cp:
-      rules:
-        - attribute
-        - there_is_clause
-        - math("The", "the", math_operator, "between", math_first,,)
-        - comparison
-        - simple_proposition
-        - negated_simple_proposition
-        - entity
-        - verb
-      target:
-        - cp
-    smt:
-      rules:
-        - attribute
-        - there_is_clause
-        - math("The", "the", math_operator, "between", math_first,,)
-        - comparison
-        - simple_proposition
-        - negated_simple_proposition
-        - entity
-        - verb
-      target:
-          - smt
-
-
+  rules:
+    - attribute
+    - there_is_clause
+    - math("The", "the", math_operator, "between", math_first,,)
+    - comparison
+    - simple_proposition
+    - negated_simple_proposition
+    - entity
+    - verb
+  source: [asp, cp, smt]
+  target: [asp, cp, smt]
 
 start:
   syntax: (proposition ".")*
@@ -77,7 +49,6 @@ comparison_second:
 
 math_first:
   syntax: '"the" string "of the" entity "that are" verb entity'
-
 
 level:
   syntax:
