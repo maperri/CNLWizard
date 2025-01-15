@@ -1,0 +1,39 @@
+A node is identified by id.
+A color is identified by id.
+A connection is identified by firstNode, secondNode.
+A colored is identified by nodeid, color.
+
+There is a connection with firstNode equal to 1, with secondNode equal to 2 .
+There is a connection with firstNode equal to 1, with secondNode equal to 3 .
+There is a connection with firstNode equal to 2, with secondNode equal to 1 .
+There is a connection with firstNode equal to 2, with secondNode equal to 3 .
+There is a connection with firstNode equal to 3, with secondNode equal to 1 .
+There is a connection with firstNode equal to 3, with secondNode equal to 2 .
+
+It is required that node with id equal to 1 is colored with color equal to blue or node with id equal to 1 is colored with color equal to red or node with id equal to 1 is colored with color equal to yellow.
+It is required that node with id equal to 2 is colored with color equal to blue or node with id equal to 2 is colored with color equal to red or node with id equal to 2 is colored with color equal to yellow.
+It is required that node with id equal to 3 is colored with color equal to blue or node with id equal to 3 is colored with color equal to red or node with id equal to 3 is colored with color equal to yellow.
+
+If node with id equal to 1 is colored with color equal to blue, then node with id equal to 1 cannot be colored with color equal to red and node with id equal to 1 cannot be colored with color equal to yellow.
+If node with id equal to 1 is colored with color equal to red, then node with id equal to 1 cannot be colored with color equal to blue and node with id equal to 1 cannot be colored with color equal to yellow.
+If node with id equal to 1 is colored with color equal to yellow, then node with id equal to 1 cannot be colored with color equal to red and node with id equal to 1 cannot be colored with color equal to blue.
+
+If node with id equal to 2 is colored with color equal to blue, then node with id equal to 2 cannot be colored with color equal to red and node with id equal to 2 cannot be colored with color equal to yellow.
+If node with id equal to 2 is colored with color equal to red, then node with id equal to 2 cannot be colored with color equal to blue and node with id equal to 2 cannot be colored with color equal to yellow.
+If node with id equal to 2 is colored with color equal to yellow, then node with id equal to 2 cannot be colored with color equal to red and node with id equal to 2 cannot be colored with color equal to blue.
+
+If node with id equal to 3 is colored with color equal to blue, then node with id equal to 3 cannot be colored with color equal to red and node with id equal to 3 cannot be colored with color equal to yellow.
+If node with id equal to 3 is colored with color equal to red, then node with id equal to 3 cannot be colored with color equal to blue and node with id equal to 3 cannot be colored with color equal to yellow.
+If node with id equal to 3 is colored with color equal to yellow, then node with id equal to 3 cannot be colored with color equal to red and node with id equal to 3 cannot be colored with color equal to blue.
+
+If node with id equal to 1 is colored with color equal to blue, then node with id equal to 2 cannot be colored with color equal to blue and node with id equal to 3 cannot be colored with color equal to blue.
+If node with id equal to 1 is colored with color equal to red, then node with id equal to 2 cannot be colored with color equal to red and node with id equal to 3 cannot be colored with color equal to red.
+If node with id equal to 1 is colored with color equal to yellow, then node with id equal to 2 cannot be colored with color equal to yellow and node with id equal to 3 cannot be colored with color equal to yellow.
+
+If node with id equal to 2 is colored with color equal to blue, then node with id equal to 1 cannot be colored with color equal to blue and node with id equal to 3 cannot be colored with color equal to blue.
+If node with id equal to 2 is colored with color equal to red, then node with id equal to 1 cannot be colored with color equal to red and node with id equal to 3 cannot be colored with color equal to red.
+If node with id equal to 2 is colored with color equal to yellow, then node with id equal to 1 cannot be colored with color equal to yellow and node with id equal to 3 cannot be colored with color equal to yellow.
+
+If node with id equal to 3 is colored with color equal to blue, then node with id equal to 1 cannot be colored with color equal to blue and node with id equal to 2 cannot be colored with color equal to blue.
+If node with id equal to 3 is colored with color equal to red, then node with id equal to 1 cannot be colored with color equal to red and node with id equal to 2 cannot be colored with color equal to red.
+If node with id equal to 3 is colored with color equal to yellow, then node with id equal to 1 cannot be colored with color equal to yellow and node with id equal to 2 cannot be colored with color equal to yellow.

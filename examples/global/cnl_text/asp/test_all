@@ -1,0 +1,17 @@
+A node is identified by id, value.
+A graph is identified by id.
+There is a node with id equal to one.
+There is a node with id equal to two.
+There is a node with id equal to three.
+It is prohibited that there is not a node with id equal to one, with value equal to two and a node with id equal to two.
+It is prohibited that there is a node with id equal to two and a node with id equal to three.
+It is prohibited that there is a node with id equal to B and the total of value that a node with id equal to one, with value equal to A is equal to B.
+It is prohibited that there is the sum between A and B equal to 1 .
+It is prohibited that there is the sum between A and B greater than 1 .
+It is prohibited that there is the sum between A and B equal to 1 whenever there is a node with id equal to A, whenever there is a node with id equal to B.
+Whenever there is a node with id equal to one, whenever there is a node with id equal to two, then we can have a graph with id equal to three.
+Whenever there is a node with id equal to one, whenever there is a node with id equal to two, then we can have exactly one a graph with id equal to three a node with id equal to 1 .
+Whenever there is a node with id equal to one, whenever there is a node with id equal to two, then we can have at most one a graph with id equal to three a node with id equal to 1 .
+Whenever there is a node with id equal to one, whenever there is a node with id equal to two, then we must have a graph with id equal to three.
+It is preferred as much as possible, with low priority that the sum between A and B is equal to 1 whenever there is a node with id equal to A, whenever there is a node with id equal to B.
+It is preferred as much as possible, with medium priority that the sum between A and B is equal to 2 whenever there is a node with id equal to A.

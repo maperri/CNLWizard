@@ -1,0 +1,22 @@
+A pigeon is identified by number.
+A assignment is identified by pigeonnumber, holeNumber.
+
+There is a pigeon with number equal to 1 .
+There is a pigeon with number equal to 2 .
+There is a pigeon with number equal to 3 .
+
+It is required that a pigeon with number equal to 1 has an assignment with holeNumber equal to 1 or a pigeon with number equal to 1 has an assignment with holeNumber equal to 2 .
+It is required that a pigeon with number equal to 2 has an assignment with holeNumber equal to 1 or a pigeon with number equal to 2 has an assignment with holeNumber equal to 2 .
+It is required that a pigeon with number equal to 3 has an assignment with holeNumber equal to 1 or a pigeon with number equal to 3 has an assignment with holeNumber equal to 2 .
+
+If pigeon with number equal to 1 has an assignment with holeNumber equal to 1, then pigeon with number equal to 2 cannot have an assignment with holeNumber equal to 1 and pigeon with number equal to 3 cannot have an assignment with holeNumber equal to 1 .
+If pigeon with number equal to 1 has an assignment with holeNumber equal to 2, then pigeon with number equal to 2 cannot have an assignment with holeNumber equal to 2 and pigeon with number equal to 3 cannot have an assignment with holeNumber equal to 2 .
+If pigeon with number equal to 1 has an assignment with holeNumber equal to 3, then pigeon with number equal to 2 cannot have an assignment with holeNumber equal to 3 and pigeon with number equal to 3 cannot have an assignment with holeNumber equal to 3 .
+
+If pigeon with number equal to 2 has an assignment with holeNumber equal to 1, then pigeon with number equal to 1 cannot have an assignment with holeNumber equal to 1 and pigeon with number equal to 3 cannot have an assignment with holeNumber equal to 1 .
+If pigeon with number equal to 2 has an assignment with holeNumber equal to 2, then pigeon with number equal to 1 cannot have an assignment with holeNumber equal to 2 and pigeon with number equal to 3 cannot have an assignment with holeNumber equal to 2 .
+If pigeon with number equal to 2 has an assignment with holeNumber equal to 3, then pigeon with number equal to 1 cannot have an assignment with holeNumber equal to 3 and pigeon with number equal to 3 cannot have an assignment with holeNumber equal to 3 .
+
+If pigeon with number equal to 3 has an assignment with holeNumber equal to 1, then pigeon with number equal to 2 cannot have an assignment with holeNumber equal to 1 and pigeon with number equal to 1 cannot have an assignment with holeNumber equal to 1 .
+If pigeon with number equal to 3 has an assignment with holeNumber equal to 2, then pigeon with number equal to 2 cannot have an assignment with holeNumber equal to 2 and pigeon with number equal to 1 cannot have an assignment with holeNumber equal to 2 .
+If pigeon with number equal to 3 has an assignment with holeNumber equal to 3, then pigeon with number equal to 2 cannot have an assignment with holeNumber equal to 3 and pigeon with number equal to 1 cannot have an assignment with holeNumber equal to 3 .

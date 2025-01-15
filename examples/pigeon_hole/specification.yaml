@@ -1,9 +1,10 @@
 import:
-  - simple_proposition
-  - negated_simple_proposition
-  - entity
-  - attribute
-  - there_is_clause
+  - rules:
+      - entity
+      - attribute
+      - there_is_clause
+    target: [smt, cp, asp]
+    source: [smt, cp, asp]
 
 start:
   syntax: (proposition ".")+
@@ -17,6 +18,12 @@ proposition:
     - disjunction
     - consequential
     - there_is_clause
+
+simple_proposition:
+  syntax: 'entity ("have" | "has" | "are" | "is") entity'
+
+negated_simple_proposition:
+  syntax: 'entity ("do not have" | "does not have" | "are not" | "is not") entity'
 
 simple_clause:
   syntax:

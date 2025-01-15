@@ -1,0 +1,127 @@
+import:
+  - rules:
+      - constant_definition
+      - compounded_range_clause
+      - quantified_choice
+      - cardinality
+      - entity
+      - at_most
+      - at_least
+      - between
+      - exactly
+      - simple_aggregate
+      - list_of_entities
+      - aggregate_operator
+      - whenever_clause
+      - comparison
+      - sum
+      - count
+      - passive_aggregate
+      - math
+      - simple_proposition_with_entities
+      - negation
+    source: [asp]
+    target: [asp]
+
+
+start:
+  syntax:
+    - >
+      (proposition ".")+
+  target:
+    - asp
+
+
+proposition:
+  - name: constant_definition
+  - name: compounded_range_clause
+  - name: quantified_choice_proposition
+    syntax: quantified_choice [for_each]
+  - name: positive_constraint
+    syntax: '"It is required that" positive_constraint_body ["," terminal_clause]'
+  - name: negative_constraint
+    syntax: '"It is prohibited that" negative_constraint_body ["," terminal_clause]'
+  - name: preference
+    syntax: '"It is preferred" "as much as possible"? ", with" level "priority, that" math "is minimized" ["," terminal_clause]'
+
+
+attribute:
+  syntax: '"and"? "with" ("a " | "an ")? string [attribute_value] [comparison_operator attribute_value]'
+  concat: ','
+
+verb:
+  syntax: ("a" | "an")? word [attribute] word
+
+
+attribute_value:
+  syntax:
+    - string
+    - number
+    - sum_string
+    - diff_string
+
+when_clause:
+  syntax: '"when" simple_proposition_with_entities'
+
+terminal_clause:
+  syntax:
+    - comparison_where_clause
+    - between_where_clause
+    - whenever_clause
+    - whenever_aggregate
+    - when_clause
+  concat: ','
+
+whenever_aggregate:
+  syntax: '"whenever we have that" comparison'
+
+comparison_where_clause:
+  syntax: '"where" comparison'
+
+between_where_clause:
+  syntax: '"where" string "is between" (string | sum_string | diff_string) "and" (string | sum_string | diff_string)'
+
+sum_string:
+  syntax: 'string "+" number'
+
+diff_string:
+  syntax: 'string "-" number'
+
+math_first:
+  syntax: string
+
+math_second:
+  syntax: string
+
+level:
+  syntax:
+    - '"low"'
+    - '"medium"'
+    - '"high"'
+
+positive_constraint_body:
+  syntax:
+    - comparison
+    - simple_proposition_with_entities
+
+negative_constraint_body:
+  syntax:
+    - comparison
+    - simple_proposition_with_entities
+
+comparison_first:
+  syntax:
+    - simple_aggregate
+    - passive_aggregate
+    - string
+
+comparison_second:
+  syntax:
+    - number
+    - string
+    - sum_string
+    - diff_string
+
+for_each:
+  syntax: '"for each" entity'
+

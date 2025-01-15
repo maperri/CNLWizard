@@ -1,0 +1,56 @@
+start:
+  syntax:
+    - >
+      (propositions ".")+
+propositions:
+  - name: compounded_range_clause
+    syntax: >
+      "A" string "goes from" (NUMBER | string) "to" (NUMBER | string)
+  - name: compound_match_clause
+    syntax: >
+      "A" string "is one of" string ("," string)+ 
+  - name: quantified_choice
+    syntax: > 
+      "Every" entity "can be" verb cardinality entity
+  - name: constraint
+    syntax: >
+      "It is required that" constraint_body
+  - name: simple_clause
+    syntax: entity "is"? verb entity
+attribute_value:
+    syntax:
+      - string
+      - number
+cardinality:
+  syntax:
+    - >
+      "exactly 1"
+    - >
+      "at lest 1"
+    - >
+      "at most 1"
+constraint_body:
+    syntax:
+      - when_then_clause
+      - simple_clause
+    concat: "and also"
+when_then_clause:
+  syntax: >
+    "when" simple_clause "then" simple_clause
+negation:
+  syntax: > 
+    "not"
+attribute:
+  - name: attribute
+    concat: ","
+label:
+  syntax:
+    - number
+    - string
+entity:
+  - name: entity
+    syntax: >
+      ("a"| "an")? string [label] [attribute]
+  - name: verb
+    syntax: >
+      [negation] string [attribute] string

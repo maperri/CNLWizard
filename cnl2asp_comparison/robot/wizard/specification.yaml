@@ -1,0 +1,143 @@
+import:
+  - rules:
+      - constant_definition
+      - compounded_range_clause
+      - quantified_choice
+      - cardinality
+      - verb
+      - at_most
+      - at_least
+      - between
+      - exactly
+      - simple_aggregate
+      - list_of_entities
+      - aggregate_operator
+      - whenever_clause
+      - whenever_clauses
+      - comparison
+      - sum
+      - count
+      - passive_aggregate
+      - math
+      - simple_proposition_with_entities
+      - whenever_then_clause_assignment
+      - whenever_then_clause_choice
+      - negation
+    source: [asp]
+    target: [asp]
+start:
+  syntax:
+    - >
+      ((temporal_definition | proposition) ".")+
+  target:
+    - asp
+proposition:
+  - name: constant_definition
+  - name: compounded_range_clause
+  - name: quantified_choice_proposition
+    syntax: quantified_choice [for_each]
+  - name: whenever_then_clause_assignment
+  - name: whenever_then_clause_choice_ext
+    syntax: 'whenever_then_clause_choice [such_that_clause]'
+  - name: positive_constraint
+    syntax: '"It is required that" positive_constraint_body ["," terminal_clause]'
+  - name: negative_constraint
+    syntax: '"It is prohibited that" negative_constraint_body ["," terminal_clause]'
+  - name: preference
+    syntax: '"It is preferred" "as much as possible"? ", with" level "priority, that" math "is minimized" ["," terminal_clause]'
+attribute:
+  syntax: '"and"? "with" ("a " | "an ")? string attribute_value [comparison_operator attribute_value]'
+  concat: ','
+attribute_value:
+  syntax:
+    - string
+    - number
+    - sum_string
+    - diff_string
+when_clause:
+  syntax: '"when" simple_proposition_with_entities'
+terminal_clause:
+  syntax: 'comparison_where_clause | between_where_clause | whenever_clause | whenever_aggregate | when_clause'
+  concat: ','
+whenever_aggregate:
+  syntax: '"whenever we have that" comparison'
+comparison_where_clause:
+  syntax: '"where" comparison'
+between_where_clause:
+  syntax: '"where" string "is between" (string | sum_string | diff_string) "and" (string | sum_string | diff_string)'
+sum_string:
+  syntax: 'string "+" number'
+diff_string:
+  syntax: 'string "-" number'
+temporal_definition:
+  syntax: '"A" string "is a temporal concept expressed in steps ranging from" (number) "to" (number) ["with a length of" number "minutes"]'
+math_first:
+  syntax:
+    - equation
+    - string
+    - linked_attribute
+equation:
+  - name: abs_eq
+    syntax: '"|" equation "|"'
+  - name: sum_eq
+    syntax: 'equation "+" equation'
+  - name: diff_eq
+    syntax: 'equation "-" equation'
+  - name: div_eq
+    syntax: 'equation "/" equation'
+  - name: mult_eq
+    syntax: 'equation "*" equation'
+  - name: par_eq
+    syntax: '"(" equation ")"'
+  - name: num_eq
+    syntax: 'number'
+  - name: string_eq
+    syntax: 'string'
+math_second:
+  syntax:
+    - string
+    - equation
+level:
+  syntax:
+    - '"low"'
+    - '"medium"'
+    - '"high"'
+time_modifier:
+  syntax:
+    - '"next"'
+    - '"previous"'
+    - '"before"'
+    - '"after"'
+entity:
+  - name: entity
+    syntax: ("a " | "an ")? string [string] ["the" time_modifier "step"] [attribute] ["that is"? [negation] time_modifier (string | number)]
+such_that_clause:
+  syntax: '"such that there is" list_of_entities'
+positive_constraint_body:
+  syntax:
+    - comparison
+    - simple_proposition_with_entities
+negative_constraint_body:
+  syntax:
+    - comparison
+    - simple_proposition_with_entities
+comparison_first:
+  syntax:
+    - math
+    - simple_aggregate
+    - passive_aggregate
+    - string
+    - linked_attribute
+comparison_second:
+  syntax:
+    - number
+    - string
+    - sum_string
+    - diff_string
+    - linked_attribute
+    - equation
+linked_attribute:
+  syntax: '"the" string string "of the" entity'
+for_each:
+  syntax: '"for each" entity'
+

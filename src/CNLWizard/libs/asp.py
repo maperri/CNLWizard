@@ -1,6 +1,3 @@
-from numpy.core.defchararray import isalpha, isupper
-from sympy import discriminant
-
 from CNLWizard.cnl_wizard_compiler import CnlWizardCompiler, Signature, create_var
 
 
@@ -16,7 +13,8 @@ class Atom:
     def __str__(self):
         values = []
         for value in self.fields.values():
-            if value != '_' and isalpha(value) and value not in CnlWizardCompiler.constants and not isupper(value[0]):
+            if value != '_' and not value.isnumeric() and value not in CnlWizardCompiler.constants and not value[0].isupper()\
+                    and not value[0] == '"' and '..' not in value and ',' not in value:
                 values.append(f'"{value}"')
             else:
                 values.append(value)
@@ -98,7 +96,11 @@ class Assignment:
         self.body: list = body
 
     def __str__(self):
-        return f'{" | ".join(map(str, self.head))} :- {", ".join(map(str, self.body))}.'
+        res = f'{" | ".join(map(str, self.head))}'
+        body = f'{", ".join(map(str, self.body))}'
+        if body:
+            res += f':- {body}'
+        return f'{res}.'
 
 
 class WeakConstraint:

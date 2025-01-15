@@ -1,0 +1,30 @@
+start: (propositions ".")+
+%import common.WS 
+%import common.CNAME 
+%import common.SIGNED_NUMBER 
+%import common.INT 
+%import common.FLOAT 
+%import common.NUMBER 
+%import common.CPP_COMMENT 
+%ignore WS 
+%ignore CPP_COMMENT 
+?string: CNAME
+?number: NUMBER
+
+//  ----- Defined grammar below
+compounded_range_clause: "A" string "goes from" (NUMBER | string) "to" (NUMBER | string)
+compound_match_clause: "A" string "is one of" string ("," string)+
+quantified_choice: "Every" entity "can be" verb cardinality entity
+constraint: "It is required that" constraint_body
+simple_clause: entity "is"? verb entity
+propositions: compounded_range_clause | compound_match_clause | quantified_choice | constraint | simple_clause
+!cardinality: "exactly 1" | "at lest 1" | "at most 1"
+constraint_body: when_then_clause | simple_clause
+               | constraint_body "and also" constraint_body -> constraint_body_concat
+when_then_clause: "when" simple_clause "then" simple_clause
+!negation: "not"
+attribute: "with" string "equal to" (string | number)
+         | attribute "," attribute -> attribute_concat
+label: number | string
+entity: ("a"| "an")? string [label] [attribute]
+verb: [negation] string [attribute] string
