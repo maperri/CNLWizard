@@ -55,7 +55,8 @@ class CnlWizardGenerator:
                 if self._is_specification_file(file):
                     yaml_file_name = self._get_filename(file)
                 if self._is_py_file(file):
-                    functions[self._get_filename(file)] = pyReader().get_functions(os.path.join(import_dir, file))
+                    PY_FILE_PREFIX = 'py_'
+                    functions[self._get_filename(file).removeprefix(PY_FILE_PREFIX)] = pyReader().get_functions(os.path.join(import_dir, file))
             res[yaml_file_name] = functions
         return res
 

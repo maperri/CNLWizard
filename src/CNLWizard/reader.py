@@ -184,12 +184,45 @@ class YAMLReader:
     def list_rule(self, name: str):
         return ListRule(name)
 
+    def _substitute_question_mark(self, string: str) -> str:
+        # substitute the question mark in optional tokens with
+        # squared parenthesis
+        res = ''
+        i = len(string) - 1
+        while i >= 0:
+            if string[i] == '?':
+                res = ']' + res
+                parenthesis = 0
+                quotation_mark = False
+                i -= 1
+                while i >= 0:
+                    if string[i] == ')':
+                        parenthesis += 1
+                    elif string[i] == '(':
+                        parenthesis -= 1
+                        if not quotation_mark and not parenthesis:
+                            res = f'[{string[i]}{res}'
+                            break
+                    elif string[i] == '"':
+                        quotation_mark = not quotation_mark
+                    elif string[i] == ' ' and not quotation_mark and not parenthesis:
+                        res = f'[{res}'
+                    res = string[i] + res
+                    i -= 1
+            else:
+                res = string[i] + res
+            i -= 1
+        return res
+
     def syntax(self, value: str | list[str]) -> list[str]:
+        res = value
         if value is None:
             return []
         if isinstance(value, str):
-            return [value.strip()]
-        return [v.strip() for v in value]
+            res = [value]
+        for idx, v in enumerate(res):
+            res[idx] = self._substitute_question_mark(v).strip()
+        return res
 
     def target(self, value: str | list[str]) -> list[str]:
         if value is None:
