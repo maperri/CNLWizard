@@ -282,11 +282,12 @@ class PythonFunctionWriter(RuleVisitor):
                 out.write(f'{libs}\n\n\n{content}')
 
     def import_rule(self, r: Rule, origin: str, target: str) -> str:
-        if r.name in self._implemented_fn:
-            return ''
         if target in self._imported_fn[origin] and r.name in self._imported_fn[origin][target]:
             res = ''
             for name in r.get_to_import():
-                res += inspect.getsource(self._imported_fn[origin][target][name]) + '\n\n'
+                if name not in self._implemented_fn:
+                    res += inspect.getsource(self._imported_fn[origin][target][name]) + '\n\n'
+                if r.concat is not None and f'{r.name}_concat' not in self._implemented_fn:
+                    res += inspect.getsource(self._imported_fn[origin][target][f'{r.name}_concat']) + '\n\n'
             return res
         return r.accept(self)

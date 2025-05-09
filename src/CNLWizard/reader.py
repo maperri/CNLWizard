@@ -26,6 +26,7 @@ class YAMLReader:
         rule = rule.split('(')
         res = self._imported_libs[lib].get_grammar(target)[rule[0]]
         if len(rule) > 1:
+            # new terminal symbols are defined for the rule and they are consequently replaced
             symbols = rule[1].removesuffix(')').split(',')
             self.substitute_symbols(res, symbols)
         return ImportedRule(lib, target, res)
