@@ -206,7 +206,8 @@ class YAMLReader:
                     elif string[i] == '"':
                         quotation_mark = not quotation_mark
                     elif string[i] == ' ' and not quotation_mark and not parenthesis:
-                        res = f'[{res}'
+                        res = f' [{res}'
+                        break
                     res = string[i] + res
                     i -= 1
             else:
