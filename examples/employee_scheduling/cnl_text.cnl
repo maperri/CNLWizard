@@ -1,6 +1,6 @@
-A employee is identified by a name, and a salary.
-A team is identified by an id.
-assigned is identified by a employee_name, and a team_id.
+A employee has a name and a salary.
+A team has an id.
+Assigned has an employee_name and a team_id.
 
 There is an employee with name equal to 1, with salary equal to 2000.
 There is an employee with name equal to 2, with salary equal to 3000.

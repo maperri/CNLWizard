@@ -33,7 +33,10 @@ class ProcessCNLTransformer(Transformer):
     @v_args(inline=True)
     def signature_definition(self, name, type, keys, parameters):
         from CNLWizard.cnl_wizard_compiler import CnlWizardCompiler
+        if keys is None:
+            keys = parameters
         fields = keys.copy()
+        name = name.lower()
         if parameters:
             fields += parameters
         CnlWizardCompiler.signatures[name] = name, fields, keys, type
@@ -154,13 +157,13 @@ def process_cnl_specification(cnl: CnlWizardCompiler, cnl_specification: str, co
     start_rules = []
     if config['signatures']:
         grammar += dedent('''\
-                signature_definition: ("A" | "An")? CNAME [typed_signature] "is identified by" signature_parameters [","? "and has" signature_parameters]
-                typed_signature: "is" ("a"|"an")? CNAME "concept" ["that ranges from" NUMBER "to" NUMBER] ", and it"
+                signature_definition: ("A " | "An ")? CNAME [typed_signature] ["is identified by" signature_parameters] [(", " | (", "? "and "))? "has" signature_parameters]
+                typed_signature: "is" ("a " | "an ")? CNAME "concept" ["that ranges from" NUMBER "to" NUMBER] ","? "and it"
                 cnl_list_elem: NUMBER | CNAME
                              | cnl_list_elem "," cnl_list_elem -> cnl_list_elem_concat
-                signature_parameters: "by"? ("a" | "an")? CNAME 
-                                    | signature_parameters "," "and"? signature_parameters -> signature_parameters_concat
-                cnl_list_definition: ("A" | "An") CNAME "is a list made of" cnl_list_elem
+                signature_parameters: "by"? ("a " | "an ")? CNAME 
+                                    | signature_parameters (", " | (", "? "and ")) signature_parameters -> signature_parameters_concat
+                cnl_list_definition: ("A " | "An ") CNAME "is a list made of" cnl_list_elem
                 ?definition.1: signature_definition | cnl_list_definition
                 ''')
         start_rules.append('definition')
