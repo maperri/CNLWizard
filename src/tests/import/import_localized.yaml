@@ -1,0 +1,6 @@
+localized_rule:
+  syntax:
+    en: '"This is an English rule"'
+    it: '"Questa è una regola in italiano"'
+  target:
+    - lang

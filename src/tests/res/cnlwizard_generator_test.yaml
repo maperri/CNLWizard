@@ -12,6 +12,10 @@ import:
     rules: '*'
     source: [lang]
     target: [lang1]
+  - from: import_localized
+    rules: '*'
+    source: [ lang ]
+    target: [ lang1 ]
 
 config:
   signatures:
@@ -66,6 +70,7 @@ start:
     - there_is_clause
     - a_rule
     - test_rule
+    - localized_rule
   target:
     - lang1
     - lang2

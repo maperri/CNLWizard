@@ -5,16 +5,17 @@ from CNLWizard.writer import LarkGrammarWriter, PythonFunctionWriter
 
 
 class CnlWizardGenerator:
-    def __init__(self, yaml_file: str, import_dirs: list[str], out_dir: str):
+    def __init__(self, yaml_file: str, import_dirs: list[str], out_dir: str, lang: str = None):
         self._specification = yaml_file
         if import_dirs is None:
             import_dirs = []
+        self._lang = lang
         self._imported_libs = self._get_imported_grammars(import_dirs)
         self._imported_fn = self._get_imported_functions(import_dirs)
         self._out_dir = out_dir
 
     def _import_internal_lib(self):
-        return YAMLReader().read_specification(
+        return YAMLReader(lang=self._lang).read_specification(
             os.path.join(os.path.join(os.path.dirname(__file__), 'libs', 'cnl_wizard_propositions.yaml')))
 
     def _is_specification_file(self, file: str) -> bool:
@@ -35,7 +36,7 @@ class CnlWizardGenerator:
         for import_dir in import_dirs:
             for file in os.listdir(import_dir):
                 if self._is_specification_file(file):
-                    res[self._get_filename(file)] = YAMLReader().read_specification(os.path.join(import_dir, file))
+                    res[self._get_filename(file)] = YAMLReader(lang=self._lang).read_specification(os.path.join(import_dir, file))
         return res
 
     def _import_internal_fn(self):
@@ -61,7 +62,7 @@ class CnlWizardGenerator:
         return res
 
     def generate(self):
-        cnl = YAMLReader(self._imported_libs).read_specification(self._specification)
+        cnl = YAMLReader(self._imported_libs, self._lang).read_specification(self._specification)
         grammar_writer = LarkGrammarWriter()
         for lang in cnl.get_languages():
             with open(os.path.join(self._out_dir, f'grammar_{lang}.lark'), 'w') as out:

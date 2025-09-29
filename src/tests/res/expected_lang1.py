@@ -45,3 +45,7 @@ def test_rule_concat(*args):
 
 def a_rule(*args):
     raise NotImplementedError
+
+
+def localized_rule(*args):
+    raise NotImplementedError

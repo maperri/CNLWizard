@@ -14,8 +14,9 @@ from CNLWizard.cnl import Cnl, SupportRule, CompiledRule, AttributeRule, EntityR
 
 
 class YAMLReader:
-    def __init__(self, imported_libs: dict = None):
+    def __init__(self, imported_libs: dict = None, lang: str = None):
         self._imported_libs = imported_libs
+        self._lang = lang
 
     def substitute_symbols(self, rule: Rule, symbols):
         rule_symbols = rule.get_symbols()
@@ -228,7 +229,11 @@ class YAMLReader:
         res = value
         if value is None:
             return []
-        if isinstance(value, str):
+        if isinstance(value, dict):
+            if self._lang not in value:
+                raise KeyError(f"{self._lang} is not defined")
+            res = [value[self._lang]]
+        elif isinstance(value, str):
             res = [value]
         for idx, v in enumerate(res):
             res[idx] = self._substitute_question_mark(v).strip()
