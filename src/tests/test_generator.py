@@ -16,7 +16,7 @@ class TestCNLWizardGenerator(unittest.TestCase):
         cnl_wizard = CnlWizardGenerator(os.path.join(base_path, 'res',
                                                      'cnlwizard_generator_test.yaml'),
                                         [os.path.join(base_path, 'import')],
-                                        os.path.join(base_path, 'res'))
+                                        os.path.join(base_path, 'res'), 'en')
         self.maxDiff = None
         cnl_wizard.generate()
         # Add arithmetic function to lang1 file

@@ -1,0 +1,4 @@
+a_rule:
+    syntax: '"This is a rule to import"'
+    target:
+      - lang

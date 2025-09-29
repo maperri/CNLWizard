@@ -41,3 +41,11 @@ def test_rule_concat(*args):
             arg = [arg]
         res += arg
     return res
+
+
+def a_rule(*args):
+    raise NotImplementedError
+
+
+def localized_rule(*args):
+    raise NotImplementedError

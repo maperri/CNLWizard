@@ -282,7 +282,10 @@ class PythonFunctionWriter(RuleVisitor):
                 out.write(f'{libs}\n\n\n{content}')
 
     def import_rule(self, r: Rule, origin: str, target: str) -> str:
-        if target in self._imported_fn[origin] and r.name in self._imported_fn[origin][target]:
+        if r.name in self._implemented_fn:
+            return ''
+        if (origin in self._imported_fn and target in self._imported_fn[origin] and
+                r.name in self._imported_fn[origin][target]):
             res = ''
             for name in r.get_to_import():
                 if name not in self._implemented_fn:
