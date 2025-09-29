@@ -30,3 +30,5 @@ def there_is_clause(entity):
     return Fact(entity)
 
 
+def a_rule(*args):
+    raise NotImplementedError

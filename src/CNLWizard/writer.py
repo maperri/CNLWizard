@@ -284,7 +284,8 @@ class PythonFunctionWriter(RuleVisitor):
     def import_rule(self, r: Rule, origin: str, target: str) -> str:
         if r.name in self._implemented_fn:
             return ''
-        if r.name in self._imported_fn[origin][target]:
+        if (origin in self._imported_fn and target in self._imported_fn[origin] and
+                r.name in self._imported_fn[origin][target]):
             res = ''
             for name in r.get_to_import():
                 res += inspect.getsource(self._imported_fn[origin][target][name]) + '\n\n'

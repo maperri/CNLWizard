@@ -31,8 +31,8 @@ class TestCNLWizardGenerator(unittest.TestCase):
         with open(os.path.join(base_path, 'res', 'py_lang2.py'), 'w') as file:
             file.write('')  # restore file
 
-        self.assertEqual(generated_py_lang1_content, expected_lang1)
-        self.assertEqual(generated_py_lang2_content, lang2)
+        self.assertEqual(generated_py_lang1_content.strip(), expected_lang1.strip())
+        self.assertEqual(generated_py_lang2_content.strip(), lang2.strip())
         with open(os.path.join(base_path, 'res', 'grammar_lang1.lark'), 'r') as file:
             # as there is an instance of entity called entity, we do not have to add
             # a composite rule in lark

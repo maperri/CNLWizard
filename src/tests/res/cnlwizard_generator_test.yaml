@@ -8,6 +8,10 @@ import:
       - test_rule
     source: [lang]
     target: [lang1]
+  - from: import_all
+    rules: '*'
+    source: [lang]
+    target: [lang1]
 
 config:
   signatures:
@@ -60,6 +64,7 @@ start:
     - entity
     - operation
     - there_is_clause
+    - a_rule
   target:
     - lang1
     - lang2

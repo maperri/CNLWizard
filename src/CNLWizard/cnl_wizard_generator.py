@@ -70,4 +70,3 @@ class CnlWizardGenerator:
             if os.path.exists(py_file):
                 py_writer.import_fn(py_file)
             py_writer.write(cnl.print(lang, py_writer), py_file)
-

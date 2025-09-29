@@ -1,7 +1,6 @@
-
-
 test_rule:
   syntax: >
     "Test" string
   target:
     - lang
+

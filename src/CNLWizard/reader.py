@@ -80,7 +80,15 @@ class YAMLReader:
             res.append(PreprocessConfigRule('var_substitution'))
         return res
 
+    def import_all(self, lib, target_lib):
+        res = []
+        for rule in self._imported_libs[lib].get_grammar(target_lib):
+            res.append(self.get_imported_rule(lib, target_lib, rule))
+        return res
+
     def import_rules(self, lib, target_lib, rules) -> [list[Rule], str]:
+        if rules == '*':
+            return self.import_all(lib, target_lib)
         res = []
         for rule in rules:
             res.append(self.get_imported_rule(lib, target_lib, rule))

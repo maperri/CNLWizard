@@ -1,4 +1,4 @@
-start: arithmetic | constraint | TERMINAL | entity | operation | there_is_clause
+start: arithmetic | constraint | TERMINAL | entity | operation | there_is_clause | a_rule
 %import common.WS 
 %import common.CNAME 
 %import common.SIGNED_NUMBER 
