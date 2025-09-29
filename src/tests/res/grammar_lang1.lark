@@ -1,4 +1,4 @@
-start: arithmetic | constraint | TERMINAL | entity | operation | there_is_clause | a_rule
+start: arithmetic | constraint | TERMINAL | entity | operation | there_is_clause | a_rule | test_rule
 %import common.WS 
 %import common.CNAME 
 %import common.SIGNED_NUMBER 
@@ -18,4 +18,6 @@ constraint: "it is prohibited that" arithmetic
 entity: ("A" | "An" | "a" | "an")? string attribute
 TERMINAL: "TERMINAL"
 there_is_clause: ("it is" | "There") "is" entity
+test_rule: "Test" string
+         | test_rule "," test_rule -> test_rule_concat
 !a_rule: "This is a rule to import"

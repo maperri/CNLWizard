@@ -288,6 +288,9 @@ class PythonFunctionWriter(RuleVisitor):
                 r.name in self._imported_fn[origin][target]):
             res = ''
             for name in r.get_to_import():
-                res += inspect.getsource(self._imported_fn[origin][target][name]) + '\n\n'
+                if name not in self._implemented_fn:
+                    res += inspect.getsource(self._imported_fn[origin][target][name]) + '\n\n'
+                if r.concat is not None and f'{r.name}_concat' not in self._implemented_fn:
+                    res += inspect.getsource(self._imported_fn[origin][target][f'{r.name}_concat']) + '\n\n'
             return res
         return r.accept(self)

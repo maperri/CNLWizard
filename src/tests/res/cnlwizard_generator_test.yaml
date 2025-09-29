@@ -65,6 +65,7 @@ start:
     - operation
     - there_is_clause
     - a_rule
+    - test_rule
   target:
     - lang1
     - lang2

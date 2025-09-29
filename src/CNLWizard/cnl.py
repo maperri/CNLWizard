@@ -190,7 +190,7 @@ class PreprocessConfigRule(Rule):
 
 class ImportedRule(Rule):
     def __init__(self, origin: str, target: str, rule: Rule):
-        super().__init__(rule.name, rule.syntax)
+        super().__init__(rule.name, rule.syntax, rule.concat)
         self.origin = origin
         self.target = target
         self.rule = rule
