@@ -47,7 +47,7 @@ proposition:
 
 attribute:
   syntax: '"and"? "with" ("a " | "an ")? string [attribute_value] [comparison_operator attribute_value]'
-  concat: ','
+  concat: '","'
 
 verb:
   syntax: ("a" | "an")? word [attribute] word
@@ -70,7 +70,7 @@ terminal_clause:
     - whenever_clause
     - whenever_aggregate
     - when_clause
-  concat: ','
+  concat: '","'
 
 whenever_aggregate:
   syntax: '"whenever we have that" comparison'

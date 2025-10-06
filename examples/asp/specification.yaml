@@ -43,12 +43,12 @@ whenever_clause:
   syntax:
     - >
       ("whenever there is" | "Whenever there is") entity
-  concat: ","
+  concat: '","'
 
 disjunction_then_subject:
   syntax:
     - then_subject
-  concat: "or"
+  concat: '"or"'
 
 cardinality:
   syntax:
@@ -77,7 +77,7 @@ constraint_body:
       - entity
       - aggregate
       - comparison
-    concat: "and"
+    concat: '"and"'
 
 operation:
   - name: math
@@ -124,7 +124,7 @@ then_subject:
 then_object:
   syntax:
     - then_subject
-  concat: ","
+  concat: '","'
 
 comparison_operand:
   syntax:
@@ -140,7 +140,7 @@ math_operand:
 
 Attribute:
   - name: attribute
-    concat: ","
+    concat: '","'
 
 Entity:
   - name: entity

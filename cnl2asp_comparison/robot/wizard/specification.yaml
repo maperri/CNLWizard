@@ -47,7 +47,7 @@ proposition:
     syntax: '"It is preferred" "as much as possible"? ", with" level "priority, that" math "is minimized" ["," terminal_clause]'
 attribute:
   syntax: '"and"? "with" ("a " | "an ")? string attribute_value [comparison_operator attribute_value]'
-  concat: ','
+  concat: '","'
 attribute_value:
   syntax:
     - string
@@ -58,7 +58,7 @@ when_clause:
   syntax: '"when" simple_proposition_with_entities'
 terminal_clause:
   syntax: 'comparison_where_clause | between_where_clause | whenever_clause | whenever_aggregate | when_clause'
-  concat: ','
+  concat: '","'
 whenever_aggregate:
   syntax: '"whenever we have that" comparison'
 comparison_where_clause:

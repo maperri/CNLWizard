@@ -48,7 +48,7 @@ math_first:
   syntax:
     - string
     - linked_attribute
-  concat: ','
+  concat: '","'
 math_second:
   syntax:
     - string
@@ -69,7 +69,7 @@ entity:
     syntax: ("a " | "an ")? string [string] [attribute]
 attribute:
   syntax: '"and"? "with" ("a " | "an ")? string [attribute_value] [comparison_operator attribute_value]'
-  concat: ','
+  concat: '","'
 attribute_value:
   syntax:
     - string

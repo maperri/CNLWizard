@@ -22,7 +22,7 @@ proposition:
     - name: disjunction
       syntax: simple_clause "or" attribute
       concat:
-        ", and"
+        '", and"'
     - name: there_is_clause
     - name: comparison
     - name: weak_constraint

@@ -33,7 +33,7 @@ constraint_body:
     syntax:
       - when_then_clause
       - simple_clause
-    concat: "and also"
+    concat: '"and also"'
 when_then_clause:
   syntax: >
     "when" simple_clause "then" simple_clause
@@ -42,7 +42,7 @@ negation:
     "not"
 attribute:
   - name: attribute
-    concat: ","
+    concat: '","'
 label:
   syntax:
     - number

@@ -80,14 +80,14 @@ whenever_clause:
   syntax:
     - >
       ("whenever there is" | "Whenever there is") entity
-  concat: ","
+  concat: '","'
   target:
     - asp
 
 disjunction_then_subject:
   syntax:
     - then_subject
-  concat: "or"
+  concat: '"or"'
   target:
     - asp
 
@@ -136,7 +136,7 @@ constraint_body:
       - entity
       - aggregate
       - comparison
-    concat: "and"
+    concat: '"and"'
     target:
       - asp
 
@@ -266,7 +266,7 @@ then_subject:
 then_object:
   syntax:
     - then_subject
-  concat: ","
+  concat: '","'
   target:
     - asp
 
@@ -315,7 +315,7 @@ math_operand:
 
 attribute:
   - name: attribute
-    concat: ","
+    concat: '","'
     target:
       - cp
       - asp

@@ -47,7 +47,7 @@ math_operand:
 
 Attribute:
   - name: attribute
-    concat: ","
+    concat: '","'
 
 Entity:
   - name: entity

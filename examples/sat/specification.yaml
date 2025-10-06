@@ -49,7 +49,7 @@ operation:
 
 Attribute:
   - name: attribute
-    concat: ","
+    concat: '","'
 
 Entity:
   - name: entity

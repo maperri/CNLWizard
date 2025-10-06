@@ -61,7 +61,7 @@ diff_string:
   syntax: 'string "-" number'
 math_first:
   syntax: [equation, string, linked_attribute]
-  concat: ','
+  concat: '","'
 math_second:
   syntax: [string, linked_attribute, equation]
 equation:
@@ -92,7 +92,7 @@ label:
   syntax: ['/[A-Z]/ [string | number]', 'number']
 attribute:
   syntax: '"and "? "with" ("a " | "an ")? string [attribute_value] [comparison_operator attribute_value]'
-  concat: ','
+  concat: '","'
 verb:
   syntax: >
     [negation] ("a " | "an ")? word [attribute] word
@@ -124,7 +124,7 @@ temporal_operator:
   syntax: ['"before"', '"after"']
 terminal_clause:
   syntax: [comparison_where_clause, between_where_clause, whenever_clause, whenever_aggregate, when_clause]
-  concat: ','
+  concat: '","'
 whenever_aggregate:
   syntax: '"whenever we have that" comparison'
 comparison_where_clause:
