@@ -1,7 +1,7 @@
 test_rule:
   syntax: >
     "Test" string
-  concat: ','
+  concat: '","'
   target:
     - lang
 
