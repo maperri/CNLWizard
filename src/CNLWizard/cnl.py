@@ -43,6 +43,8 @@ class Rule:
             if curr:
                 self.non_terminal_symbols.append(curr)
                 curr = ''
+        if self.concat:
+            self.non_terminal_symbols.extend(Rule("", [self.concat]).get_non_terminal_symbols())
         return self.non_terminal_symbols
 
     def get_symbols(self):
