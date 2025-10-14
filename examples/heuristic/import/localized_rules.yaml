@@ -1,0 +1,83 @@
+preferred_that:
+  syntax: 
+    en: '"it is preferred that "'
+    it: '"è preferibile che "'
+  target:
+    - asp
+
+if_then:
+  syntax:
+    en: '", then"'
+    it: '", allora"'
+  target:
+    - asp
+
+true_sign:
+  syntax:
+    en: '"is true" | "is not false"'
+    it: '"sia vero" | "non sia falso"'
+  target:
+    - asp
+
+false_sign:
+  syntax:
+    en: '"is false" | "is not true"'
+    it: '"sia falso" | "non sia vero"'
+  target:
+    - asp
+
+if_there_is:
+  syntax:
+    en: '"if there is"'
+    it: '"se esiste"'
+  target:
+    - asp
+
+with_priority:
+  syntax:
+    en: '", with priority " ["equal to"]'
+    it: '", con priorità " ["uguale a"]'
+  target:
+    - asp
+
+with_level:
+  syntax:
+    en: '(", with" | "a") " level " ["equal to"]'
+    it: '(", con" | "un") " livello " ["uguale a"]'
+  target:
+    - asp
+
+choose_first:
+  syntax:
+    en: '"Choose first"'
+    it: '"Scegli prima"'
+  target:
+    - asp
+
+article:
+  syntax:
+    en: '"a " | "an "'
+    it: '"un " | "una " | "uno " | "un''"'
+  target:
+    - asp
+
+has:
+  syntax:
+    en: '"has "'
+    it: '"abbia "'
+  target:
+    - asp
+
+conj_then:
+  syntax:
+    en: '", then"'
+    it: '", in seguito"'
+  target:
+    - asp
+
+and:
+  syntax:
+    en: '"and"'
+    it: '"it'
+  target:
+    - asp

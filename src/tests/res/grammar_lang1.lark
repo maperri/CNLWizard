@@ -1,4 +1,4 @@
-start: arithmetic | constraint | TERMINAL | entity | operation | there_is_clause | a_rule | test_rule | localized_rule
+start: arithmetic | constraint
 %import common.WS 
 %import common.CNAME 
 %import common.SIGNED_NUMBER 
@@ -13,12 +13,10 @@ start: arithmetic | constraint | TERMINAL | entity | operation | there_is_clause
 ?l_case: LCASE_LETTER
 
 //  ----- Defined grammar below
-!arithmetic: "the sum between 1 and 2"
-constraint: "it is prohibited that" arithmetic
-entity: ("A" | "An" | "a" | "an")? string attribute
-TERMINAL: "TERMINAL"
-there_is_clause: ("it is" | "There") "is" entity
-test_rule: "Test" string
-         | test_rule "," test_rule -> test_rule_concat
-!a_rule: "This is a rule to import"
-!localized_rule: "This is an English rule"
+!arithmetic_operator: 
+arithmetic: "the sum between 1 and 2" | "the difference between 1 and 2"
+operation: arithmetic | boolean
+negative_constraint: "It is prohibited that" operation
+constraint: negative_constraint
+!boolean_operator: 
+boolean: "the or between a and b"

@@ -1,0 +1,12 @@
+An a.
+A b.
+A c.
+it is preferred that an a is true.
+it is preferred that a b is true.
+it is preferred that an a has a level equal to 10.
+we can have an a or a b.
+It is prohibited that there is an a whenever there is a b.
+we can have a c.
+if there is a b, then it is preferred that a c is true.
+if there is not a b, then it is preferred that a c is not true.
+it is preferred that a b has a level equal to 20.

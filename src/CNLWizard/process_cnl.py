@@ -35,7 +35,10 @@ class ProcessCNLTransformer(Transformer):
         from CNLWizard.cnl_wizard_compiler import CnlWizardCompiler
         if keys is None:
             keys = parameters
-        fields = keys.copy()
+        # modifica: permettere di definire entità senza attributi
+        fields = []
+        if keys:
+            fields = keys.copy()
         name = name.lower()
         if parameters:
             fields += parameters

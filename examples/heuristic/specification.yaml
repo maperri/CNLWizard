@@ -1,0 +1,332 @@
+#import:
+#  - rules:
+#      - entity
+#      - attribute
+#      - there_is_clause
+#    target: [smt, cp, asp]
+#    source: [smt, cp, asp]
+
+
+import:
+  - from: localized_rules
+    rules: '*'
+    source: [asp]
+    target: [asp]
+    
+      
+start:
+  syntax: (propositions ".")+
+
+propositions:
+  - name: there_is_clause
+    syntax: >
+      ("There" | "there") "is" entity
+
+  - name: constant
+    syntax: >
+      string "is a constant equal to" attribute_value
+    target:
+      - asp
+
+  - name: constraint
+    syntax: >
+      "It is prohibited that there is" constraint_body [whenever_clause]
+    target:
+      - asp
+
+  - name: whenever_then_clause_choice
+# modifica: whenever_clause ", then we can have" [cardinality] then_subject [then_object]
+#   "whenever_clause, then" resa opzionale per poter inserire choice senza body
+#   disjunction_then_subject invece di then_subject per poter inserire più head disgiuntive
+#   aggiunta di "if there is" su then_object per poter distinguere bene le condition dalla head 
+    syntax: >
+      [whenever_clause ", then "] "we can have" [cardinality] disjunction_then_subject ["if there is" then_object]
+    target:
+      - asp
+
+  - name: whenever_then_clause_assignment
+    syntax:
+      - >
+        whenever_clause ", then we must have" then_subject
+      - >
+        whenever_clause ", then we can have" disjunction_then_subject
+    target:
+        - asp
+
+  - name: weak_constraint
+    syntax: >
+      "It is preferred as much as possible, with" level "priority that" comparison [whenever_clause]
+    target:
+      - asp
+
+  - name: heuristic
+    syntax:
+      - >
+        sign_heuristic_clause
+      - >
+        level_heuristic_clause
+      - >
+        true_false_heuristic_clause
+    target:
+      - asp
+
+
+attribute_value:
+    syntax:
+      - string
+      - number
+    target:
+      - asp
+
+whenever_clause:
+  syntax:
+    - >
+      ("whenever there is" | "Whenever there is") entity
+  concat: '","'
+  target:
+    - asp
+
+disjunction_then_subject:
+  syntax:
+    - then_subject
+  concat: '"or"'
+  target:
+    - asp
+
+cardinality:
+  syntax:
+    - >
+      "exactly one"
+    - >
+      "at lest one"
+    - >
+      "at most one"
+  target:
+    - asp
+
+negation:
+  syntax:
+    - >
+      "not"
+    - >
+      "cannot"
+  target:
+    - asp
+
+level:
+  syntax:
+    - >
+      "low"
+    - >
+      "medium"
+    - >
+      "high"
+  target:
+    - asp
+
+constraint_body:
+    syntax:
+      - entity
+      - aggregate
+      - comparison
+    concat: '"and"'
+    target:
+      - asp
+
+operation:
+  - name: math
+    operators:
+      sum: '+'
+      difference: '-'
+      division: '/'
+      multiplication: '*'
+    syntax:
+      - '"the" math_operator "between" math_operand "and" math_operand'
+    target:
+      - asp
+
+  - name: comparison
+    operators:
+      equal to: '=='
+      different from: '!='
+      lower than: '<'
+      greater than: '>'
+      lower than or equal to: '<='
+      greater than or equal to: '>='
+    syntax:
+      - comparison_operand "is"? comparison_operator comparison_operand
+    target:
+      - asp
+
+aggregate:
+    syntax:
+      - >
+        aggregate_operator string "that" entity
+    target:
+      - asp
+
+aggregate_operator:
+  syntax:
+    - >
+      "the number of"
+    - >
+      "the total of"
+    - >
+      "the lowest value of"
+    - >
+      "the highest value of"
+  target:
+    - asp
+
+
+then_subject:
+  syntax:
+    - entity
+    - verb
+  target:
+    - asp
+
+then_object:
+  syntax:
+    - then_subject
+  concat: '","'
+  target:
+    - asp
+
+comparison_operand:
+  - name: comparison_operand
+    syntax:
+      - math
+      - aggregate
+      - attribute_value
+    target:
+      - asp
+
+math_operand:
+  - name: math_operand
+    syntax:
+      - entity
+      - string
+      - number
+    target:
+      - asp
+
+attribute:
+  - name: attribute
+    concat: '","'
+    target:
+      - asp
+
+entity:
+  - name: entity
+# modifica: [negation] ("a"| "an") string attribute
+#   aggiunta di uno spazio agli articoli per poter distinguerli meglio dalla parola successiva, possono essere opzionali
+#   attribute reso opzionale, per poter scrivere atomi senza attributi
+    syntax: >
+      [negation] [article] string [attribute]
+    target:
+      - asp
+
+  - name: verb
+    syntax: string attribute string
+    target:
+      - asp
+
+sign:
+  - name: sign
+    syntax:
+      - >
+        true_sign
+      - >
+        false_sign
+
+sign_heuristic_clause:
+  - name: sign_heuristic_clause
+    syntax: >
+      [if_clause if_then] preferred_that entity sign [heur_priority]
+    target:
+      - asp
+
+level_heuristic_clause:
+  - name: level_heuristic_clause
+    syntax:
+      - >
+        level_heuristic_clause_first_syntax
+      - >
+        level_heuristic_clause_second_syntax
+    target:
+      - asp
+
+level_heuristic_clause_first_syntax:
+  - name: level_heuristic_clause_first_syntax
+    syntax: >
+      [if_clause if_then] preferred_that entity has heur_level [heur_priority]
+    target:
+      - asp
+
+#level_heuristic_clause:
+#  - name: level_heuristic_clause
+#    syntax: >
+#      [if_clause ", then "] "is preferred that " entity "has " heur_level [heur_priority]
+#    target:
+#      - asp
+
+level_heuristic_clause_second_syntax:
+  - name: level_heuristic_clause_second_syntax
+    syntax: >
+      choose_first level_heuristic_clause_second_syntax_body
+    target:
+      - asp
+
+level_heuristic_clause_second_syntax_body:
+  - name: level_heuristic_clause_second_syntax_body
+    syntax: >
+      (entity | entity_conjunction)
+    concat: conj_then
+    target:
+      - asp
+
+entity_conjunction:
+  - name: entity_conjunction
+    syntax: >
+      entity
+    concat: and
+    target:
+      - asp
+
+true_false_heuristic_clause:
+  - name: true_false_heuristic_clause
+    syntax: >
+      [if_clause if_then] preferred_that entity sign heur_level [heur_priority]
+    target:
+      - asp
+
+if_clause:
+  - name: if_clause
+    syntax: 
+      - >
+        if_there_is entity
+    concat: '","'
+    target:
+      - asp
+
+heur_negation:
+  syntax:
+    - >
+      "not "
+  target:
+    - asp
+
+heur_level:
+  - name: heur_level
+    syntax: >
+      with_level SIGNED_NUMBER
+    target:
+      - asp
+
+heur_priority:
+  - name: heur_priority
+    syntax: >
+      with_priority number
+    target:
+      - asp

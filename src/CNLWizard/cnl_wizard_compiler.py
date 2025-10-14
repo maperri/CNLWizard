@@ -6,7 +6,7 @@ from typing import Callable
 import uuid
 import lark
 
-from lark import Lark, UnexpectedInput, Transformer
+from lark import Lark, UnexpectedInput, Transformer, Tree
 
 from CNLWizard.process_cnl import process_cnl_specification
 from CNLWizard.reader import pyReader
@@ -105,15 +105,47 @@ class CnlWizardCompiler:
         self.logger = logging.getLogger(type(self).__name__)
 
     def compile(self, grammar_file: str, py_file: str, cnl_text_file: str):
+        print(f"grammar_file: {grammar_file}")
+        print(f"py_file: {py_file}")
+        print(f"cnl_text_file: {cnl_text_file}")
+
         with open(grammar_file, 'r') as grammar:
             grammar = grammar.read()
         with open(cnl_text_file, 'r') as cnl_text_file:
             cnl_text_file = cnl_text_file.read()
         functions = pyReader().get_functions(py_file)
+
+
+        #print("---- INIT_GRAMMAR -------------------------------------------------------------------------------------")
+        #print(grammar)
+        #print("---- FINE_GRAMMAR -------------------------------------------------------------------------------------")
+
+        #print("---- INIT_CNLTEXT -------------------------------------------------------------------------------------")
+        #print(cnl_text_file)
+        #print("---- FINE_CNLTEXT -------------------------------------------------------------------------------------")
+
+        #print("---- INIT_FUNCTIONS -------------------------------------------------------------------------------------")
+        #print(functions)
+        #print("---- FINE_FUNCTIONS -------------------------------------------------------------------------------------")
+
+
         lark = Lark(grammar)
         processed_cnl = process_cnl_specification(self, cnl_text_file, self.config)
+
+        #print("---- INIT_PROCESSED -------------------------------------------------------------------------------------")
+        #print(processed_cnl)
+        #print("---- FINE_PROCESSED -------------------------------------------------------------------------------------")
+
         try:
             parse_tree = lark.parse(processed_cnl)
+
+            parse_tree.children.append(Tree("graph", [None]))
+
+
+            print("---- INIT_TREE -------------------------------------------------------------------------------------")
+            print(parse_tree.pretty())
+            print("---- FINE_TREE -------------------------------------------------------------------------------------")
+
         except UnexpectedInput as e:
             self.logger.error(e)
             return ''

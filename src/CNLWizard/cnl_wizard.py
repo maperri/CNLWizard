@@ -23,5 +23,7 @@ def main():
         import_dirs = args.to_import if args.to_import else []
         CnlWizardGenerator(yaml_specification, import_dirs, out_dir, args.lang).generate()
     if args.compile:
+        print("---- INIT_COMPILE -------------------------------------------------------------------------------------")
         print(CnlWizardCompiler().compile(args.compile[0], args.compile[1], args.compile[2]))
+        print("---- FINE_COMPILE -------------------------------------------------------------------------------------")
     return

@@ -1,0 +1,75 @@
+start: (propositions ".")+
+%import common.WS 
+%import common.CNAME 
+%import common.SIGNED_NUMBER 
+%import common.INT 
+%import common.FLOAT 
+%import common.NUMBER 
+%import common.CPP_COMMENT 
+%import common.LCASE_LETTER 
+%ignore WS 
+%ignore CPP_COMMENT 
+?string: CNAME
+?l_case: LCASE_LETTER
+?number: NUMBER
+
+//  ----- Defined grammar below
+there_is_clause: ("There" | "there") "is" entity
+propositions: there_is_clause | constant | constraint | whenever_then_clause_choice | whenever_then_clause_assignment | weak_constraint | heuristic
+sign: true_sign | false_sign
+!preferred_that: "it is preferred that "
+!if_then: ", then"
+!true_sign: "is true" | "is not false"
+!false_sign: "is false" | "is not true"
+!if_there_is: "if there is"
+!with_priority: ", with priority " ["equal to"]
+!with_level: (", with" | "a") " level " ["equal to"]
+!choose_first: "Choose first"
+!article: "a " | "an "
+!has: "has "
+!conj_then: ", then"
+!and: "and"
+constant: string "is a constant equal to" attribute_value
+constraint: "It is prohibited that there is" constraint_body [whenever_clause]
+whenever_then_clause_choice: [whenever_clause ", then "] "we can have" [cardinality] disjunction_then_subject ["if there is" then_object]
+whenever_then_clause_assignment: whenever_clause ", then we must have" then_subject | whenever_clause ", then we can have" disjunction_then_subject
+weak_constraint: "It is preferred as much as possible, with" level "priority that" comparison [whenever_clause]
+heuristic: sign_heuristic_clause | level_heuristic_clause | true_false_heuristic_clause
+attribute_value: string | number
+whenever_clause: ("whenever there is" | "Whenever there is") entity
+               | whenever_clause "," whenever_clause -> whenever_clause_concat
+disjunction_then_subject: then_subject
+                        | disjunction_then_subject "or" disjunction_then_subject -> disjunction_then_subject_concat
+!cardinality: "exactly one" | "at lest one" | "at most one"
+!negation: "not" | "cannot"
+!level: "low" | "medium" | "high"
+constraint_body: entity | aggregate | comparison
+               | constraint_body "and" constraint_body -> constraint_body_concat
+!math_operator: "sum" | "difference" | "division" | "multiplication"
+math: "the" math_operator "between" math_operand "and" math_operand
+!comparison_operator: "equal to" | "different from" | "lower than" | "greater than" | "lower than or equal to" | "greater than or equal to"
+comparison: comparison_operand ["is"] comparison_operator comparison_operand
+aggregate: aggregate_operator string "that" entity
+!aggregate_operator: "the number of" | "the total of" | "the lowest value of" | "the highest value of"
+then_subject: entity | verb
+then_object: then_subject
+           | then_object "," then_object -> then_object_concat
+comparison_operand: math | aggregate | attribute_value
+math_operand: entity | string | number
+attribute: "with" ("a" | "an")? string "equal to"? (string | number)
+         | attribute "," attribute -> attribute_concat
+entity: [negation] [article] string [attribute]
+verb: string attribute string
+sign_heuristic_clause: [if_clause if_then] preferred_that entity sign [heur_priority]
+level_heuristic_clause: level_heuristic_clause_first_syntax | level_heuristic_clause_second_syntax
+level_heuristic_clause_first_syntax: [if_clause if_then] preferred_that entity has heur_level [heur_priority]
+level_heuristic_clause_second_syntax: choose_first level_heuristic_clause_second_syntax_body
+level_heuristic_clause_second_syntax_body: (entity | entity_conjunction)
+                                         | level_heuristic_clause_second_syntax_body conj_then level_heuristic_clause_second_syntax_body -> level_heuristic_clause_second_syntax_body_concat
+entity_conjunction: entity
+                  | entity_conjunction and entity_conjunction -> entity_conjunction_concat
+true_false_heuristic_clause: [if_clause if_then] preferred_that entity sign heur_level [heur_priority]
+if_clause: if_there_is entity
+         | if_clause "," if_clause -> if_clause_concat
+heur_level: with_level SIGNED_NUMBER
+heur_priority: with_priority number
