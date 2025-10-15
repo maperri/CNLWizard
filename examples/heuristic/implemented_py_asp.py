@@ -126,6 +126,7 @@ def start(*rules):
     res = ''
     for r in rules:
         res += str(r) + '\n'
+    res += str(DictPriorityGraph())
     return res
 
 
@@ -368,10 +369,68 @@ def sign(sign):
 #    return bool(heur_negation)
 
 
+class DictPriorityGraph:
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+            cls._instance.dict = dict()         
+        return cls._instance
+    
+
+    def addNode(self, atom, if_clause, sign):
+        if atom not in self._instance.dict:
+            self._instance.dict[atom] = list()
+        
+        if if_clause:
+            if_clause = set(str(x) for x in if_clause)
+        else:
+            if_clause = set()
+
+        index = 0
+        for rule in self._instance.dict[atom]:
+            if if_clause.issubset(rule[0]):
+                self._instance.dict[atom].insert(index, (if_clause, sign))
+                return
+            index += 1
+                        
+        self._instance.dict[atom].append((if_clause, sign))
+
+        
+
+
+    def __str__(self):
+        res = ''
+        for atom, list in self._instance.dict.items():
+            priority_rate = 1
+            '''
+            print("1----------------------")
+            for r in list:
+                if not r[0]:
+                    print('0', end='')
+                else:
+                    print(f'({", ".join(str(e) for e in r[0])})', end='  ')
+                print()
+            print("2----------------------")
+            '''
+            for rule in list:
+                conditions = f': {", ".join(x for x in rule[0])}'if rule[0] else ''
+                sign = '1' if rule[1] else '-1'
+                priority = f'@{priority_rate}'
+                r = f'#heuristic {atom}{conditions}. [{sign}{priority}, sign]'
+                res += str(r) + '\n'
+                priority_rate += 1
+        return res
+
+
+
 def sign_heuristic_clause(if_clause, then, preferred_that, entity, sign, heur_priority):
     if if_clause and not isinstance(if_clause, list):
         if_clause = [if_clause]
-    return SignHeuristic(entity, if_clause, sign, heur_priority)
+    dict = DictPriorityGraph()
+    dict.addNode(str(entity), if_clause, sign)
+    #return SignHeuristic(entity, if_clause, sign, heur_priority)
 
 
 def true_false_heuristic_clause(if_clause, then, preferred_that, entity, sign, heur_level, heur_priority):

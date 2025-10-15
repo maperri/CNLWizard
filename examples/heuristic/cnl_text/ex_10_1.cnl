@@ -1,7 +1,21 @@
 a.
 b.
 c.
+d.
 
-if there is b, if there is c, then it is preferred that a is false, with priority equal to 3.
+
+if there is b, if there is c, then it is preferred that a is true.
+it is preferred that a is true.
+if there is b, then it is preferred that a is false.
+if there is c, if there is not d, then it is preferred that a is false.
+if there is not d, then it is preferred that a is true.
+if there is c, then it is preferred that a is true.
+
+
+
+if there is not d, then it is preferred that b is true.
+if there is c, then it is preferred that b is true.
+
+
 
 //se esiste b, allora è preferibile che a sia falso, con priorità uguale a 3.
