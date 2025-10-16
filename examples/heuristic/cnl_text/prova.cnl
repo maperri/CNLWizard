@@ -1,0 +1,18 @@
+a.
+b.
+c.
+d.
+e.
+f.
+k.
+p.
+
+//choose a.
+choose a and b when c and d hold.
+
+//choose a and d when e hold, then choose c when b hold, then choose f and k when p hold, then choose p.
+//Choose first a, then c and d.
+//Choose first a and b, then c.
+//Choose first a and b, then c and d.
+
+

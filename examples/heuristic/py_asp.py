@@ -13,7 +13,43 @@ def propositions(there_is_clause):
     raise NotImplementedError
 
 
+def sign(true_sign):
+    raise NotImplementedError
+
+
 def preferred_that(*args):
+    raise NotImplementedError
+
+
+def if_then(*args):
+    raise NotImplementedError
+
+
+def true_sign(*args):
+    raise NotImplementedError
+
+
+def false_sign(*args):
+    raise NotImplementedError
+
+
+def if_there_is(*args):
+    raise NotImplementedError
+
+
+def with_priority(*args):
+    raise NotImplementedError
+
+
+def with_level(*args):
+    raise NotImplementedError
+
+
+def article(*args):
+    raise NotImplementedError
+
+
+def has(*args):
     raise NotImplementedError
 
 
@@ -170,7 +206,7 @@ def attribute_concat(*args):
     return res
 
 
-def entity(negation, string, attribute):
+def entity(negation, article, string, attribute):
     try:
         entity = CnlWizardCompiler.signatures[string]
         for name, value in attribute:
@@ -190,7 +226,7 @@ def verb(string_1, attribute, string_2):
         return None
 
 
-def sign_heuristic_clause(if_clause, preferred_that, entity, heur_negation, heur_priority):
+def sign_heuristic_clause(if_clause, if_then, preferred_that, entity, sign, heur_priority):
     raise NotImplementedError
 
 
@@ -198,41 +234,27 @@ def level_heuristic_clause(level_heuristic_clause_first_syntax):
     raise NotImplementedError
 
 
-def level_heuristic_clause_first_syntax(if_clause, entity, heur_level, heur_priority):
+def level_heuristic_clause_first_syntax(if_clause, if_then, preferred_that, entity, has, heur_level, heur_priority):
     raise NotImplementedError
 
 
-def level_heuristic_clause_second_syntax(entity, entity_conjunction):
+def level_heuristic_clause_second_syntax(*entity_conj):
     raise NotImplementedError
 
 
-def level_heuristic_clause_second_syntax_concat(*args): 
-    res = []
-    for arg in args:
-        if not isinstance(arg, list):
-            arg = [arg]
-        res += arg
-    return res
-
-
-def entity_conjunction(entity):
+def entity_conj(*entity):
     raise NotImplementedError
 
 
-def entity_conjunction_concat(*args): 
-    res = []
-    for arg in args:
-        if not isinstance(arg, list):
-            arg = [arg]
-        res += arg
-    return res
-
-
-def true_false_heuristic_clause(if_clause, entity, heur_negation, heur_level, heur_priority):
+def condition(*entity):
     raise NotImplementedError
 
 
-def if_clause(entity):
+def true_false_heuristic_clause(if_clause, if_then, preferred_that, entity, sign, heur_level, heur_priority):
+    raise NotImplementedError
+
+
+def if_clause(if_there_is, entity):
     raise NotImplementedError
 
 
@@ -245,80 +267,19 @@ def if_clause_concat(*args):
     return res
 
 
-def heur_negation(*args):
+def heur_level(with_level):
     raise NotImplementedError
 
 
-def heur_level(*args):
+def heur_priority(with_priority, number):
     raise NotImplementedError
 
 
-def heur_priority(number):
+def entity_cond_conj(*entity_cond):
     raise NotImplementedError
 
 
-def then(*args):
-    raise NotImplementedError
-
-
-def sign(true_sign):
-    raise NotImplementedError
-
-
-def true_sign(*args):
-    raise NotImplementedError
-
-
-def false_sign(*args):
-    raise NotImplementedError
-
-
-def if_there_is(*args):
-    raise NotImplementedError
-
-
-def with_priority(*args):
-    raise NotImplementedError
-
-
-def if_then(*args):
-    raise NotImplementedError
-
-
-def level_heuristic_clause_second_syntax_body(entity, entity_conjunction):
-    raise NotImplementedError
-
-
-def level_heuristic_clause_second_syntax_body_concat(*args): 
-    res = []
-    for arg in args:
-        if not isinstance(arg, list):
-            arg = [arg]
-        res += arg
-    return res
-
-
-def choose_first(*args):
-    raise NotImplementedError
-
-
-def article(*args):
-    raise NotImplementedError
-
-
-def has(*args):
-    raise NotImplementedError
-
-
-def with_level(*args):
-    raise NotImplementedError
-
-
-def conj_then(*args):
-    raise NotImplementedError
-
-
-def and(*args):
+def entity_cond(entity, condition):
     raise NotImplementedError
 
 

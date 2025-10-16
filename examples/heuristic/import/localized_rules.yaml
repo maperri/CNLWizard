@@ -75,7 +75,7 @@ conj_then:
   target:
     - asp
 
-and:
+and_rule:
   syntax:
     en: '"and"'
     it: '"it'

@@ -24,11 +24,8 @@ sign: true_sign | false_sign
 !if_there_is: "if there is"
 !with_priority: ", with priority " ["equal to"]
 !with_level: (", with" | "a") " level " ["equal to"]
-!choose_first: "Choose first"
 !article: "a " | "an "
 !has: "has "
-!conj_then: ", then"
-!and: "and"
 constant: string "is a constant equal to" attribute_value
 constraint: "It is prohibited that there is" constraint_body [whenever_clause]
 whenever_then_clause_choice: [whenever_clause ", then "] "we can have" [cardinality] disjunction_then_subject ["if there is" then_object]
@@ -63,11 +60,10 @@ verb: string attribute string
 sign_heuristic_clause: [if_clause if_then] preferred_that entity sign [heur_priority]
 level_heuristic_clause: level_heuristic_clause_first_syntax | level_heuristic_clause_second_syntax
 level_heuristic_clause_first_syntax: [if_clause if_then] preferred_that entity has heur_level [heur_priority]
-level_heuristic_clause_second_syntax: choose_first level_heuristic_clause_second_syntax_body
-level_heuristic_clause_second_syntax_body: (entity | entity_conjunction)
-                                         | level_heuristic_clause_second_syntax_body conj_then level_heuristic_clause_second_syntax_body -> level_heuristic_clause_second_syntax_body_concat
-entity_conjunction: entity
-                  | entity_conjunction and entity_conjunction -> entity_conjunction_concat
+level_heuristic_clause_second_syntax: "choose" entity_cond_conj (", then choose" entity_cond_conj)*
+entity_cond_conj: entity_cond ("and" entity_cond)*
+entity_cond: entity [condition]
+condition: "when" entity ("and" entity)* "hold"
 true_false_heuristic_clause: [if_clause if_then] preferred_that entity sign heur_level [heur_priority]
 if_clause: if_there_is entity
          | if_clause "," if_clause -> if_clause_concat

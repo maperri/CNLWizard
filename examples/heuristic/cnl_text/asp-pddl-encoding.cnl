@@ -1,0 +1,13 @@
+A fluent is identified by state.
+An init is identified by state.
+An adds is identified by action, state.
+A next is identified by previous, following.
+An holds is identified by state, time.
+
+
+if there is an holds with state equal to F, with time equal to T1, if there is a next with previous equal to T, with following equal to T1, then it is preferred that an holds with state equal to F, with time equal to T is true.
+choose an holds with state equal to F, with time equal to T when an holds with state equal to F, with time equal to T1 and a next with previous equal to T, with following equal to T1 hold.
+
+
+Whenever there is an init with state equal to F, then we must have a fluent with state equal to F.
+Whenever there is an adds with an action equal to A, with a state equal to F, then we must have a fluent with state equal to F.

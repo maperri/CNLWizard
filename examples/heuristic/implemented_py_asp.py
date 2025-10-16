@@ -168,7 +168,11 @@ def whenever_then_clause_choice(whenever_clause, cardinality, then_subject, then
 
 
 def whenever_then_clause_assignment(whenever_clause, then_subject):
-    return Assignment([then_subject], whenever_clause)
+    if whenever_clause and not isinstance(whenever_clause, list):
+        whenever_clause = [whenever_clause]
+    if then_subject and not isinstance(then_subject, list):
+        then_subject = [then_subject]
+    return Assignment(then_subject, whenever_clause)
 
 
 def weak_constraint(level, comparison, whenever_clause):
@@ -449,8 +453,36 @@ def level_heuristic_clause_first_syntax(if_clause, then, preferred_that, entity,
     return LevelHeuristic(entity, if_clause, heur_level, heur_priority)
 
 
-def level_heuristic_clause_second_syntax(_):
-    return None
+#def level_heuristic_clause_second_syntax(_):
+#    return None
+
+def level_heuristic_clause_second_syntax(*entity_cond_conj_list):
+    if entity_cond_conj_list and not isinstance(entity_cond_conj_list, list):
+        entity_cond_conj_list = list(entity_cond_conj_list)
+    g = Graph()
+    #for entity_cond_conj in entity_cond_conj_list:
+    #    print(entity_cond_conj)
+
+    if len(entity_cond_conj_list) == 1:
+        for entity_cond in entity_cond_conj_list[0]:
+            g.addNode(entity_cond, None)
+
+    while len(entity_cond_conj_list) >= 2:
+        second = entity_cond_conj_list.pop()
+        if not isinstance(second, list):
+            second = [second]
+        first = entity_cond_conj_list[-1]
+        if not isinstance(first, list):
+            first = [first]
+        for arg_first in first:
+            for arg_second in second:
+                g.addNode(arg_first, arg_second)
+
+
+def entity_cond(entity, condition):
+    conditions = f': {", ".join(str(x) for x in condition)}'if condition else ''
+    format = f'{entity}{conditions}'
+    return format
 
 
 def level_heuristic_clause_second_syntax_body(body):
@@ -536,7 +568,10 @@ class Graph:
     
 
     def addNode(self, first, second):
-        self.structure.add(str(first), str(second))
+        if second == None:
+            self.structure.add(str(first))
+        else:
+            self.structure.add(str(first), str(second))
 
 
     def __str__(self):
@@ -569,6 +604,9 @@ def entity_conjunction_concat(*args):
     return res
 
 
-def entity_conjunction(entity):
-    return entity
+
+def entity_conjunction(entity, whenever_clause):
+    if not isinstance(whenever_clause, list):
+        whenever_clause = [whenever_clause]
+    return (entity, whenever_clause)
 
