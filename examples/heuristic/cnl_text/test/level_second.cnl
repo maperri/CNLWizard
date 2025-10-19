@@ -1,0 +1,20 @@
+a.
+b.
+c.
+d.
+e.
+f.
+g.
+h.
+
+//choose a.
+
+//choose a and b.
+
+//choose a, then choose c.
+
+//choose a and b, then choose c.
+
+//choose a and b, then choose c and d.
+
+//choose a when e hold and b, then choose c and d when f and g hold.

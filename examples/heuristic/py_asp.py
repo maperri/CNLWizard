@@ -283,3 +283,7 @@ def entity_cond(entity, condition):
     raise NotImplementedError
 
 
+def with_rule(*args):
+    raise NotImplementedError
+
+

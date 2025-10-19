@@ -23,9 +23,9 @@ sign: true_sign | false_sign
 !false_sign: "is false" | "is not true"
 !if_there_is: "if there is"
 !with_priority: ", with priority " ["equal to"]
-!with_level: (", with" | "a") " level " ["equal to"]
+!with_rule: ", with "
 !article: "a " | "an "
-!has: "has "
+!has: "has " ["a "]
 constant: string "is a constant equal to" attribute_value
 constraint: "It is prohibited that there is" constraint_body [whenever_clause]
 whenever_then_clause_choice: [whenever_clause ", then "] "we can have" [cardinality] disjunction_then_subject ["if there is" then_object]
@@ -52,7 +52,7 @@ then_subject: entity | verb
 then_object: then_subject
            | then_object "," then_object -> then_object_concat
 comparison_operand: math | aggregate | attribute_value
-math_operand: entity | string | number
+math_operand: string | number | math
 attribute: "with" ("a" | "an")? string "equal to"? (string | number)
          | attribute "," attribute -> attribute_concat
 entity: [negation] [article] string [attribute]
@@ -64,8 +64,12 @@ level_heuristic_clause_second_syntax: "choose" entity_cond_conj (", then choose"
 entity_cond_conj: entity_cond ("and" entity_cond)*
 entity_cond: entity [condition]
 condition: "when" entity ("and" entity)* "hold"
-true_false_heuristic_clause: [if_clause if_then] preferred_that entity sign heur_level [heur_priority]
-if_clause: if_there_is entity
-         | if_clause "," if_clause -> if_clause_concat
-heur_level: with_level SIGNED_NUMBER
+true_false_heuristic_clause: [if_clause if_then] preferred_that entity sign with_rule heur_level [heur_priority]
+
+if_clause: if_there_is entity(", and" [if_there_is] entity)*
+
+//if_clause: if_there_is entity
+//         | if_clause ", and" if_clause -> if_clause_concat
+
+heur_level: "level " ["equal to "] (SIGNED_NUMBER | string | comparison_operand)
 heur_priority: with_priority number

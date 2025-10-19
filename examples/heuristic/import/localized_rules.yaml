@@ -40,10 +40,10 @@ with_priority:
   target:
     - asp
 
-with_level:
+with_rule:
   syntax:
-    en: '(", with" | "a") " level " ["equal to"]'
-    it: '(", con" | "un") " livello " ["uguale a"]'
+    en: '", with "'
+    it: '", con "'
   target:
     - asp
 
@@ -63,8 +63,8 @@ article:
 
 has:
   syntax:
-    en: '"has "'
-    it: '"abbia "'
+    en: '"has " ["a "] '
+    it: '"abbia " ["un "]'
   target:
     - asp
 

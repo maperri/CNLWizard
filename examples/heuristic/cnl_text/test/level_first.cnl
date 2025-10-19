@@ -1,0 +1,29 @@
+a.
+b.
+c.
+d.
+e.
+f.
+g.
+h.
+
+
+//it is preferred that a has a level equal to 30.
+
+
+//it is preferred that a has a level equal to -10.
+
+
+//if there is b, then it is preferred that a has a level equal to 30.
+
+
+//if there is c, and if there is d, then it is preferred that a has a level equal to -10.
+
+
+//it is preferred that a has a level equal to 30, with priority equal to 10.
+
+
+//if there is b, and if there is d, then it is preferred that a has a level equal to -30, with priority equal to 20.
+
+
+

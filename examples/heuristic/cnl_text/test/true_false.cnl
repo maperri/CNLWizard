@@ -1,0 +1,29 @@
+a.
+b.
+c.
+d.
+e.
+f.
+g.
+h.
+
+
+//it is preferred that a is true, with level equal to 20.
+
+
+//it is preferred that a is false, with level -12.
+
+
+//if there is b, then it is preferred that a is true, with level equal to 20.
+
+
+//if there is c, and if there is d, then it is preferred that a is true, with level equal to -12.
+
+
+//it is preferred that a is true, with level 20, with priority equal to 10.
+
+
+//if there is b, and if there is d, then it is preferred that a is false, with level equal to -20, with priority equal to 30.
+
+
+

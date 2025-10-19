@@ -205,7 +205,9 @@ comparison_operand:
 math_operand:
   - name: math_operand
     syntax:
-      - entity
+    # modifica: non contempla più le entity
+    #           in più, tra gli operandi ci può essere un'altra operazioni: favorisce espressioni più complesse
+    #  - entity
       - string
       - number
     target:
@@ -232,13 +234,7 @@ entity:
     target:
       - asp
 
-sign:
-  - name: sign
-    syntax:
-      - >
-        true_sign
-      - >
-        false_sign
+## commentare codice
 
 sign_heuristic_clause:
   - name: sign_heuristic_clause
@@ -263,13 +259,6 @@ level_heuristic_clause_first_syntax:
       [if_clause if_then] preferred_that entity has heur_level [heur_priority]
     target:
       - asp
-
-#level_heuristic_clause:
-#  - name: level_heuristic_clause
-#    syntax: >
-#      [if_clause ", then "] "is preferred that " entity "has " heur_level [heur_priority]
-#    target:
-#      - asp
 
 level_heuristic_clause_second_syntax:
   - name: level_heuristic_clause_second_syntax
@@ -299,26 +288,10 @@ condition:
     target:
       - asp
 
-#level_heuristic_clause_second_syntax_body:
-#  - name: level_heuristic_clause_second_syntax_body
-#    syntax: >
-#      (entity | entity_conjunction)
-#    concat: conj_then
-#    target:
-#      - asp
-
-#entity_conjunction:
-#  - name: entity_conjunction
-#    syntax: >
-#      entity
-#    concat: and_rule
-#    target:
-#      - asp
-
 true_false_heuristic_clause:
   - name: true_false_heuristic_clause
     syntax: >
-      [if_clause if_then] preferred_that entity sign heur_level [heur_priority]
+      [if_clause if_then] preferred_that entity sign with_rule heur_level [heur_priority]
     target:
       - asp
 
@@ -327,21 +300,22 @@ if_clause:
     syntax: 
       - >
         if_there_is entity
-    concat: '","'
+    concat: '", and"'
     target:
       - asp
 
-heur_negation:
-  syntax:
-    - >
-      "not "
-  target:
-    - asp
+sign:
+  - name: sign
+    syntax:
+      - >
+        true_sign
+      - >
+        false_sign
 
 heur_level:
   - name: heur_level
     syntax: >
-      with_level SIGNED_NUMBER
+      "level " ["equal to "] SIGNED_NUMBER
     target:
       - asp
 

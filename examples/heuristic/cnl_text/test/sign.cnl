@@ -8,13 +8,13 @@ g.
 h.
 
 
-
+//it is preferred that a is true.
 
 
 //it is preferred that a is false.
 
 
-//if there is b, then it is preferred that a is true.
+//if there is b, then it is preferred that a is false.
 
 
 //if there is c, and if there is d, then it is preferred that a is false.

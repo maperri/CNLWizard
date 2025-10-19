@@ -1,0 +1,14 @@
+A vertex_bin is identified by vertex, bin.
+An offset is identified by value.
+A total_order is identified by vertex, index.
+A nrofvertices is identified by value.
+
+
+//if there is an offset with value equal to M, and if there is a total_order with vertex equal to V, with index equal to 1, and if there is a nrofvertices with value equal to NV, then it is preferred that a vertex_bin with vertex equal to V, with bin equal to 1 is true, with level equal to the multiplication between 10 and the multiplication between M and MV.
+
+if there is an offset with value M, and a total_order with vertex equal to V, with index equal to 1, and a nrofvertices with value equal to NV, then it is preferred that a vertex_bin with vertex equal to V, with bin equal to 1 is true, with level equal to the multiplication between 10 and the multiplication between M and MV.
+
+
+
+
+//_heuristic(vertex_bin(V,1), true, 10*M*NV) :- offset(M), total_order(V,1), nrofvertices(NV).

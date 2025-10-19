@@ -1,5 +1,6 @@
 from CNLWizard.cnl_wizard_compiler import CnlWizardCompiler
 from graphlib import TopologicalSorter
+import re
 
 
 class Atom:
@@ -85,30 +86,31 @@ class WeakConstraint:
         return f':~ {", ".join(map(str, self.body))}. [{self.weight}@{", ".join(map(str, self.discriminant))}]'
 
 
+## ------------------------------------------------------------------------------------------------------------------------------
+
+
 class Heuristic:
     def __init__(self, head, body, heur_priority):
-        self.head: Atom = head
-        self.body: list = ": " + ", ".join(map(str, body)) if body else ''
-        self.heur_priority = f'@{heur_priority}' if heur_priority else ''
+        self.head = str(head)
+        self.body = f': {", ".join(map(str, body))}' if body else ''
+        self.heur_priority = f'@{str(heur_priority)}' if heur_priority else ''
     
 
 class SignHeuristic(Heuristic):
     def __init__(self, head, body, sign, heur_priority):
         super().__init__(head, body, heur_priority)
         self.sign = '1' if sign else '-1'
+        '''
+        print("1 --------------------------------------------------------------")
+        print(self.head)
+        print(self.body)
+        print(self.sign)
+        print(self.heur_priority)
+        print("2 --------------------------------------------------------------")
+        '''
 
     def __str__(self):
         return f'#heuristic {self.head}{self.body}. [{self.sign}{self.heur_priority},sign]'
-    
-
-class TrueFalseHeuristic(SignHeuristic):
-    def __init__(self, head, body, heur_negation, heur_level, heur_priority):
-        super().__init__(head, body, heur_negation, heur_priority)
-        self.heur_level = heur_level if heur_level else ''
-
-    def __str__(self):
-        str_heur_negation = 'false' if self.heur_negation else 'true'
-        return f'#heuristic {self.head}{self.body}. [{self.heur_level}{self.heur_priority},{str_heur_negation}]'
     
 
 class LevelHeuristic(Heuristic):
@@ -120,13 +122,108 @@ class LevelHeuristic(Heuristic):
         return f'#heuristic {self.head}{self.body}. [{self.heur_level}{self.heur_priority},level]'
 
 
+class TrueFalseHeuristic(Heuristic):
+    def __init__(self, head, body, sign, heur_level, heur_priority):
+        super().__init__(head, body, heur_priority)
+        self.sign = 'true' if sign else 'false'
+        self.heur_level = heur_level
+
+    def __str__(self):
+        return f'#heuristic {self.head}{self.body}. [{self.heur_level}{self.heur_priority},{self.sign}]'
+    
+
+class DictPriorityGraph:
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+            cls._instance.dict = dict()         
+        return cls._instance
+    
+    def addNode(self, atom, if_clause, sign):
+        if atom not in self._instance.dict:
+            self._instance.dict[atom] = list()
+        if if_clause:
+            if_clause = set(str(x) for x in if_clause)
+        else:
+            if_clause = set()
+        index = 0
+        for rule in self._instance.dict[atom]:
+            if if_clause < rule[0]:
+                self._instance.dict[atom].insert(index, (if_clause, sign))
+                return
+            index += 1
+        self._instance.dict[atom].append((if_clause, sign))
+
+    def __str__(self):
+        res = ''
+        for atom, list in self._instance.dict.items():
+            priority_rate = 0
+            '''
+            print("1----------------------")
+            for r in list:
+                if not r[0]:
+                    print('0', end='')
+                else:
+                    print(f'({", ".join(str(e) for e in r[0])})', end='  ')
+                print()
+            print("2----------------------")
+            '''
+            for rule in list:
+                conditions = f': {", ".join(x for x in rule[0])}'if rule[0] else ''
+                sign = '1' if rule[1] else '-1'
+                priority = f'@{priority_rate}' if priority_rate > 0 else ''
+                r = f'#heuristic {atom}{conditions}. [{sign}{priority}, sign]'
+                res += str(r) + '\n'
+                priority_rate += 1
+        return res.strip()
+    
+
+class LevelGraph:
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+            cls._instance.structure = TopologicalSorter()            
+        return cls._instance
+    
+
+    def addNode(self, first, second):
+        if second == None:
+            self.structure.add(str(first))
+        else:
+            self.structure.add(str(first), str(second))
+
+
+    def __str__(self):
+        self._instance.structure.prepare()
+        layers = []
+        while self._instance.structure.is_active():
+            ready = list(self._instance.structure.get_ready())
+            layers.append(ready)
+            for node in ready:
+                self._instance.structure.done(node)
+        res = ''
+        level = 10
+        for layer in layers:
+            for atom in layer:
+                r = f'#heuristic {atom}. [{level}, level]'
+                res += str(r) + '\n'
+            level += 10
+        return res.strip()
+    
+
+## ------------------------------------------------------------------------------------------------------------------------------
 
 
 def start(*rules):
     res = ''
     for r in rules:
         res += str(r) + '\n'
-    res += str(DictPriorityGraph())
+    #res += str(DictPriorityGraph()) + '\n'
+    #res += str(LevelGraph()) + '\n'
     return res
 
 
@@ -353,94 +450,21 @@ def then_object(then_subject):
    return then_subject
 
 
+## ------------------------------------------------------------------------------------------------------------------------------
+
+
 def heuristic(clause):
     return clause
-
-
-def true_sign(arg):
-    return True
-
-
-def false_sign(arg):
-    return False
-
-
-def sign(sign):
-    return sign
-
-
-#def sign(heur_negation):
-#    return bool(heur_negation)
-
-
-class DictPriorityGraph:
-    _instance = None
-
-    def __new__(cls):
-        if cls._instance is None:
-            cls._instance = super().__new__(cls)
-            cls._instance.dict = dict()         
-        return cls._instance
-    
-
-    def addNode(self, atom, if_clause, sign):
-        if atom not in self._instance.dict:
-            self._instance.dict[atom] = list()
-        
-        if if_clause:
-            if_clause = set(str(x) for x in if_clause)
-        else:
-            if_clause = set()
-
-        index = 0
-        for rule in self._instance.dict[atom]:
-            if if_clause.issubset(rule[0]):
-                self._instance.dict[atom].insert(index, (if_clause, sign))
-                return
-            index += 1
-                        
-        self._instance.dict[atom].append((if_clause, sign))
-
-        
-
-
-    def __str__(self):
-        res = ''
-        for atom, list in self._instance.dict.items():
-            priority_rate = 1
-            '''
-            print("1----------------------")
-            for r in list:
-                if not r[0]:
-                    print('0', end='')
-                else:
-                    print(f'({", ".join(str(e) for e in r[0])})', end='  ')
-                print()
-            print("2----------------------")
-            '''
-            for rule in list:
-                conditions = f': {", ".join(x for x in rule[0])}'if rule[0] else ''
-                sign = '1' if rule[1] else '-1'
-                priority = f'@{priority_rate}'
-                r = f'#heuristic {atom}{conditions}. [{sign}{priority}, sign]'
-                res += str(r) + '\n'
-                priority_rate += 1
-        return res
-
 
 
 def sign_heuristic_clause(if_clause, then, preferred_that, entity, sign, heur_priority):
     if if_clause and not isinstance(if_clause, list):
         if_clause = [if_clause]
-    dict = DictPriorityGraph()
-    dict.addNode(str(entity), if_clause, sign)
-    #return SignHeuristic(entity, if_clause, sign, heur_priority)
-
-
-def true_false_heuristic_clause(if_clause, then, preferred_that, entity, sign, heur_level, heur_priority):
-    if if_clause and not isinstance(if_clause, list):
-        if_clause = [if_clause]
-    return TrueFalseHeuristic(entity, if_clause, sign, heur_level, heur_priority)
+    if not heur_priority:
+        dict = DictPriorityGraph()
+        dict.addNode(str(entity), if_clause, sign)
+    else:
+        return SignHeuristic(entity, if_clause, sign, heur_priority)
 
 
 def level_heuristic_clause(syntax_clause):
@@ -453,20 +477,19 @@ def level_heuristic_clause_first_syntax(if_clause, then, preferred_that, entity,
     return LevelHeuristic(entity, if_clause, heur_level, heur_priority)
 
 
-#def level_heuristic_clause_second_syntax(_):
-#    return None
+def true_false_heuristic_clause(if_clause, then, preferred_that, entity, sign, with_rule, heur_level, heur_priority):
+    if if_clause and not isinstance(if_clause, list):
+        if_clause = [if_clause]
+    return TrueFalseHeuristic(entity, if_clause, sign, heur_level, heur_priority)
+
 
 def level_heuristic_clause_second_syntax(*entity_cond_conj_list):
     if entity_cond_conj_list and not isinstance(entity_cond_conj_list, list):
         entity_cond_conj_list = list(entity_cond_conj_list)
-    g = Graph()
-    #for entity_cond_conj in entity_cond_conj_list:
-    #    print(entity_cond_conj)
-
+    g = LevelGraph()
     if len(entity_cond_conj_list) == 1:
         for entity_cond in entity_cond_conj_list[0]:
             g.addNode(entity_cond, None)
-
     while len(entity_cond_conj_list) >= 2:
         second = entity_cond_conj_list.pop()
         if not isinstance(second, list):
@@ -485,55 +508,16 @@ def entity_cond(entity, condition):
     return format
 
 
-def level_heuristic_clause_second_syntax_body(body):
-    return body
+def if_clause(*args):
+    res = []
+    for arg in args:
+        if isinstance(arg, Atom):
+            res.append(arg)
+    return res
 
 
-def level_heuristic_clause_second_syntax_body_concat(*entity_concat):
-    if entity_concat and not isinstance(entity_concat, list):
-        entity_concat = list(entity_concat)
-    entity_concat = [
-        e for e in entity_concat
-        if (
-            isinstance(e, Atom) or
-            (isinstance(e, list) and all(isinstance(el, Atom) for el in e))
-        )
-    ]
-    g = Graph()
-    while len(entity_concat) >= 2:
-        second = entity_concat.pop()
-        if not isinstance(second, list):
-            second = [second]
-        first = entity_concat[-1]
-        if not isinstance(first, list):
-            first = [first]
-        for arg_first in first:
-            for arg_second in second:
-                g.addNode(arg_first, arg_second)
-    
-
-
-#def level_heuristic_clause_second_syntax_concat(*entity_concat):
-#    if entity_concat and not isinstance(entity_concat, list):
-#        entity_concat = list(entity_concat)
-#    level_heuristics = []
-#    level = 1
-#    while len(entity_concat) > 0:
-#        e = entity_concat.pop()
-#        if isinstance(e, Atom):
-#            level_heuristics.insert(0, LevelHeuristic(e, None, str(level), None))
-#        elif isinstance(e, list):
-#            for sameLev in e:
-#                level_heuristics.insert(0, LevelHeuristic(sameLev, None, str(level), None))
-#        level += 1
-#    res = ''
-#    for r in level_heuristics:
-#        res += str(r) + '\n'
-#    return res
-
-
-def if_clause(if_there_is, entity):
-   return entity
+#def if_clause(if_there_is, entity):
+#   return entity
 
 
 def if_clause_concat(*args):
@@ -545,11 +529,19 @@ def if_clause_concat(*args):
     return res
 
 
-def heur_negation(args):
+def true_sign(arg):
     return True
 
 
-def heur_level(with_level, value):
+def false_sign(arg):
+    return False
+
+
+def sign(sign):
+    return sign
+
+
+def heur_level(value):
     return str(value)
 
 
@@ -557,56 +549,9 @@ def heur_priority(with_priority, value):
     return str(value)
 
 
-class Graph:
-    _instance = None
-
-    def __new__(cls):
-        if cls._instance is None:
-            cls._instance = super().__new__(cls)
-            cls._instance.structure = TopologicalSorter()            
-        return cls._instance
-    
-
-    def addNode(self, first, second):
-        if second == None:
-            self.structure.add(str(first))
-        else:
-            self.structure.add(str(first), str(second))
-
-
-    def __str__(self):
-        self._instance.structure.prepare()
-        layers = []
-        while self._instance.structure.is_active():
-            ready = list(self._instance.structure.get_ready())
-            layers.append(ready)
-            for node in ready:
-                self._instance.structure.done(node)
-        res = ''
-        level = 10
-        for layer in layers:
-            for atom in layer:
-                r = f'#heuristic {atom}. [{level}, level]'
-                res += str(r) + '\n'
-            level += 10
-        return res
-    
-
 def graph(arg):
-    return Graph()
-
-
-def entity_conjunction_concat(*args):
-    args = [a for a in args if isinstance(a, Atom)]
-    res = []
-    for arg in args:
-        res.append(arg)
+    res = ''
+    res += str(DictPriorityGraph()) + '\n'
+    res += str(LevelGraph())
     return res
-
-
-
-def entity_conjunction(entity, whenever_clause):
-    if not isinstance(whenever_clause, list):
-        whenever_clause = [whenever_clause]
-    return (entity, whenever_clause)
 
